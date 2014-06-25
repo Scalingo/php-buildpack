@@ -1,9 +1,11 @@
-#!/usr/bin/env bash
+#/usr/bin/env bash
 
 set -e
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
+source "$basedir/utils"
+source "$basedir/swift"
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
@@ -21,14 +23,12 @@ fi
 
 echo "-----> Packaging PHP $php_version"
 
-tempdir="$( mktemp -t php_xxxx )"
-rm -rf $tempdir
-mkdir -p $tempdir
+tempdir=$(mktmpdir php)
 cd $tempdir
 
-echo "-----> Downloading dependency zlib ${zlib_version}"
+echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
 
-curl -LO "http://$S3_BUCKET.s3.amazonaws.com/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
 echo "-----> Downloading PHP $php_version"
@@ -50,69 +50,61 @@ SH
 )
 fi
 
-build_command=$(cat <<BUILD_CMD
-    mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu" \
-    && curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libicu-51.tgz" | tar xzv -C /app/vendor/libicu \
-    && curl "http://${S3_BUCKET}.s3.amazonaws.com/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
-    && export LD_LIBRARY_PATH=/app/vendor/libicu/lib \
-    && export PATH=/app/vendor/libicu/bin:\$PATH \
-    && mkdir -p "/app/vendor/php/etc/conf.d" \
-    && cd zlib-${PHP_ZLIB_VERSION} && ./configure --prefix=/app/vendor/php/zlib && make && make install \
-    && cd ../php-${php_version} && ./configure --prefix=/app/vendor/php \
-    --with-config-file-path=/app/vendor/php/etc \
-    --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
-    --enable-intl \
-    --with-gd \
-    --with-mysql \
-    --with-mysqli \
-    --with-pdo-mysql \
-    --with-pdo-sqlite \
-    --with-pdo-pgsql=/usr/bin/pg_config \
-    --with-pgsql \
-    --enable-shmop \
-    --enable-zip \
-    --with-jpeg-dir=/usr \
-    --with-png-dir=/usr \
-    --with-freetype-dir=/usr \
-    --enable-exif \
-    --with-zlib=/app/vendor/php/zlib \
-    --with-bz2 \
-    --with-openssl \
-    --enable-soap \
-    --enable-xmlreader \
-    --with-xmlrpc \
-    --with-curl=/usr \
-    --with-xsl \
-    --enable-fpm \
-    --enable-mbstring \
-    --enable-pcntl \
-    --enable-sockets \
-    --enable-bcmath \
-    --with-readline \
-    --with-mcrypt=/app/vendor/libmcrypt \
-    --disable-debug \
-    && make \
-    && make install \
-    && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
-    && $install_zend_optimizer
-BUILD_CMD
-)
+mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu" \
+&& curl "${SWIFT_URL}/package/libicu-51.tgz" | tar xzv -C /app/vendor/libicu \
+&& curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
+&& export LD_LIBRARY_PATH=/app/vendor/libicu/lib \
+&& export PATH=/app/vendor/libicu/bin:$PATH \
+&& mkdir -p "/app/vendor/php/etc/conf.d" \
+&& pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
+&& pushd ../php-${php_version} >/dev/null && ./configure --prefix=/app/vendor/php \
+--with-config-file-path=/app/vendor/php/etc \
+--with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
+--enable-intl \
+--with-gd \
+--with-mysql \
+--with-mysqli \
+--with-pdo-mysql \
+--with-pdo-sqlite \
+--with-pdo-pgsql=/usr/bin/pg_config \
+--with-pgsql \
+--enable-shmop \
+--enable-zip \
+--with-jpeg-dir=/usr \
+--with-png-dir=/usr \
+--with-freetype-dir=/usr \
+--enable-exif \
+--with-zlib=/app/vendor/php/zlib \
+--with-icu-dir=/app/vendor/libicu \
+--with-bz2 \
+--with-openssl \
+--enable-soap \
+--enable-xmlreader \
+--with-xmlrpc \
+--with-curl=/usr \
+--with-xsl \
+--enable-fpm \
+--enable-mbstring \
+--enable-pcntl \
+--enable-sockets \
+--enable-bcmath \
+--with-readline \
+--with-mcrypt=/app/vendor/libmcrypt \
+--disable-debug \
+&& make \
+&& make install \
+&& popd > /dev/null \
+&& /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
+&& $install_zend_optimizer
 
-echo "-----> Uploading source to build server"
+mkdir package
+pushd /app/vendor/php > /dev/null
+tar zcvf "${tempdir}/package/php-${php_version}.tgz" .
+popd > /dev/null
 
-vulcan build --verbose \
-    --name php \
-    --prefix /app/vendor/php \
-    --source "." \
-    --output "$tempdir/php-$php_version.tgz" \
-    --command "$build_command"
+echo "-----> Moving package to Swift"
 
-echo "-----> Moving package to S3"
-
-s3cmd put \
-    --verbose --acl-public \
-    "$tempdir/php-${php_version}.tgz" \
-    "s3://$S3_BUCKET/package/php-${php_version}.tgz"
+swift upload "${SWIFT_BUCKET}" "package/php-${php_version}.tgz"
 
 "$basedir/manifest" php
 "$basedir/package-checksum" "php-${php_version}"

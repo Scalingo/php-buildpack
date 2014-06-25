@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/utils"
+
+validate_env
+
+function swift_upload() {
+  file="$1"
+  dest="$2"
+
+  # Require swift client > 1.0
+  # if [ "x$dest" != "x" ] ; then
+  #   opts="--object-name $dest"   
+  # fi
+
+  swift --verbose ${opts} upload ${SWIFT_BUCKET} "${file}"
+  swift --verbose post -r '.r:*' ${SWIFT_BUCKET} "${file}"
+}
+
+function swift_download() {
+  file="$1"
+  swift --verbose download ${SWIFT_BUCKET} "${file}"
+}

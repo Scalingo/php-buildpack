@@ -1,0 +1,19 @@
+#!/bin/bash
+
+function validate_env() {
+  if [ -z "$SWIFT_BUCKET" ]; then
+      echo "Must set SWIFT_BUCKET environment variable" >&2
+      exit 1
+  fi
+}
+
+function mktmpdir() {
+  tempdir="$( mktemp -t $1_XXXX )"
+  rm -rf $tempdir
+  mkdir -p $tempdir
+  echo $tempdir
+}
+
+function md5() {
+  md5sum $1 | awk '{print $1}'
+}
