@@ -32,8 +32,8 @@ function fetch_package() {
 
     mkdir -p "$location"
 
-    local checksum_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.md5"
-    local package_url="http://${S3_BUCKET}.s3.amazonaws.com/package/${package}.tgz"
+    local checksum_url="${SWIFT_URL}/package/${package}.md5"
+    local package_url="${SWIFT_URL}/package/${package}.tgz"
     local checksum=$(curl "$checksum_url" 2> /dev/null)
     local cache_checksum=
 
@@ -86,12 +86,12 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
-    local checksum=$(curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar.md5")
+    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer.phar.md5")
 
     status "Vendoring Composer"
     if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
         echo "Updating Composer" | indent
-        curl --silent "http://${S3_BUCKET}.s3.amazonaws.com/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        curl --silent "${SWIFT_URL}/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
     fi
@@ -187,48 +187,52 @@ function install_newrelic() {
     cd "$cwd"
 }
 
+function has_heroku_extra() {
+   jq --raw-output '.extra.heroku // ""' < "$BUILD_DIR/composer.json"
+}
+
 function package_document_root() {
-    jq --raw-output '.extra.heroku["document-root"] // ""' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"document-root\"] // \"\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_index_file() {
-    jq --raw-output '.extra.heroku["index-document"] // "index.php"' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"index-document\"] // \"index.php\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_framework() {
-    jq --raw-output '.extra.heroku.framework // ""' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}.framework // \"\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_nginx_version() {
-    jq --raw-output ".extra.heroku.engines.nginx // \"default\"" < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}.engines.nginx // \"default\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_version() {
-    jq --raw-output ".extra.heroku.engines.php // \"default\"" < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}.engines.php // \"default\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_config() {
-    jq --raw-output '.extra.heroku["php-config"] // [] | .[]' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"php-config\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_includes() {
-    jq --raw-output '.extra.heroku["php-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"php-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_nginx_includes() {
-    jq --raw-output '.extra.heroku["nginx-includes"] // [] | .[]' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"nginx-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_log_files() {
-    jq --raw-output '.extra.heroku["log-files"] // [] | .[]' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"log-files\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_compile_cmd() {
-    jq --raw-output '.extra.heroku["compile"] // [] | .[]' < "$BUILD_DIR/composer.json"
+    jq --raw-output ".extra.${composer_extra_key}[\"compile\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_newrelic_enabled() {
-    local val=$(jq --raw-output '.extra.heroku["newrelic"] // false' < "$BUILD_DIR/composer.json")
+    local val=$(jq --raw-output ".extra.${composer_extra_key}[\"newrelic\"] // false" < "$BUILD_DIR/composer.json")
 
     if [ "$val" = "true" ]; then
         return 0
@@ -241,14 +245,14 @@ export_env_dir "$3"
 
 # Download jq binary for JSON processing
 export PATH="$HOME/bin:$PATH"
-curl "http://${S3_BUCKET}.s3.amazonaws.com/jq/jq" -L -s -o - > "$HOME/bin/jq"
+curl "${SWIFT_URL}/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.10"
-DEFAULT_NGINX="1.4.4"
+DEFAULT_PHP="5.5.13"
+DEFAULT_NGINX="1.6.0"
 
-AVAILABLE_PHP_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.php" 2> /dev/null)
-AVAILABLE_NGINX_VERSIONS=$(curl "http://${S3_BUCKET}.s3.amazonaws.com/manifest.nginx" 2> /dev/null)
+AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
+AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
 
 MCRYPT_VERSION="2.5.8"
 PHP_VERSION="default"
@@ -265,16 +269,22 @@ LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.lo
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
-    PHP_VERSION=$(package_php_version)
-    NGINX_VERSION=$(package_nginx_version)
-    DOCUMENT_ROOT=$(package_document_root)
-    INDEX_DOCUMENT=$(package_index_file)
-    FRAMEWORK=$(package_framework)
-    PHP_EXTRA_CONFIG=$(package_php_config)
-    PHP_INCLUDES=$(package_php_includes)
-    COMPILE_CMD=$(package_compile_cmd)
-    NGINX_INCLUDES=$(package_nginx_includes)
-    USER_LOG_FILES=$(package_log_files)
+  composer_extra_key="paas"
+  if [ -n "$(has_heroku_extra)" ] ; then
+    protip "Your composer.json is using the key 'extra' → 'heroku', you should switch to 'extra' → 'paas' for standardization"
+    composer_extra_key="heroku"
+  fi
+
+  PHP_VERSION=$(package_php_version)
+  NGINX_VERSION=$(package_nginx_version)
+  DOCUMENT_ROOT=$(package_document_root)
+  INDEX_DOCUMENT=$(package_index_file)
+  FRAMEWORK=$(package_framework)
+  PHP_EXTRA_CONFIG=$(package_php_config)
+  PHP_INCLUDES=$(package_php_includes)
+  COMPILE_CMD=$(package_compile_cmd)
+  NGINX_INCLUDES=$(package_nginx_includes)
+  USER_LOG_FILES=$(package_log_files)
 fi
 
 # Try reading PHP version from .php-version file in project
@@ -321,7 +331,7 @@ test ! -d ".profile.d" && mkdir -p .profile.d || true
 
 cat > ".profile.d/php.sh" <<SH
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:/app/vendor/nginx/sbin:/app/vendor/php/sbin:/app/vendor/php/bin:/app/vendor/bin:\$PATH
-export HEROKU_BUILD_TIME=$(date +%Y%m%d%H%M%S)
+export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 source ".profile.d/php.sh"

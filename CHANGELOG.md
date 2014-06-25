@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.4.0, 2014-06-25
+
+* Use of swift instead of S3 (Used at Appsdeck with OVH Swift)
+* Fix mktemp xxx → XXX for right syntax
+* Helpers for factorizing code in vendor compilation
+* Helpers for swift operations
+* PHP to 5.5.13
+* NGINX to 1.6.0
+* Add warning to switch ['extra']['heroku'] to ['extra']['paas']
+
 ## v0.3.6, 2014-03-26
 
 ### Changes

@@ -4,14 +4,16 @@ zlib_version="$1"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 source "$basedir/../conf/buildpack.conf"
+source "$basedir/utils"
+source "$basedir/swift"
 
-tempdir="$( mktemp -t nginx_xxxx )"
-rm -rf $tempdir
-mkdir -p $tempdir
+tempdir=$(mktmpdir zlib)
 cd $tempdir
 
 echo "-----> Downloading ZLib v${zlib_version}"
 curl -LO "http://zlib.net/zlib-${zlib_version}.tar.gz"
 
-s3cmd put --acl-public --verbose "zlib-${zlib_version}.tar.gz" \
-    "s3://$S3_BUCKET/zlib/zlib-${zlib_version}.tar.gz"
+mkdir zlib
+mv zlib-${zlib_version}.tar.gz zlib
+
+swift_upload "zlib/zlib-${zlib_version}.tar.gz"

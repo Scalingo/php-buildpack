@@ -4,11 +4,12 @@ set -e
 
 nginx_version="$1"
 
-E_ARG_MISSING=127
-E_S3_BUCKET_MISSING=2
-
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
+source "$basedir/utils"
+source "$basedir/swift"
+
+validate_env
 
 export PATH=${basedir}/../vendor/bin:$PATH
 
@@ -22,15 +23,13 @@ if [ -z "$NGINX_ZLIB_VERSION" ]; then
 fi
 
 if [ -z "$NGINX_PCRE_VERSION" ]; then
-    NGINX_PCRE_VERSION=8.32
+    NGINX_PCRE_VERSION=8.35
 fi
 
 zlib_version="$NGINX_ZLIB_VERSION"
 pcre_version="$NGINX_PCRE_VERSION"
 
-tempdir="$( mktemp -t nginx_xxxx )"
-rm -rf $tempdir
-mkdir -p $tempdir
+tempdir=$(mktmpdir nginx)
 cd $tempdir
 
 echo "-----> Downloading dependency PCRE ${pcre_version}"
@@ -40,7 +39,7 @@ tar -xzvf "pcre-${pcre_version}.tar.gz"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 
-curl -LO "http://${S3_BUCKET}.s3.amazonaws.com/zlib/zlib-${zlib_version}.tar.gz"
+curl -LO "${SWIFT_URL}/zlib/zlib-${zlib_version}.tar.gz"
 tar -xzvf "zlib-${zlib_version}.tar.gz"
 
 echo "-----> Downloading NGINX ${nginx_version}"
@@ -50,20 +49,23 @@ tar -xzvf "nginx-${nginx_version}.tar.gz"
 
 echo "-----> Uploading source to build server"
 
-vulcan build --verbose \
-    --name nginx \
-    --prefix /app/vendor/nginx \
-    --source "$tempdir" \
-    --output "$tempdir/nginx-${nginx_version}.tgz" \
-    --command "cd nginx-${nginx_version} && ./configure --prefix=/app/vendor/nginx --with-http_ssl_module --with-pcre=../pcre-${pcre_version} --with-zlib=../zlib-${zlib_version} && make && make install"
+pushd nginx-${nginx_version} >/dev/null && \
+  ./configure \
+    --prefix=/app/vendor/nginx \
+    --with-http_ssl_module \
+    --with-pcre=../pcre-${pcre_version} \
+    --with-zlib=../zlib-${zlib_version} && \
+  make && make install && \
+  popd > /dev/null
 
-echo "-----> Uploading package to s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+echo "-----> Uploading package to Swift https://${SWIFT_URL}/package/nginx-${nginx_version}.tgz"
 
-s3cmd put --verbose \
-    --acl-public \
-    "$tempdir/nginx-${nginx_version}.tgz" \
-    "s3://$S3_BUCKET/package/nginx-${nginx_version}.tgz"
+mkdir package
+pushd /app/vendor/nginx >/dev/null
+tar zcvf "${tempdir}/package/nginx-${nginx_version}.tgz" .
+popd >/dev/null
 
+swift_upload package/nginx-${nginx_version}.tgz
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
