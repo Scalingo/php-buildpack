@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-apcu_version=4.0.2
+apcu_version=4.0.6
 
 curl -L "http://pecl.php.net/get/apcu-${apcu_version}.tgz" \
     | tar xzv
