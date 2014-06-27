@@ -69,6 +69,24 @@ function indent() {
     esac
 }
 
+function check_composer_syntax() {
+  local target="$1"
+
+  if [ -f "$target/composer.json" ]; then
+      [ -z $(cat "$target/composer.json") ] && \
+        error "composer.json is empty, remove it from GIT repository or fill its content."
+      jq . < "$target/composer.json" >/dev/null 2>&1 ; rc=$?
+      [ $rc -ne 0 ] && error "composer.json is not a valid JSON file."
+  fi
+
+  if [ -f "$target/composer.lock" ]; then
+      [ -z $(cat "$target/composer.lock") ] && \
+        error "composer.lock is empty, generate it with the composer command."
+      jq . < "$target/composer.lock" >/dev/null 2>&1 ; rc=$?
+      [ $rc -ne 0 ] && error "composer.lock is not a valid JSON file."
+  fi
+}
+
 function check_composer_json_and_lock() {
   local target="$1"
 
@@ -86,9 +104,9 @@ function install_composer_deps() {
     local cwd=$(pwd)
     local target="$1"
 
-    check_composer_json_and_lock $target; rc=$?
-    if [ $rc -ne 0 ] ; then
-      return $rc
+    # If there is no composer.json, we install nothing
+    if [ ! -f "$target/composer.json" ] ; then
+      return 0
     fi
 
     export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
@@ -276,6 +294,9 @@ NGINX_INCLUDES=
 NEWRELIC_VERSION=4.4.5.35
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
+check_composer_syntax "$BUILD_DIR"
+check_composer_json_and_lock "$BUILD_DIR"
+
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
   composer_extra_key="paas"
@@ -377,8 +398,6 @@ done
 for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
 done
-
-check_composer_json_and_lock "$BUILD_DIR"
 
 # Detect PHP framework
 for f in "$basedir/../frameworks/"*; do
