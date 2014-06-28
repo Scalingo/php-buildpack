@@ -80,7 +80,7 @@ function check_composer_syntax() {
   fi
 
   if [ -f "$target/composer.lock" ]; then
-      [ -z $(cat "$target/composer.lock") ] && \
+      [ -z "$(cat "$target/composer.lock")" ] && \
         error "composer.lock is empty, generate it with the composer command."
       jq . < "$target/composer.lock" >/dev/null 2>&1 ; rc=$?
       [ $rc -ne 0 ] && error "composer.lock is not a valid JSON file."
