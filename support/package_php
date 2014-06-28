@@ -57,7 +57,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu" \
 && export PATH=/app/vendor/libicu/bin:$PATH \
 && mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
-&& pushd ../php-${php_version} >/dev/null && ./configure --prefix=/app/vendor/php \
+&& pushd php-${php_version} >/dev/null && ./configure --prefix=/app/vendor/php \
 --with-config-file-path=/app/vendor/php/etc \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
@@ -104,7 +104,7 @@ popd > /dev/null
 
 echo "-----> Moving package to Swift"
 
-swift upload "${SWIFT_BUCKET}" "package/php-${php_version}.tgz"
+swift_upload "package/php-${php_version}.tgz"
 
 "$basedir/manifest" php
 "$basedir/package-checksum" "php-${php_version}"

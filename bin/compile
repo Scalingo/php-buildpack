@@ -275,7 +275,7 @@ export PATH="$HOME/bin:$PATH"
 curl "${SWIFT_URL}/jq/jq" -L -s -o - > "$HOME/bin/jq"
 chmod +x "$HOME/bin/jq"
 
-DEFAULT_PHP="5.5.13"
+DEFAULT_PHP="5.5.14"
 DEFAULT_NGINX="1.6.0"
 
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)

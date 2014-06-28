@@ -34,7 +34,7 @@ echo "-----> Manifest for $manifest_type"
 swift list ${SWIFT_BUCKET} \
     | sed "s/^package\///" \
     | grep "\.tgz$" \
-    | grep "${manifest_type}" \
+    | grep "^${manifest_type}" \
     | grep -v -e ".md5" \
     | sed -e "s/${manifest_type}-\([0-9.]*\)\\.tgz/\\1/" \
     | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
