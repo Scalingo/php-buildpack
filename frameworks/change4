@@ -28,16 +28,20 @@ case "$1" in
     compile)
         echo "-----> Setting up Change 4 app"
         cp "$basedir/../conf/nginx/change4.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+
         echo "-----> Bootstrap Change 4 base plugins"
+        pushd $BUILD_DIR > /dev/null
         php bin/change.phar change:generate-db-schema | indent
         php bin/change.phar change:register-plugin --all | indent
         php bin/change.phar change:install-package --vendor=Rbs Core | indent
         php bin/change.phar change:install-package --vendor=Rbs ECom | indent
         php bin/change.phar change:install-plugin --type=theme --vendor=Rbs Demo | indent
-
+        popd $BUILD_DIR > /dev/null
+        ;;
+    end)
         echo "-----> Change references to build directory"
         for php_file in $BUILD_DIR/www/*.php ; do
           sed -i 's+/build+/app+g' $php_file
         done
-        ;;
+      ;;
 esac

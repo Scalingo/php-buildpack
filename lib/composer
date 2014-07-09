@@ -1,0 +1,79 @@
+function check_composer_syntax() {
+  local target="$1"
+
+  if [ -f "$target/composer.json" ]; then
+      [ -z "$(cat "$target/composer.json")" ] && \
+        error "composer.json is empty, remove it from GIT repository or fill its content."
+      jq . < "$target/composer.json" >/dev/null 2>&1 ; rc=$?
+      [ $rc -eq 0 ] || error "composer.json is not a valid JSON file."
+  fi
+
+  if [ -f "$target/composer.lock" ]; then
+      [ -z "$(cat "$target/composer.lock")" ] && \
+        error "composer.lock is empty, generate it with the composer command."
+      jq . < "$target/composer.lock" >/dev/null 2>&1 ; rc=$?
+      [ $rc -eq 0 ] || error "composer.lock is not a valid JSON file."
+  fi
+}
+
+function check_composer_json_and_lock() {
+  local target="$1"
+
+  if [ ! -f "$target/composer.json" ]; then
+      return 0
+  fi
+
+  if [ ! -f "$target/composer.lock" ]; then
+      error "composer.lock has not been found, please lock the dependencies of your project."
+  fi
+}
+
+function install_composer_deps() {
+    local cwd=$(pwd)
+    local target="$1"
+
+    # If there is no composer.json, we install nothing
+    if [ ! -f "$target/composer.json" ] ; then
+      return 0
+    fi
+
+    export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
+    mkdir -p $COMPOSER_CACHE_DIR
+    mkdir -p "$target/vendor/composer/bin"
+
+    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer.phar.md5")
+
+    status "Vendoring Composer"
+    if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
+        echo "Updating Composer" | indent
+        curl --silent "${SWIFT_URL}/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        chmod a+x "$CACHE_DIR/composer.phar"
+        echo "$checksum" > $CACHE_DIR/composer.phar.md5
+    fi
+
+    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
+
+    local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+    if [ -n "$required_extensions" ]; then
+        status "Bundling additional extensions $required_extensions"
+        for ext in $required_extensions; do
+            echo "$ext" | indent
+            # TODO: Find a better way to ignore extensions which were not found in S3
+            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+        done
+    fi
+
+    php "vendor/composer/bin/composer.phar" self-update
+
+    status "Installing application dependencies with Composer"
+    {
+        cd "$target"
+        php "vendor/composer/bin/composer.phar" install \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-interaction \
+            --no-dev
+        cd "$cwd"
+    } | indent
+}
+

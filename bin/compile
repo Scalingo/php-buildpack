@@ -7,6 +7,9 @@ shopt -s dotglob
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source $basedir/common.sh
+source $basedir/../lib/composer
+source $basedir/../lib/nodejs
+source $basedir/../lib/newrelic
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
@@ -53,165 +56,18 @@ function fetch_package() {
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
-function log_error() {
-    local c='s/^/ !     /'
-    case $(uname) in
-        Darwin) echo "$*" | sed -l "$c";;
-        *)      echo "$*" | sed -u "$c";;
-    esac
-}
-
-function indent() {
-    local c='s/^/       /'
-    case $(uname) in
-        Darwin) sed -l "$c";;
-        *)      sed -u "$c";;
-    esac
-}
-
-function check_composer_syntax() {
-  local target="$1"
-
-  if [ -f "$target/composer.json" ]; then
-      [ -z "$(cat "$target/composer.json")" ] && \
-        error "composer.json is empty, remove it from GIT repository or fill its content."
-      jq . < "$target/composer.json" >/dev/null 2>&1 ; rc=$?
-      [ $rc -eq 0 ] || error "composer.json is not a valid JSON file."
-  fi
-
-  if [ -f "$target/composer.lock" ]; then
-      [ -z "$(cat "$target/composer.lock")" ] && \
-        error "composer.lock is empty, generate it with the composer command."
-      jq . < "$target/composer.lock" >/dev/null 2>&1 ; rc=$?
-      [ $rc -eq 0 ] || error "composer.lock is not a valid JSON file."
-  fi
-}
-
-function check_composer_json_and_lock() {
-  local target="$1"
-
-  if [ ! -f "$target/composer.json" ]; then
-      return 0
-  fi
-
-  if [ ! -f "$target/composer.lock" ]; then
-      log_error "composer.lock has not been found, please lock the dependencies of your project."
-      return 1
-  fi
-}
-
-function install_composer_deps() {
-    local cwd=$(pwd)
-    local target="$1"
-
-    # If there is no composer.json, we install nothing
-    if [ ! -f "$target/composer.json" ] ; then
-      return 0
-    fi
-
-    export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
-    mkdir -p $COMPOSER_CACHE_DIR
-    mkdir -p "$target/vendor/composer/bin"
-
-    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer.phar.md5")
-
-    status "Vendoring Composer"
-    if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
-        echo "Updating Composer" | indent
-        curl --silent "${SWIFT_URL}/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
-        chmod a+x "$CACHE_DIR/composer.phar"
-        echo "$checksum" > $CACHE_DIR/composer.phar.md5
-    fi
-
-    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
-
-    local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
-    if [ -n "$required_extensions" ]; then
-        status "Bundling additional extensions $required_extensions"
-        for ext in $required_extensions; do
-            echo "$ext" | indent
-            # TODO: Find a better way to ignore extensions which were not found in S3
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
-        done
-    fi
-
-    php "vendor/composer/bin/composer.phar" self-update
-
-    status "Installing application dependencies with Composer"
-    {
-        cd "$target"
-        php "vendor/composer/bin/composer.phar" install \
-            --prefer-dist \
-            --optimize-autoloader \
-            --no-interaction \
-            --no-dev
-        cd "$cwd"
-    } | indent
-}
-
-function install_node_deps() {
-    local cwd=$(pwd)
-    local target="$1"
-
-    if [ ! -f "$target/package.json" ]; then
-        return 0
-    fi
-
-    status "NODE (package.json) app detected"
-
-    source ${basedir}/compile_node $BUILD_DIR $CACHE_DIR
-
-    local node_path='vendor/node'
-
-    # Symlink node to /app/vendor/node so node and its modules are runnable.
-
-    ln -s ${BUILD_DIR}/${node_path}/ /app/${node_path}
-    ln -s ${BUILD_DIR}/node_modules /app/node_modules
-
-    echo "Node " `node -v` | indent
-}
-
-export_env_dir() {
-    env_dir=$1
-    blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH|LD_LIBRARY_PATH)$'}
-    if [ -d "$env_dir" ]; then
-        for e in $(ls $env_dir); do
-            echo "$e" | grep -qvE "$blacklist_regex" &&
-            export "$e=$(cat $env_dir/$e)"
-            :
-        done
-    fi
-}
-
-function mktmpdir() {
-    dir=$(mktemp -t php-$1-XXXX)
-    rm -rf $dir
-    mkdir -p $dir
-    echo $dir
+function detect_framework() {
+  BUILD_DIR=$1
+  for f in "$basedir/../frameworks/"*; do
+      if "$f" detect "$BUILD_DIR"; then
+          echo $f
+          break
+      fi
+  done
 }
 
 function php_api_version() {
     basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
-}
-
-function install_newrelic() {
-    status "Enabling Newrelic support"
-
-    local version="$1"
-    local cwd=$(pwd)
-    local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
-    local tempdir=$(mktmpdir "newrelic")
-    cd "$tempdir"
-
-    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
-    mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
-    cd "newrelic-php5-${version}-linux"
-
-    cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
-    cp -f "agent/x64/newrelic-$(php_api_version).so" "${ext_dir}/newrelic.so"
-    cp -f "$basedir/../conf/php/newrelic.ini" "/app/vendor/php/etc/conf.d/newrelic.ini"
-
-    cd "$cwd"
 }
 
 function has_heroku_extra() {
@@ -399,13 +255,11 @@ for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
 done
 
+install_node_deps "$BUILD_DIR"
+install_composer_deps "$BUILD_DIR"
+
 # Detect PHP framework
-for f in "$basedir/../frameworks/"*; do
-    if "$f" detect "$BUILD_DIR"; then
-        FRAMEWORK="$f"
-        break
-    fi
-done
+FRAMEWORK=$(detect_framework $BUILD_DIR)
 
 # Fall back to classic mode
 if [ -z "$FRAMEWORK" ]; then
@@ -419,14 +273,10 @@ if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
 fi
 
 if [ ! -f "$FRAMEWORK" ]; then
-    log_error "Framework \"$FRAMEWORK\" not found!"
-    exit 1
+    error "Framework \"$FRAMEWORK\" not found!"
 fi
 
 "$FRAMEWORK" compile "$BUILD_DIR" "$CACHE_DIR"
-
-install_node_deps "$BUILD_DIR"
-install_composer_deps "$BUILD_DIR"
 
 LOG_FILES=$(unique_array ${LOG_FILES[@]} ${USER_LOG_FILES[@]})
 if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then

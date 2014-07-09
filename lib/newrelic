@@ -1,0 +1,20 @@
+function install_newrelic() {
+    status "Enabling Newrelic support"
+
+    local version="$1"
+    local cwd=$(pwd)
+    local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+    local tempdir=$(mktmpdir "newrelic")
+    cd "$tempdir"
+
+    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
+    cd "newrelic-php5-${version}-linux"
+
+    cp -f "daemon/newrelic-daemon.x64" $BUILD_DIR/vendor/newrelic/bin/newrelic-daemon
+    cp -f "agent/x64/newrelic-$(php_api_version).so" "${ext_dir}/newrelic.so"
+    cp -f "$basedir/../conf/php/newrelic.ini" "/app/vendor/php/etc/conf.d/newrelic.ini"
+
+    cd "$cwd"
+}
+
