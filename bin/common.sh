@@ -32,17 +32,6 @@ unique_array() {
   echo "$*" | tr ' ' '\n' | sort -u | tr '\n' ' '
 }
 
-init_log_plex_fifo() {
-  for log_file in $*; do
-    echo "mkdir -p `dirname ${log_file}`"
-  done
-  for log_file in $*; do
-    # Remove logfile if exists
-    rm ${log_file} 2>/dev/null
-    echo "mkfifo ${log_file}"
-  done
-}
-
 init_log_plex() {
   for log_file in $*; do
     echo "mkdir -p `dirname ${log_file}`"
