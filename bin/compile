@@ -60,7 +60,7 @@ function detect_framework() {
   BUILD_DIR=$1
   for f in "$basedir/../frameworks/"*; do
       if "$f" detect "$BUILD_DIR"; then
-          echo $f
+          FRAMEWORK=$f
           break
       fi
   done
@@ -259,7 +259,8 @@ install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
 
 # Detect PHP framework
-FRAMEWORK=$(detect_framework $BUILD_DIR)
+# Set FRAMEWORK
+detect_framework "$BUILD_DIR"
 
 # Fall back to classic mode
 if [ -z "$FRAMEWORK" ]; then
