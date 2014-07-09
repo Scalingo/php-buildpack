@@ -37,6 +37,8 @@ init_log_plex_fifo() {
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
+    # Remove logfile if exists
+    rm ${log_file}
     echo "mkfifo ${log_file}"
   done
 }

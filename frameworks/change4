@@ -2,6 +2,7 @@
 
 BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source $basedir/../bin/common.sh
 
 function requires_change4() {
   require_change=$(jq --raw-output ".require[\"rbschange/core\"] // \"\"" < "$BUILD_DIR/composer.json")
@@ -30,10 +31,10 @@ case "$1" in
         ;;
     end)
         echo "-----> Bootstrap Change 4 base plugins"
-        php bin/change.phar change:generate-db-schema
-        php bin/change.phar change:register-plugin --all
-        php bin/change.phar change:install-package --vendor=Rbs Core
-        php bin/change.phar change:install-package --vendor=Rbs ECom
-        php bin/change.phar change:install-plugin --type=theme --vendor=Rbs Demo
+        php bin/change.phar change:generate-db-schema | indent
+        php bin/change.phar change:register-plugin --all | indent
+        php bin/change.phar change:install-package --vendor=Rbs Core | indent
+        php bin/change.phar change:install-package --vendor=Rbs ECom | indent
+        php bin/change.phar change:install-plugin --type=theme --vendor=Rbs Demo | indent
         ;;
 esac
