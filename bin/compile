@@ -403,6 +403,7 @@ done
 for f in "$basedir/../frameworks/"*; do
     if "$f" detect "$BUILD_DIR"; then
         FRAMEWORK="$f"
+        break
     fi
 done
 
