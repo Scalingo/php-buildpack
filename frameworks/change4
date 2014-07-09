@@ -28,8 +28,6 @@ case "$1" in
     compile)
         echo "-----> Setting up Change 4 app"
         cp "$basedir/../conf/nginx/change4.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
-        ;;
-    end)
         echo "-----> Bootstrap Change 4 base plugins"
         php bin/change.phar change:generate-db-schema | indent
         php bin/change.phar change:register-plugin --all | indent
