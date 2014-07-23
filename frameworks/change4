@@ -45,5 +45,18 @@ case "$1" in
           sed -i 's+\\Rbs\\Http+\\Change\\Http+' $php_file
           sed -i 's+/build+/app+g' $php_file
         done
+        php_script=$(cat <<EOF
+          <?php
+          \$cache_file = "$BUILD_DIR/tmp/cache/.pluginsNamespace.ser";
+          \$namespace_str = file_get_contents(\$cache_file);
+          \$namespace = unserialize(\$namespace_str);
+          foreach(\$namespace as \$plugin => \$path) {
+            \$namespace[\$plugin] = str_replace("$BUILD_DIR", "/app", \$path);
+          }
+          file_put_contents(\$cache_file, serialize(\$namespace));
+          ?>
+EOF
+        )
+        echo $php_script | php
       ;;
 esac
