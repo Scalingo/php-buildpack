@@ -57,7 +57,8 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu" \
 && export PATH=/app/vendor/libicu/bin:$PATH \
 && mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
-&& pushd php-${php_version} >/dev/null && ./configure --prefix=/app/vendor/php \
+&& pushd php-${php_version} >/dev/null \
+&& ./configure --prefix=/app/vendor/php \
 --with-config-file-path=/app/vendor/php/etc \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
@@ -91,6 +92,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" "/app/vendor/libicu" \
 --with-readline \
 --with-mcrypt=/app/vendor/libmcrypt \
 --disable-debug \
+&& echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
 && make \
 && make install \
 && popd > /dev/null \
