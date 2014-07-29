@@ -127,9 +127,10 @@ function package_newrelic_enabled() {
 export_env_dir "$3"
 
 # Download jq binary for JSON processing
-export PATH="$HOME/bin:$PATH"
-curl "${SWIFT_URL}/jq/jq" -L -s -o - > "$HOME/bin/jq"
-chmod +x "$HOME/bin/jq"
+mkdir -p $BUILD_DIR/bin
+export PATH="$BUILD_DIR/bin:$PATH"
+curl "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
+chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP="5.5.15"
 DEFAULT_NGINX="1.6.0"
