@@ -37,7 +37,7 @@ case "$1" in
         php bin/change.phar change:install-package --vendor=Rbs ECom | indent
         php bin/change.phar change:install-plugin --type=theme --vendor=Rbs Demo | indent
         php bin/change.phar change:set-document-root $BUILD_DIR/www | indent
-        popd $BUILD_DIR > /dev/null
+        popd > /dev/null
         ;;
     end)
         echo "-----> Change references to build directory"
