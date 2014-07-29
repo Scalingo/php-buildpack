@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.1, 2014-07-29
+
+ * PHP to 5.5.15
+ * PHP to 5.4.31
+ * PHP to 5.3.28
+
 ## v0.4.0, 2014-06-25
 
 * Use of swift instead of S3 (Used at Appsdeck with OVH Swift)
