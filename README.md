@@ -1,4 +1,4 @@
-# Advanced PHP Heroku Build Pack
+# Advanced PHP Buildpack
 
 ## What makes it unique?
 
@@ -11,30 +11,21 @@
 
 ## How to use it
 
-Use the `--buildpack` parameter when creating a new app:
+This buildpack is used automatically by Appsdeck. So you juste need to create
+a PHP application and to deploy it.
 
-    heroku create --buildpack https://github.com/CHH/heroku-buildpack-php myapp
-
-Or set the `BUILDPACK_URL` config var on an existing app:
-
-    heroku config:set BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php
-
-* * *
-
-If you want to be on the bleeding edge and use pre-release features, then use
-`git://github.com/CHH/heroku-buildpack-php#development` as buildpack
-url.
+`appsdeck create my-php-app`
 
 ## Stack
 
-* NGINX 1.4 or 1.5
-* PHP 5.3, 5.4 and 5.5, with [ZendOpcache][] and [APCu][] ([Info](https://chh-php-test.herokuapp.com/info))
+* NGINX 1.5 or 1.6
+* PHP 5.3, 5.4 and 5.5, with [ZendOpcache][] and [APCu][] ([Info](https://sample-php-base.appsdeck.eu))
 * PHP-FPM
 
 [ZendOpcache]: http://pecl.php.net/package/ZendOpcache
 [APCu]: http://pecl.php.net/package/apcu
-[Available PHP Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.php
-[Available NGINX Versions]: http://chh-heroku-buildpack-php.s3.amazonaws.com/manifest.nginx
+[Available PHP Versions]: https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.php
+[Available NGINX Versions]: https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.nginx
 
 ## Detection
 
@@ -48,12 +39,6 @@ and the document root is set to the app root.
 When a `composer.lock` is detected, then the buildpack does `composer
 install --no-dev`.
 
-## Environment
-
-This buildpack sets environment variables during compile and runtime:
-
-* `HEROKU_BUILD_TIME`: Time when the slug was compiled. Format is `%Y%m%d%H%M%S`, e.g. `20131103111548`
-
 This buildpack also detects when the app has a node `package.json` in the
 app's root. And will install node dependencies like less for example.
 
@@ -62,7 +47,7 @@ app's root. And will install node dependencies like less for example.
 ### CakePHP
 
 Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package or when the
-`extra.heroku.framework` key is set to `cakephp2` in the `composer.json`. This project assumes the layout given in the [FriendsOfCake/app-template](https://github.com/FriendsOfCake/app-template) composer project.
+`extra.paas.framework` key is set to `cakephp2` in the `composer.json`. This project assumes the layout given in the [FriendsOfCake/app-template](https://github.com/FriendsOfCake/app-template) composer project.
 
 Options:
 
@@ -79,7 +64,7 @@ project and no `composer.json`.
 
 ### Magento
 
-Is used when the `extra.heroku.framework` key is set to `magento` in the `composer.json`.
+Is used when the `extra.paas.framework` key is set to `magento` in the `composer.json`.
 
 ### Silex
 
@@ -95,7 +80,7 @@ Options:
 ### Slim
 
 Is used when the app requires the `slim/slim` package or when the
-`extra.heroku.framework` key is set to `slim` in the `composer.json`.
+`extra.paas.framework` key is set to `slim` in the `composer.json`.
 
 Options:
 
@@ -112,6 +97,10 @@ This framework preset doesn't need any configuration to work.
 
 Please note that if you use config vars in Composer hooks, or in `compile`
 scripts, then a new code push may be necessary if you decide to change a config variable.
+
+### Change 4
+
+Detected when you application uses rbschange/core in your `composer.json`.
 
 ## Extensions
 
@@ -151,7 +140,7 @@ A simple configuration could look like this:
             "silex/silex": "~1.0@dev"
         },
         "extra": {
-            "heroku": {
+            "paas": {
                 "document-root": "web",
                 "index-document": "index.php"
             }
@@ -164,7 +153,7 @@ which contains the application's front controller.
 
 ### Configuration Directives
 
-This buildpack supports configuration through directives placed in the `heroku`
+This buildpack supports configuration through directives placed in the `paas`
 key in the `extra` object.
 
 #### framework
@@ -278,8 +267,9 @@ _Note: pecl is not runnable this way._
 _Default: false_
 
 Enable instrumentation support via [New Relic](http://newrelic.com).
-It's recommended to add the New Relic addon to your Heroku app, but you
-can also set your license key manually by setting the `NEW_RELIC_LICENSE_KEY` config var via `heroku config:set`.
+You need to define the environment variable `NEW_RELIC_LICENSE_KEY` for your
+application on your dashboard.
+
 
     "newrelic": true
 
@@ -297,7 +287,7 @@ A tail on each unique log file will be run at application startup
     ],
 
 
-## Node.Js
+## Node.js
 
 If your app contains a `package.json` node and its dependencies will be installed
 
