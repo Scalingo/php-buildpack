@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2, 2014-07-31
+
+ * Add support for Laravel framework
+
 ## v0.4.1, 2014-07-29
 
  * PHP to 5.5.15
