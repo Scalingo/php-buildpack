@@ -15,8 +15,12 @@ http {
 
     keepalive_timeout  65;
 
+    log_format specialLog '$http_x_forwarded_for - '
+                      '"$request" $status $body_bytes_sent '
+                      '"$http_referer" "$http_user_agent"';
+
     error_log logs/error.log notice;
-    access_log logs/access.log;
+    access_log logs/access.log specialLog;
 
     client_max_body_size 100m;
     client_body_timeout 600s;
