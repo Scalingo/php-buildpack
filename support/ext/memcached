@@ -12,6 +12,7 @@ curl "${SWIFT_URL}/package/libmemcached-1.0.18.tgz" \
 cd php-memcached-${php_memcached_version}
 /app/vendor/php/bin/phpize
 ./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --disable-memcached-sasl \
             --with-libmemcached-dir=/app/vendor/libmemcached \
             --enable-memcached
 

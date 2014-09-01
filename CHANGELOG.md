@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5, 2014-08-01
+
+ * PHP to 5.6.0
+ * Add new zend API reference
+
 ## v0.4.2, 2014-07-31
 
  * Add support for Laravel framework
