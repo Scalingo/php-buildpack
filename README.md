@@ -6,7 +6,7 @@
 * Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php
 * Supports Composer out of the box
 * No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
-* Zero-Configuration Symfony 2 and Yii 1 deployment.
+* Zero-Configuration Symfony 2 and Yii deployment.
 * Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
 
 ## How to use it
@@ -102,7 +102,7 @@ scripts, then a new code push may be necessary if you decide to change a config 
 
 Detected when you application uses rbschange/core in your `composer.json`.
 
-### Yii 1
+### Yii
 
 Is detected when the app requires the `yiisoft/yii` package or when the
 `framework` setting is set to `yii` in the `composer.json`.
