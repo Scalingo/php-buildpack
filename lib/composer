@@ -72,12 +72,16 @@ function install_composer_deps() {
 
     status "Installing application dependencies with Composer"
     {
+	local devopt="--no-dev"
+	local dev=${COMPOSER_DEV:=false}
+	[ "x$dev" = "xtrue" ] && devopt="--dev"
+
         cd "$target"
         php "vendor/composer/bin/composer.phar" install \
             --prefer-dist \
             --optimize-autoloader \
             --no-interaction \
-            --no-dev
+            $devopt
         cd "$cwd"
     } | indent
 }
