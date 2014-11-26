@@ -307,6 +307,7 @@ mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
 
 mkdir -p "bin"
+cp ${basedir}/heroku* "bin"
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
