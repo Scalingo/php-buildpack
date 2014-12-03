@@ -306,8 +306,9 @@ mv /app/vendor/libicu vendor/libicu
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
 
-mkdir -p "bin"
+mkdir -p "bin" "vendor/bin"
 cp ${basedir}/heroku* "bin"
+cp ${basedir}/heroku* "vendor/bin"
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
