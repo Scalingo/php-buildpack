@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.6, 2015-01-04
+
+ * PHP to 5.6.4
+
+-- SNIP -- sorry for timelapse
+
 ## v0.5.1, 2014-09-17
 
  * Nginx to 1.6.2
