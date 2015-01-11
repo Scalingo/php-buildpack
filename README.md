@@ -1,7 +1,7 @@
 # Advanced PHP Buildpack
 
 This buildpack is a fork from [CHH/heroku-buildpack-php](https://github.com/CHH/heroku-buildpack-php) which has been improved for the PaaS
-https:/scalingo.com (ex Appsdeck) to have a better PHP support.
+https://scalingo.com (ex Appsdeck) to have a better PHP support.
 
 ## Characteristics
 
