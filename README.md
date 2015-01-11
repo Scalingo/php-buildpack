@@ -1,8 +1,8 @@
-# Advanced PHP Buildpack
+# Advanced PHP Buildpack (fork from CHH/heroku=buildpack-php)
 
 ## What makes it unique?
 
-* Supports PHP 5.3, 5.4 and 5.5
+* Supports PHP 5.3, 5.4, 5.5 and 5.6
 * Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php
 * Supports Composer out of the box
 * No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
@@ -19,7 +19,7 @@ a PHP application and to deploy it.
 ## Stack
 
 * NGINX 1.5 or 1.6
-* PHP 5.3, 5.4 and 5.5, with [ZendOpcache][] and [APCu][] ([Info](https://sample-php-base.appsdeck.eu))
+* PHP 5.3, 5.4, 5.5 and 5.6, with [ZendOpcache][] and [APCu][] ([Info](https://sample-php-base.appsdeck.eu))
 * PHP-FPM
 
 [ZendOpcache]: http://pecl.php.net/package/ZendOpcache
