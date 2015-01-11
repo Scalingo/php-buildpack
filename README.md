@@ -1,12 +1,14 @@
-# Advanced PHP Buildpack (fork from CHH/heroku=buildpack-php)
+# Advanced PHP Buildpack
 
-## What makes it unique?
+This buildpack is a fork from [CHH/heroku-buildpack-php](https://github.com/CHH/heroku-buildpack-php) which has been improved for the PaaS
+https:/scalingo.com (ex Appsdeck) to have a better PHP support.
 
-* Supports PHP 5.3, 5.4, 5.5 and 5.6
-* Uses the memory of the dyno more efficiently by going with NGINX and PHP-FPM instead of Apache/mod_php
-* Supports Composer out of the box
-* No writing NGINX configuration files: supports CakePHP, Classic PHP applications, Magento, Silex, Slim, Symfony 2 and ZF2 apps with a simple configuration driven by your `composer.json`.
-* Zero-Configuration Symfony 2 and Yii deployment.
+## Characteristics
+
+* __Nginx__ 1.5 and 1.6 - __PHP__ 5.3, 5.4, 5.5 and 5.6 - __PHP FPM__
+* Lightweight stack compared to Apache-ModPHP
+* Composer support
+* Various frameworks support out of the box (no configuration)
 * Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
 
 ## How to use it
@@ -14,29 +16,34 @@
 This buildpack is used automatically by Appsdeck. So you juste need to create
 a PHP application and to deploy it.
 
-`appsdeck create my-php-app`
+```
+scalingo create my-php-app
+```
 
-## Stack
+Install CLI tool → http://cli.scalingo.com
 
-* NGINX 1.5 or 1.6
-* PHP 5.3, 5.4, 5.5 and 5.6, with [ZendOpcache][] and [APCu][] ([Info](https://sample-php-base.appsdeck.eu))
-* PHP-FPM
+### Node.JS for assets building
 
-[ZendOpcache]: http://pecl.php.net/package/ZendOpcache
-[APCu]: http://pecl.php.net/package/apcu
-[Available PHP Versions]: https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.php
-[Available NGINX Versions]: https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.nginx
+If you have `package.json` file in your repository, you have to enforce the buildpack choice
+
+```
+scalingo env-set BUILDPACK_NAME=php
+```
+
+## Available versions
+
+[Available PHP Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.php)
+[Available NGINX Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.nginx)
 
 ## Detection
 
-This buildpack detects apps when the app has a `composer.lock` in the
-app's root.
+This buildpack detects apps when the app has a `composer.json` in the app's root.
 
-If an `index.php` is detected in the app's root, then it switches to
-"classic mode", which means that every ".php" file is served with PHP,
-and the document root is set to the app root.
+If an `index.php` is detected in the app's root, then it switches to "classic mode",
+which means that every ".php" file is served with PHP, and the document root is set
+to the app root.
 
-When a `composer.lock` is detected, then the buildpack does `composer
+When a `composer.json` is detected, then the buildpack does `composer
 install --no-dev`.
 
 This buildpack also detects when the app has a node `package.json` in the
@@ -334,5 +341,4 @@ Node and its modules will be available at compilation meaning you could process 
 
 ## Contributing
 
-Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the
-details.
+Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the details.
