@@ -64,10 +64,9 @@ Options:
 
 ### Classic PHP
 
-The classic PHP configuration is used as fallback when no framework was detected. It serves every `.php` file relative to the document root.
+Used when no framework is detected, serves all the `.php` files from the document root.
 
-This is also used when an `index.php` file was found in the root of your
-project and no `composer.json`.
+This is also used when an `index.php` file was found in the root of your project and no `composer.json`.
 
 ### Magento
 
@@ -105,22 +104,21 @@ This framework preset doesn't need any configuration to work.
 Please note that if you use config vars in Composer hooks, or in `compile`
 scripts, then a new code push may be necessary if you decide to change a config variable.
 
+### Laravel
+
+Detected when `laravel/framework` is required in your `composer.json`
+
 ### Change 4
 
-Detected when you application uses rbschange/core in your `composer.json`.
+Detected when `rbschange/core` is required in your `composer.json`.
 
 ### Yii
 
-Is detected when the app requires the `yiisoft/yii` package or when the
-`framework` setting is set to `yii` in the `composer.json`.
+Detected when `yiisoft/yii` is required in your `composer.json`.
 
-This framework preset doesn't need any configuration to work.
+### Yii2
 
-Options:
-
-* `index-document`: All requests which don't match an existing file will be forwarded to
-  this document. Defaults to `index.php`. With Yii apps, this can be set to `index-test.php`
-  for deployments used for acceptance testing.
+Detected when `yiisoft/yii2` or `yiisoft-yii2-dev` is required in your `composer.json`
 
 ## Extensions
 
