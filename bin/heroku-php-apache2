@@ -4,5 +4,5 @@ if [ $# -eq 1 ] ; then
   export DOCUMENT_ROOT=$1
 fi
 
-exec "/app/run"
+exec "/app/bin/run"
 
