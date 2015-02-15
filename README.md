@@ -1,7 +1,9 @@
 # Advanced PHP Buildpack
 
-This buildpack is a fork from [CHH/heroku-buildpack-php](https://github.com/CHH/heroku-buildpack-php) which has been improved for the PaaS
-https://scalingo.com (ex Appsdeck) to have a better PHP support.
+This buildpack is a fork from
+[CHH/heroku-buildpack-php](https://github.com/CHH/heroku-buildpack-php) which
+has been improved for the PaaS https://scalingo.com to have a better PHP
+support.
 
 ## Characteristics
 
@@ -13,8 +15,8 @@ https://scalingo.com (ex Appsdeck) to have a better PHP support.
 
 ## How to use it
 
-This buildpack is used automatically by Appsdeck. So you juste need to create
-a PHP application and to deploy it.
+This buildpack is used automatically by Scalingo. So you juste need to create a
+PHP application and to deploy it.
 
 ```
 scalingo create my-php-app
@@ -24,7 +26,8 @@ Install CLI tool → http://cli.scalingo.com
 
 ### Node.JS for assets building
 
-If you have `package.json` file in your repository, you have to enforce the buildpack choice
+If you have `package.json` file in your repository, you have to enforce the
+buildpack choice
 
 ```
 scalingo env-set BUILDPACK_NAME=php
