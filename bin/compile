@@ -38,7 +38,7 @@ function fetch_package() {
     local checksum_url="${SWIFT_URL}/package/${package}.md5"
     local package_url="${SWIFT_URL}/package/${package}.tgz"
     local checksum=$(curl "$checksum_url" 2> /dev/null)
-    local cache_checksum=
+    local cache_checksum=""
 
     if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
         local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
@@ -53,6 +53,7 @@ function fetch_package() {
         echo "Checksums match. Fetching from cache."
     fi
 
+    mkdir -p "$location"
     tar xzf "$CACHE_DIR/package/${package}.tgz" -C "$location"
 }
 
@@ -138,7 +139,6 @@ DEFAULT_NGINX="1.6.2"
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
 
-MCRYPT_VERSION="2.5.8"
 PHP_VERSION="default"
 NGINX_VERSION="default"
 DOCUMENT_ROOT=
@@ -210,7 +210,7 @@ status "Bundling PHP ${PHP_VERSION}"
 # Install libraries also on build container, so PHP doesn't wayne about missing
 # dynamic libraries when running it during the slug compilation.
 fetch_package "libicu-51" /app/vendor/libicu > /dev/null
-fetch_package "libmcrypt-${MCRYPT_VERSION}" /app/vendor/libmcrypt > /dev/null
+fetch_package "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
 
 fetch_engine_package php "$PHP_VERSION" /app/vendor/php | indent
 
@@ -305,6 +305,7 @@ mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/libicu vendor/libicu
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
+[ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
 
 mkdir -p "bin" "vendor/bin"
 cp ${basedir}/heroku* "bin"

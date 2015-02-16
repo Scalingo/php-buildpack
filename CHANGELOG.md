@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7, 2015-02-16
+
+ * Fix libmemcached downloading when ext-memcached is required in composer.json
+
 ## v0.6, 2015-01-04
 
  * PHP to 5.6.4

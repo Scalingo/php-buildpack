@@ -14,8 +14,6 @@ validate_env
 tempdir="$(mktmpdir libmemcached)"
 cd $tempdir
 
-memcached_version=1.0.18
-
 echo "-----> Downloading libmemcached"
 
 curl -LO "https://launchpad.net/libmemcached/1.0/${memcached_version}/+download/libmemcached-${memcached_version}.tar.gz"
