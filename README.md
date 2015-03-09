@@ -35,8 +35,8 @@ scalingo env-set BUILDPACK_NAME=php
 
 ## Available versions
 
-[Available PHP Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.php)
-[Available NGINX Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appdeck-buildpack-php/manifest.nginx)
+[Available PHP Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.php)
+[Available NGINX Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.nginx)
 
 ## Detection
 
