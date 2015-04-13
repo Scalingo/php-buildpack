@@ -189,13 +189,8 @@ fi
 
 # Look for ".*" versions, match them against all available versions
 # and select the latest version which was found.
-if echo "$PHP_VERSION" | grep '\*' &>/dev/null; then
-    PHP_VERSION=$(echo "$AVAILABLE_PHP_VERSIONS" | grep "^$PHP_VERSION$" | sort -r | head -n1)
-fi
-
-if echo "$NGINX_VERSION" | grep '\*' &>/dev/null; then
-    NGINX_VERSION=$(echo "$AVAILABLE_NGINX_VERSIONS" | grep "^$NGINX_VERSION$" | sort -r | head -n1)
-fi
+PHP_VERSION=$(find_version "${AVAILABLE_PHP_VERSIONS}" "${PHP_VERSION}" "PHP")
+NGINX_VERSION=$(find_version "${AVAILABLE_NGINX_VERSIONS}" "${NGINX_VERSION}" "Nginx")
 
 VENDORED_NGINX=/app/vendor/nginx
 VENDORED_PHP=/app/vendor/php
