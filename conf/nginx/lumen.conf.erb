@@ -1,0 +1,19 @@
+# Default configuration for non-framework apps
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
+
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+
+location /index.php {
+    include fastcgi_params;
+    fastcgi_connect_timeout 3s;
+    fastcgi_read_timeout 10s;
+    fastcgi_buffers 256 4k;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_pass php;
+}

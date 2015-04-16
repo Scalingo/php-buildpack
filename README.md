@@ -97,6 +97,11 @@ Options:
   is called. All requests which don't match an existing file will be forwarded to
   this document.
 
+### Lumen
+
+Is used when the app requires the `laravel/lumen-framework` package or when the
+`extra.paas.framework` key is set to `lumen` in the `composer.json`.
+
 ### Symfony 2
 
 Is detected when the app requires the `symfony/symfony` package or when the
