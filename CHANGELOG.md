@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8, 2015-04-18
+
+* PHP to 5.6.8
+* Nginx to 1.6.3
+* Remove lib icu from vendored libs
+
 ## v0.7, 2015-02-16
 
  * Fix libmemcached downloading when ext-memcached is required in composer.json
