@@ -26,12 +26,8 @@ Install CLI tool → http://cli.scalingo.com
 
 ### Node.JS for assets building
 
-If you have `package.json` file in your repository, you have to enforce the
-buildpack choice
-
-```
-scalingo env-set BUILDPACK_NAME=php
-```
+If you have `package.json` file in your repository, Node.JS will be installed automatically
+and dependencies will be installed according to the `package.json` file.
 
 ## Available versions
 
