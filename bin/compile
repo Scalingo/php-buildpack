@@ -148,7 +148,7 @@ PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
-NEWRELIC_VERSION=4.4.5.35
+NEWRELIC_VERSION=4.19.0.90
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 check_composer_syntax "$BUILD_DIR"
