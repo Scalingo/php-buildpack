@@ -284,7 +284,7 @@ Run console commands on slug compilation.
 
 _Note: pecl is not runnable this way._
 
-#### newrelic
+#### new-relic
 
 _Default: false_
 
@@ -293,7 +293,7 @@ You need to define the environment variable `NEW_RELIC_LICENSE_KEY` for your
 application on your dashboard.
 
 
-    "newrelic": true
+    "new-relic": true
 
 #### log-files
 
