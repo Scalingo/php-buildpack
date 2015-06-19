@@ -116,7 +116,7 @@ function package_compile_cmd() {
 }
 
 function package_newrelic_enabled() {
-    local val=$(jq --raw-output ".extra.${composer_extra_key}[\"newrelic\"] // false" < "$BUILD_DIR/composer.json")
+    local val=$(jq --raw-output ".extra.${composer_extra_key}[\"new-relic\"] // false" < "$BUILD_DIR/composer.json")
 
     if [ "$val" = "true" ]; then
         return 0
