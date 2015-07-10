@@ -4,15 +4,13 @@ function check_composer_syntax() {
   if [ -f "$target/composer.json" ]; then
       [ -z "$(cat "$target/composer.json")" ] && \
         error "composer.json is empty, remove it from GIT repository or fill its content."
-      jq . < "$target/composer.json" >/dev/null 2>&1 ; rc=$?
-      [ $rc -eq 0 ] || error "composer.json is not a valid JSON file."
+      jq . < "$target/composer.json" >/dev/null 2>&1 || error "composer.json is not a valid JSON file."
   fi
 
   if [ -f "$target/composer.lock" ]; then
       [ -z "$(cat "$target/composer.lock")" ] && \
         error "composer.lock is empty, generate it with the composer command."
-      jq . < "$target/composer.lock" >/dev/null 2>&1 ; rc=$?
-      [ $rc -eq 0 ] || error "composer.lock is not a valid JSON file."
+      jq . < "$target/composer.lock" >/dev/null 2>&1 || error "composer.lock is not a valid JSON file."
   fi
 }
 
