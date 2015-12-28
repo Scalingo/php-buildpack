@@ -47,7 +47,7 @@ function fetch_package() {
     mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
 
     if [ "$cache_checksum" != "$checksum" ]; then
-        curl "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
+        curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$package_url" -L -s > "$CACHE_DIR/package/${package}.tgz"
         echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
     else
         echo "Checksums match. Fetching from cache."
