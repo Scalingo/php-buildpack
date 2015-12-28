@@ -37,7 +37,7 @@ function fetch_package() {
 
     local checksum_url="${SWIFT_URL}/package/${package}.md5"
     local package_url="${SWIFT_URL}/package/${package}.tgz"
-    local checksum=$(curl "$checksum_url" 2> /dev/null)
+    local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
     local cache_checksum=""
 
     if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
