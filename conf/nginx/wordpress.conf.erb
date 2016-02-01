@@ -1,0 +1,31 @@
+# Default configuration for non-framework apps
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
+
+location / {
+	try_files $uri $uri/ /index.php?$args;
+}
+
+rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+
+location ~ /\. {
+	deny all;
+}
+
+location ~* /(?:uploads|files)/.*\.php$ {
+	deny all;
+}
+
+location ~ [^/]\.php(/|$) {
+	fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+	if (!-f $document_root$fastcgi_script_name) {
+		return 404;
+	}
+	include fastcgi_params;
+	fastcgi_index index.php;
+	fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	fastcgi_pass php;
+}

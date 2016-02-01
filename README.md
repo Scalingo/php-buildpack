@@ -50,6 +50,10 @@ app's root. And will install node dependencies like less for example.
 
 ## Frameworks
 
+### Wordpress
+
+Wordpress sites are automatically detected and all the URL rewriting configuration is automatically set.
+
 ### CakePHP
 
 Is used when the app requires the `pear-pear.cakephp.org/CakePHP` Pear package or when the

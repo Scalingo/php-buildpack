@@ -1,0 +1,19 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+case "$1" in
+    detect)
+        if [ -e "wp-settings.php" ]; then
+            echo "-----> Detected Wordpress"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Wordpress"
+        cp "$basedir/../conf/nginx/wordpress.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
