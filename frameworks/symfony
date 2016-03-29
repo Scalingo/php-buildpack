@@ -4,12 +4,12 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
-function requires_symfony2() {
+function requires_symfony() {
     jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/symfony$'
 }
 
-function sets_framework_symfony2() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony2" ]
+function sets_framework_symfony() {
+    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony" ]
 }
 
 case "$1" in
@@ -18,8 +18,8 @@ case "$1" in
             exit 1
         fi
 
-        if requires_symfony2 || sets_framework_symfony2; then
-            echo "-----> Detected Symfony2 App"
+        if requires_symfony || sets_framework_symfony; then
+            echo "-----> Detected symfony App"
             exit 0
         else
             exit 1
@@ -29,8 +29,8 @@ case "$1" in
         echo "app/logs/prod.log" "app/logs/dev.log"
         ;;
     compile)
-        echo "-----> Setting up Symfony2 app"
-        cp "$basedir/../conf/nginx/symfony2.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        echo "-----> Setting up symfony app"
+        cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
         ;;
     end)
         BUILD_DIR="$1"

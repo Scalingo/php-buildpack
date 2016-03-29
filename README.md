@@ -102,10 +102,10 @@ Options:
 Is used when the app requires the `laravel/lumen-framework` package or when the
 `extra.paas.framework` key is set to `lumen` in the `composer.json`.
 
-### Symfony 2
+### Symfony
 
 Is detected when the app requires the `symfony/symfony` package or when the
-`framework` setting is set to `symfony2` in the `composer.json`.
+`framework` setting is set to `symfony` in the `composer.json`.
 
 This framework preset doesn't need any configuration to work.
 
@@ -195,7 +195,7 @@ Available presets:
 * `magento`
 * `silex` (needs `document-root` and `index-document` set)
 * `slim`
-* `symfony2`
+* `symfony`
 
 Example:
 
