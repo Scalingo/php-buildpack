@@ -254,8 +254,10 @@ install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
 
 # Detect PHP framework
-# Set FRAMEWORK
-detect_framework "$BUILD_DIR"
+# Set FRAMEWORK if not set in environment by user
+if [ -z "$FRAMEWORK" ]; then
+    detect_framework "$BUILD_DIR"
+fi
 
 # Fall back to classic mode
 if [ -z "$FRAMEWORK" ]; then
@@ -264,7 +266,7 @@ fi
 
 # Try to load the framework from the "frameworks" directory if it's just a
 # simple framework name like "symfony"
-if [ ! -f "$FRAMEWORK" ] && [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
+if [ -f "$basedir/../frameworks/$FRAMEWORK" ]; then
     FRAMEWORK="$basedir/../frameworks/$FRAMEWORK"
 fi
 

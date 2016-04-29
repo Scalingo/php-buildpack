@@ -1,0 +1,20 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source $basedir/../bin/common.sh
+
+case "$1" in
+    detect)
+      exit 1
+        ;;
+    get-log-files)
+        echo "logs/production.log"
+        ;;
+    compile)
+        echo "-----> Setting up symfony 1 app"
+        cp "$basedir/../conf/nginx/symfony1.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+    end)
+        ;;
+esac
