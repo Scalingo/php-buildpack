@@ -227,6 +227,7 @@ echo "       mongo"
 fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
+    LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
     install_newrelic "$NEWRELIC_VERSION"
 fi
 
@@ -322,6 +323,7 @@ export INDEX_DOCUMENT="$INDEX_DOCUMENT"
 export NGINX_INCLUDES="$NGINX_INCLUDES"
 
 if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+    export NEW_RELIC_LOG=\${NEW_RELIC_LOG:=/app/vendor/newrelic/daemon.log}
     echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
 fi
 
