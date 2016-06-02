@@ -28,38 +28,34 @@ which are available to _all_ users.
 
 You need the following tools to hack on this project:
 
-* An Amazon S3 bucket
-* `s3cmd` from <http://s3tools.org>
-* `vulcan` from Heroku `bundle install --path vendor`
+* A bucket from an Openstack Swift instance (ie https://www.ovh.com/us/cloud/storage/object-storage.xml)
+* `swift` command
+* `docker` to get Scalingo development stack
 
-Setup `vulcan`:
+Setup the Swift bucket and configure the file `conf/buildpack.conf`
 
-    bundle install --path vendor
-    ./vendor/bin/vulcan create <yourname>-buildserver
+```
+export SWIFT_BUCKET=scalingo-php-buildpack
+export SWIFT_URL=https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/${SWIFT_BUCKET}
+```
 
-Setup an S3 Bucket in Amazon. Then note the name of your bucket
-and set it as `S3_BUCKET` in `conf/buildpack.conf`.
+To test your version of the buildpack, create a Scalingo app and set BUILDPACK_URL
 
-If s3cmd is not configured you can run ``s3cmd --configure`
+```
+mkdir myexampleapp
+cd myexampleapp
+git init
+scalingo create <appname>
+scalingo env-set BUILDPACK_URL=git://github.com/youruser/heroku-buildpack-php#feature/my-awesome-feature
+```
 
-You can copy our bucket by running ``s3cmd cp --recursive --acl-public s3://chh-heroku-buildpack-php s3://your-bucket``
+### Packaging third-party bins/libs
 
-Then create a Heroku app with your fork as buildpack:
+Packaging should be done through the Scalingo docker image `scalingo/buildpacks-builder:latest`
 
-    mkdir myexampleapp
-    cd myexampleapp
-    git init
-    heroku create --buildpack git://github.com/youruser/heroku-buildpack-php#feature/my-awesome-feature myexampleapp
-
-### Packaging
-
-Packaging is done with [Vulcan][] by Heroku. You need to setup a build
-server before packaging. _Note: This requires a Heroku account with a
-valid credit card on file! You don't get charged anything though._
-
-[Vulcan]: http://github.com/heroku/vulcan
-
-    vulcan create youruser-buildserver
+```
+docker run -v `pwd`:/buildpack -it scalingo/buildpacks-builder:latest bash
+```
 
 All packaging scripts are in the `support` directory and are named
 `package_<type>`, where `<type>` is either `nginx` or `php`. All
@@ -69,11 +65,11 @@ When the packaging is complete, the manifest which lists all available
 package version is updated for the package type. Manifests are plain
 text files which list each available version on a separate line. 
 
-They're uploaded to the S3 bucket as `manifest.<type>` files, 
+They're uploaded to the Swift bucket as `manifest.<type>` files, 
 e.g. the manifest for PHP is `manifest.php`.
 
 Before packaging anything, you need to make sure that you've a Zlib
-tarball in your S3 bucket. Both NGINX and PHP depend on it. _You need
+tarball in your swift bucket. Both NGINX and PHP depend on it. _You need
 the exact version which is set in the packaging scripts._
 
 To get one, use `support/get_zlib <version>`, for example:
@@ -92,7 +88,7 @@ For example, to build NGINX `1.5.2`:
 
 PHP is packaged by the script `support/package_php`.
 
-For example, to build PHP `5.5.0`:
+For example, to build PHP `5.6.1`:
 
-    ./support/package_php 5.5.0
+    ./support/package_php 5.6.1
 

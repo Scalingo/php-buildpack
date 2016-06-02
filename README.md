@@ -7,7 +7,7 @@ support.
 
 ## Characteristics
 
-* __Nginx__ 1.5 and 1.6 - __PHP__ 5.3, 5.4, 5.5 and 5.6 - __PHP FPM__
+* __Nginx__ 1.3 to 1.9 - __PHP__ 5.3, 5.4, 5.5 and 5.6 - __PHP FPM__
 * Lightweight stack compared to Apache-ModPHP
 * Composer support
 * Various frameworks support out of the box (no configuration)
@@ -343,7 +343,6 @@ A minimal `package.json` file with less will look like this :
 ```
 
 Node and its modules will be available at compilation meaning you could process nodejs script at that time.
-
 
 ## Contributing
 
