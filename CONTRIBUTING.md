@@ -54,7 +54,7 @@ scalingo env-set BUILDPACK_URL=git://github.com/youruser/heroku-buildpack-php#fe
 Packaging should be done through the Scalingo docker image `scalingo/buildpacks-builder:latest`
 
 ```
-docker run -v `pwd`:/buildpack -it scalingo/buildpacks-builder:latest bash
+docker run -v $(pwd):/buildpack -it scalingo/buildpacks-builder:latest bash
 ```
 
 All packaging scripts are in the `support` directory and are named
@@ -75,6 +75,11 @@ the exact version which is set in the packaging scripts._
 To get one, use `support/get_zlib <version>`, for example:
 
     ./support/get_zlib 1.2.8
+
+PHP also depends on mcrypt. Get the exact same version which is set in the
+packaging scripts using:
+
+	./support/package_mcrypt 2.5.8
 
 #### Updating NGINX
 
