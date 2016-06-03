@@ -28,11 +28,13 @@ which are available to _all_ users.
 
 You need the following tools to hack on this project:
 
-* A bucket from an Openstack Swift instance (ie https://www.ovh.com/us/cloud/storage/object-storage.xml)
+* A bucket from an Openstack Swift instance (e.g. https://www.ovh.com/us/cloud/storage/object-storage.xml)
 * `swift` command
 * `docker` to get Scalingo development stack
 
-Setup the Swift bucket and configure the file `conf/buildpack.conf`
+Setup the Swift bucket and get your `swift` command working. You can test if the
+command is working using `swift stat -v`. You swift bucket must be public. Then
+configure the file `conf/buildpack.conf`:
 
 ```
 export SWIFT_BUCKET=scalingo-php-buildpack
@@ -46,7 +48,7 @@ mkdir myexampleapp
 cd myexampleapp
 git init
 scalingo create <appname>
-scalingo env-set BUILDPACK_URL=git://github.com/youruser/heroku-buildpack-php#feature/my-awesome-feature
+scalingo env-set BUILDPACK_URL=https://github.com/youruser/php-buildpack.git#feature/my-awesome-feature
 ```
 
 ### Packaging third-party bins/libs
@@ -54,7 +56,7 @@ scalingo env-set BUILDPACK_URL=git://github.com/youruser/heroku-buildpack-php#fe
 Packaging should be done through the Scalingo docker image `scalingo/buildpacks-builder:latest`
 
 ```
-docker run -v `pwd`:/buildpack -it scalingo/buildpacks-builder:latest bash
+docker run -v $(pwd):/buildpack -it scalingo/buildpacks-builder:latest bash
 ```
 
 All packaging scripts are in the `support` directory and are named
@@ -75,6 +77,11 @@ the exact version which is set in the packaging scripts._
 To get one, use `support/get_zlib <version>`, for example:
 
     ./support/get_zlib 1.2.8
+
+PHP also depends on mcrypt. Get the exact same version which is set in the
+packaging scripts using:
+
+	./support/get_mcrypt 2.5.8
 
 #### Updating NGINX
 
