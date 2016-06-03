@@ -131,10 +131,6 @@ export_env_dir "$3"
 mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
-if [[ $? -ne 0 ]]; then
-  echo "jq is not available on your Swift bucket" >&2
-  exit -1
-fi
 chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP="5.6.8"
