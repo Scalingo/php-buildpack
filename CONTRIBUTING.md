@@ -81,7 +81,7 @@ To get one, use `support/get_zlib <version>`, for example:
 PHP also depends on mcrypt. Get the exact same version which is set in the
 packaging scripts using:
 
-	./support/package_mcrypt 2.5.8
+	./support/get_mcrypt 2.5.8
 
 #### Updating NGINX
 
