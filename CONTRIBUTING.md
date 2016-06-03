@@ -28,11 +28,13 @@ which are available to _all_ users.
 
 You need the following tools to hack on this project:
 
-* A bucket from an Openstack Swift instance (ie https://www.ovh.com/us/cloud/storage/object-storage.xml)
+* A bucket from an Openstack Swift instance (e.g. https://www.ovh.com/us/cloud/storage/object-storage.xml)
 * `swift` command
 * `docker` to get Scalingo development stack
 
-Setup the Swift bucket and configure the file `conf/buildpack.conf`
+Setup the Swift bucket and get your `swift` command working. You can test if the
+command is working using `swift stat -v`. You swift bucket must be public. Then
+configure the file `conf/buildpack.conf`:
 
 ```
 export SWIFT_BUCKET=scalingo-php-buildpack
