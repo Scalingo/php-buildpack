@@ -41,7 +41,13 @@ export SWIFT_BUCKET=scalingo-php-buildpack
 export SWIFT_URL=https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/${SWIFT_BUCKET}
 ```
 
-To test your version of the buildpack, create a Scalingo app and set BUILDPACK_URL
+To test your version of the buildpack, you will need jq in the swift bucket:
+
+```
+./support/package_jq
+```
+
+Then create a Scalingo app and set BUILDPACK_URL
 
 ```
 mkdir myexampleapp
