@@ -224,9 +224,9 @@ fetch_package "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
 if [[ $PHP_VERSION =~ "5" ]]; then
     echo "       phpredis"
     fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+    echo "       mongo"
+    fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
 fi
-echo "       mongo"
-fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
