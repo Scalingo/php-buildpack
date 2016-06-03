@@ -48,7 +48,7 @@ mkdir myexampleapp
 cd myexampleapp
 git init
 scalingo create <appname>
-scalingo env-set BUILDPACK_URL=git://github.com/youruser/heroku-buildpack-php#feature/my-awesome-feature
+scalingo env-set BUILDPACK_URL=https://github.com/youruser/php-buildpack.git#feature/my-awesome-feature
 ```
 
 ### Packaging third-party bins/libs
