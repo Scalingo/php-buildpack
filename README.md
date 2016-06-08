@@ -7,7 +7,7 @@ support.
 
 ## Characteristics
 
-* __Nginx__ 1.3 to 1.9 - __PHP__ 5.3, 5.4, 5.5 and 5.6 - __PHP FPM__
+* __Nginx__ 1.3 to 1.9 - __PHP__ 5.3, 5.4, 5.5, 5.6 and 7.0 - __PHP FPM__
 * Lightweight stack compared to Apache-ModPHP
 * Composer support
 * Various frameworks support out of the box (no configuration)
@@ -32,6 +32,7 @@ and dependencies will be installed according to the `package.json` file.
 ## Available versions
 
 [Available PHP Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.php)
+
 [Available NGINX Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.nginx)
 
 ## Detection
@@ -238,8 +239,8 @@ PHP version is read from this file instead.
 
 See also:
 
-* [Available NGINX Versions][]
-* [Available PHP Versions][]
+* [Available PHP Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.php)
+* [Available NGINX Versions](https://lb1047.pcs.ovh.net/v1/AUTH_c91a9132e4f149809d23b20b6de57161/appsdeck-buildpack-php/manifest.nginx)
 
 #### php-config
 

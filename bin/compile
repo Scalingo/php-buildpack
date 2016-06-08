@@ -130,7 +130,7 @@ export_env_dir "$3"
 # Download jq binary for JSON processing
 mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
-curl "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
+curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP="5.6.8"
@@ -221,10 +221,12 @@ source ".profile.d/php.sh"
 status "Bundling extensions"
 echo "       apcu"
 fetch_package "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
-echo "       phpredis"
-fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
-echo "       mongo"
-fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
+if [[ $PHP_VERSION =~ "5" ]]; then
+    echo "       phpredis"
+    fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+    echo "       mongo"
+    fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
+fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
