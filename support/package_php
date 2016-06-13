@@ -44,7 +44,7 @@ if [[ "$php_version" =~ 5.[34] ]]; then
 SH
 )
 else
-    install_zend_optimizer=$(cat << SH
+    install_zend_optimizer=$(cat <<SH
     echo "zend_extension=opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
 SH
 )
