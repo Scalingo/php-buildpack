@@ -133,8 +133,8 @@ export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
-DEFAULT_PHP="5.6.8"
-DEFAULT_NGINX="1.6.3"
+DEFAULT_PHP="5.6.22"
+DEFAULT_NGINX="1.10.1"
 
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
@@ -221,11 +221,16 @@ source ".profile.d/php.sh"
 status "Bundling extensions"
 echo "       apcu"
 fetch_package "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
-if [[ $PHP_VERSION =~ "5" ]]; then
-    echo "       phpredis"
-    fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
-    echo "       mongo"
-    fetch_package "ext/$(php_api_version)/php-mongo" "/app/vendor/php" | indent
+
+echo "       phpredis"
+fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+
+if [[ $PHP_VERSION =~ "5.3.[0-9]." ]] ; then
+  echo "       mongo-legacy"
+  fetch_package "ext/$(php_api_version)/php-mongo-legacy" "/app/vendor/php" | indent
+else
+  echo "       mongodb"
+  fetch_package "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
 fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then

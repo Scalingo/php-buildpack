@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-imagick_version="3.4.1"
+imagick_version="3.4.2"
 
 curl -L "http://pecl.php.net/get/imagick-${imagick_version}.tgz" \
     | tar xzv

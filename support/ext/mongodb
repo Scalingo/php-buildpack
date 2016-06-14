@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+mongo_version="1.1.7"
+
+curl -L "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
+    | tar xzv
+
+cd mongodb-${mongo_version}
+/app/vendor/php/bin/phpize ; rc=$?
+if [ $rc -ne 0 ] ; then
+  echo "Fail to PHPize mongo extension"
+  exit 1
+fi
+
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --enable-mongo ; rc=$?
+if [ $rc -ne 0  ] ; then
+  echo "Fail to configure mongo extension"
+  exit 1
+fi
+
+make ; rc=$?
+if [ $rc -ne 0 ] ; then
+  echo "Fail to build mongo extension"
+  exit 1
+fi
+
+cp modules/mongodb.so "$EXT_DIR/mongodb.so"
+echo "extension=mongodb.so" > "$PREFIX/etc/conf.d/mongodb.ini"

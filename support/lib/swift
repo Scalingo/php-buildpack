@@ -1,13 +1,3 @@
-#!/bin/bash
-
-set -e
-
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
-source "$basedir/utils"
-
-validate_env
-
 function swift_upload() {
   file="$1"
   dest="$2"

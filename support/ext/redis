@@ -2,7 +2,14 @@
 
 set -e
 
-phpredis_version="2.2.5"
+php_version=${1:=7.0}
+
+if [[ "$php_version" =~ "7.0" ]] ; then
+  phpredis_version="3.0.0"
+else
+  phpredis_version="2.2.8"
+fi
+
 curl -L "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \
     | tar -xzv
 
