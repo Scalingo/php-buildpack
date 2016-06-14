@@ -8,6 +8,12 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+export PATH=${basedir}/../vendor/bin:$PATH
+
 indent() {
     c='s/^/       /'
     case $(uname) in
@@ -60,7 +66,11 @@ build_ext() {
 
     mkdir -p "$tempbuilddir/$ext_dir" \
       && mkdir -p "$tempbuilddir/etc/conf.d" \
-      && PREFIX="$tempbuilddir" EXT_DIR="$tempbuilddir/$ext_dir" ./build.sh
+      && PREFIX="$tempbuilddir" EXT_DIR="$tempbuilddir/$ext_dir" ./build.sh "$php_version" "$zend_api_version"; rc=$?
+    if [ $rc -ne 0 ] ; then
+      echo "Fail to build package"
+      exit 1
+    fi
 
     mkdir -p package/ext/${zend_api_version}
     pushd $tempbuilddir > /dev/null
@@ -70,13 +80,6 @@ build_ext() {
     swift_upload package/ext/${zend_api_version}/php-${ext_name}.tgz
     "$basedir/package-checksum" "ext/${zend_api_version}/php-${ext_name}"
 }
-
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
-source "$basedir/utils"
-source "$basedir/swift"
-
-export PATH=${basedir}/../vendor/bin:$PATH
 
 php_versions=$(curl --silent "${SWIFT_URL}/manifest.php")
 

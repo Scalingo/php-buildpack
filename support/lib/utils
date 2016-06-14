@@ -1,5 +1,3 @@
-#!/bin/bash
-
 function validate_env() {
   if [ -z "$SWIFT_BUCKET" ]; then
       echo "Must set SWIFT_BUCKET environment variable" >&2

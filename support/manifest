@@ -20,8 +20,8 @@ indent() {
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 source "$basedir/../conf/buildpack.conf"
-source "$basedir/utils"
-source "$basedir/swift"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
 
 validate_env
 
