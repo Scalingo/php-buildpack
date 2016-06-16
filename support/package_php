@@ -84,7 +84,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 --enable-soap \
 --enable-xmlreader \
 --with-xmlrpc \
---with-curl=/usr \
+--with-curl \
 --with-xsl \
 --enable-fpm \
 --enable-mbstring \
