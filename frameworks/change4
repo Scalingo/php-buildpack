@@ -11,7 +11,7 @@ function requires_change4() {
 
 case "$1" in
     detect)
-        if [ ! -f "$BUILD_DIR/composer.json" ]; then
+        if [ ! -f "$BUILD_DIR/composer.lock" ]; then
             exit 1
         fi
 
