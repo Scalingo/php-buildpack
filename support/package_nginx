@@ -54,7 +54,8 @@ pushd nginx-${nginx_version} >/dev/null && \
     --prefix=/app/vendor/nginx \
     --with-http_ssl_module \
     --with-pcre=../pcre-${pcre_version} \
-    --with-zlib=../zlib-${zlib_version} && \
+    --with-zlib=../zlib-${zlib_version} \
+    --with-http_realip_module && \
   make && make install && \
   popd > /dev/null
 
