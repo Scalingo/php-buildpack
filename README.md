@@ -113,6 +113,18 @@ This framework preset doesn't need any configuration to work.
 Please note that if you use config vars in Composer hooks, or in `compile`
 scripts, then a new code push may be necessary if you decide to change a config variable.
 
+#### Custom configuration
+
+* `ASSETS_ROOT`: If you're using webpack or any other tool to handle your assets, you
+  can specify an additional directory, relative to `web/` to read your assets. For instance
+  if you build your assets in `web/dist/, please define:
+
+```
+ASSETS_ROOT=/dist
+```
+
+> The application document root is already the `web` directory, you don't need to specify it
+
 ### Laravel
 
 Detected when `laravel/framework` is required in your `composer.json`

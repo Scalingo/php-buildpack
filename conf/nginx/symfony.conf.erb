@@ -6,7 +6,7 @@ root /app/web;
 
 location / {
     # try to serve file directly, fallback to rewrite
-    try_files $uri @rewriteapp;
+    try_files $uri <%= "#{ENV['ASSETS_ROOT']}/$uri" if ENV['ASSETS_ROOT'] %> @rewriteapp;
 }
 
 location @rewriteapp {
