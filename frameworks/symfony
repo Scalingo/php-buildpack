@@ -40,8 +40,8 @@ case "$1" in
         status "Warmuping cache"
         rm -rf app/cache/*
 
-        [ -e "app/console" ] && local console="app/console"
-        [ -e "bin/console" ] && local console="bin/console"
+        [ -e "app/console" ] && console="app/console"
+        [ -e "bin/console" ] && console="bin/console"
 
         php $console cache:warmup --env=prod --no-debug | indent
 
