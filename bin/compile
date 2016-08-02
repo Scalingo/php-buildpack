@@ -68,61 +68,63 @@ function detect_framework() {
 }
 
 function php_api_version() {
-    basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
+  basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
 }
 
 function has_heroku_extra() {
-   jq --raw-output '.extra.heroku // ""' < "$BUILD_DIR/composer.json"
+  jq --raw-output '.extra.heroku // ""' < "$BUILD_DIR/composer.json"
 }
 
 function package_document_root() {
-    jq --raw-output ".extra.${composer_extra_key}[\"document-root\"] // \"\"" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"document-root\"] // \"\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_index_file() {
-    jq --raw-output ".extra.${composer_extra_key}[\"index-document\"] // \"index.php\"" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"index-document\"] // \"index.php\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_framework() {
-    jq --raw-output ".extra.${composer_extra_key}.framework // \"\"" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}.framework // \"\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_nginx_version() {
-    jq --raw-output ".extra.${composer_extra_key}.engines.nginx // \"default\"" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}.engines.nginx // \"default\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_version() {
-    jq --raw-output ".extra.${composer_extra_key}.engines.php // \"default\"" < "$BUILD_DIR/composer.json"
+  local require_php=$(jq --raw-output ".require.php // \"${DEFAULT_PHP}\"" < "$BUILD_DIR/composer.json")
+  require_php=$(curl --fail --location --silent "${SEMVER_SERVER}/php/resolve/${require_php}")
+  jq --raw-output ".extra.${composer_extra_key}.engines.php // \"${require_php}\"" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_config() {
-    jq --raw-output ".extra.${composer_extra_key}[\"php-config\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"php-config\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_php_includes() {
-    jq --raw-output ".extra.${composer_extra_key}[\"php-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"php-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_nginx_includes() {
-    jq --raw-output ".extra.${composer_extra_key}[\"nginx-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"nginx-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_log_files() {
-    jq --raw-output ".extra.${composer_extra_key}[\"log-files\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"log-files\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_compile_cmd() {
-    jq --raw-output ".extra.${composer_extra_key}[\"compile\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+  jq --raw-output ".extra.${composer_extra_key}[\"compile\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
 function package_newrelic_enabled() {
-    local val=$(jq --raw-output ".extra.${composer_extra_key}[\"new-relic\"] // false" < "$BUILD_DIR/composer.json")
+  local val=$(jq --raw-output ".extra.${composer_extra_key}[\"new-relic\"] // false" < "$BUILD_DIR/composer.json")
 
-    if [ "$val" = "true" ]; then
-        return 0
-    else
-        return 1
-    fi
+  if [ "$val" = "true" ]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 export_env_dir "$3"
@@ -133,7 +135,7 @@ export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
-DEFAULT_PHP="5.6.24"
+DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php/resolve/~5.6")
 DEFAULT_NGINX="1.10.1"
 
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
