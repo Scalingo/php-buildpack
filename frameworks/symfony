@@ -26,8 +26,8 @@ function get_workdir() {
 }
 
 function get_consnole() {
-    is_symfony_2 && echo "app/console"
-    is_symfony_3 && echo "bin/console"
+    is_symfony2 && echo "app/console"
+    is_symfony3 && echo "bin/console"
 }
 
 case "$1" in
