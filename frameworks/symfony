@@ -12,6 +12,24 @@ function sets_framework_symfony() {
     [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony" ]
 }
 
+function is_symfony2() {
+    test -e "app/console"
+}
+
+function is_symfony3() {
+    test -e "bin/console"
+}
+
+function get_workdir() {
+    is_symfony2 && echo "app"
+    is_symfony3 && echo "var"
+}
+
+function get_consnole() {
+    is_symfony_2 && echo "app/console"
+    is_symfony_3 && echo "bin/console"
+}
+
 case "$1" in
     detect)
         if [ ! -f "$BUILD_DIR/composer.lock" ]; then
@@ -26,7 +44,8 @@ case "$1" in
         fi
         ;;
     get-log-files)
-        echo "app/logs/prod.log" "app/logs/dev.log"
+        workdir=$(get_workdir)
+        echo "$workdir/logs/prod.log" "$workdir/logs/dev.log"
         ;;
     compile)
         echo "-----> Setting up symfony app"
@@ -40,9 +59,8 @@ case "$1" in
         status "Warmuping cache"
         rm -rf app/cache/*
 
-        [ -e "app/console" ] && console="app/console" && workdir="app"
-        [ -e "bin/console" ] && console="bin/console" && workdir="var"
-
+        workdir=$(get_workdir)
+        console=$(get_console)
         php $console cache:warmup --env=prod --no-debug | indent
 
         status "Inplace replacment of $CACHE_DIR to $APP_DIR"
