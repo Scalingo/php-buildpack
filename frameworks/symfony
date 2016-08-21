@@ -25,7 +25,7 @@ function get_workdir() {
     is_symfony3 && echo "var"
 }
 
-function get_consnole() {
+function get_console() {
     is_symfony2 && echo "app/console"
     is_symfony3 && echo "bin/console"
 }
