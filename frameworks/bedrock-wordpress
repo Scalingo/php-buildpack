@@ -1,0 +1,19 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+case "$1" in
+    detect)
+        if [ -e "web/wp-config.php" ]; then
+            echo "-----> Detected Bedrock Wordpress"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Bedrock Wordpress"
+        cp "$basedir/../conf/nginx/bedrock-wordpress.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
