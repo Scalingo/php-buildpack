@@ -99,7 +99,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 && make install \
 && popd > /dev/null \
 && /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
-&& $install_zend_optimizer
+&& eval $install_zend_optimizer
 
 mkdir package
 pushd /app/vendor/php > /dev/null
