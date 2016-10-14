@@ -16,7 +16,7 @@ location ~* /(?:uploads|files)/.*\.php$ {
 }
 
 location ~ [^/]\.php(/|$) {
-	fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+	fastcgi_split_path_info ^((?U).+?\.php)(/.*)$;
 	if (!-f $document_root$fastcgi_script_name) {
 		return 404;
 	}
