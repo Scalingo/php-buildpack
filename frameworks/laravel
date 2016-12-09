@@ -23,7 +23,7 @@ case "$1" in
     fi
     ;;
   get-log-files)
-    echo "app/storage/logs/laravel.log"
+    echo "storage/logs/laravel.log"
     ;;
   compile)
     echo "-----> Setting up Laravel app"
