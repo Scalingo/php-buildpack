@@ -75,6 +75,10 @@ http {
         #Specify a charset
         charset utf-8;
 
+        fastcgi_buffering off;
+        fastcgi_buffers 16 16k;
+        fastcgi_buffer_size 32k;
+
         include site.conf;
 
         <% Shellwords.split(ENV['NGINX_INCLUDES'].to_s).each do |f| %>
