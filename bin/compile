@@ -154,7 +154,7 @@ PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
-ACCESS_LOG_FORMAT=
+ACCESS_LOG_FORMAT_COMPOSER_JSON=
 NEWRELIC_VERSION="${NEWRELIC_VERSION:=6.2.0.158}"
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
@@ -179,7 +179,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   COMPILE_CMD=$(package_compile_cmd)
   NGINX_INCLUDES=$(package_nginx_includes)
   USER_LOG_FILES=$(package_log_files)
-  ACCESS_LOG_FORMAT=$(package_access_log_format)
+  ACCESS_LOG_FORMAT_COMPOSER_JSON=$(package_access_log_format)
 fi
 
 # Try reading PHP version from .php-version file in project
@@ -331,7 +331,8 @@ done
 export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
 export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"
 export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
-export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-$ACCESS_LOG_FORMAT}"
+export ACCESS_LOG_FORMAT_COMPOSER_JSON='$ACCESS_LOG_FORMAT_COMPOSER_JSON'
+export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-$ACCESS_LOG_FORMAT_COMPOSER_JSON}"
 
 if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
     export NEW_RELIC_LOG=\${NEW_RELIC_LOG:=/app/vendor/newrelic/daemon.log}
