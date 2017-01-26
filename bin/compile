@@ -113,6 +113,10 @@ function package_log_files() {
   jq --raw-output ".extra.${composer_extra_key}[\"log-files\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
+function package_access_log_format() {
+  jq --raw-output ".extra.${composer_extra_key}[\"access-log-format\"] // \"\"" < "$BUILD_DIR/composer.json"
+}
+
 function package_compile_cmd() {
   jq --raw-output ".extra.${composer_extra_key}[\"compile\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
@@ -141,15 +145,16 @@ DEFAULT_NGINX="1.10.1"
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
 
-PHP_VERSION="default"
-NGINX_VERSION="default"
+PHP_VERSION="${PHP_VERSION:-default}"
+NGINX_VERSION="${NGINX_VERSION:-default}"
 DOCUMENT_ROOT=
-INDEX_DOCUMENT="index.php"
+INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
 COMPILE_CMD=
 NGINX_INCLUDES=
+ACCESS_LOG_FORMAT=
 NEWRELIC_VERSION="${NEWRELIC_VERSION:=6.2.0.158}"
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
@@ -174,6 +179,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   COMPILE_CMD=$(package_compile_cmd)
   NGINX_INCLUDES=$(package_nginx_includes)
   USER_LOG_FILES=$(package_log_files)
+  ACCESS_LOG_FORMAT=$(package_access_log_format)
 fi
 
 # Try reading PHP version from .php-version file in project
@@ -322,9 +328,10 @@ for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-export DOCUMENT_ROOT="$DOCUMENT_ROOT"
-export INDEX_DOCUMENT="$INDEX_DOCUMENT"
-export NGINX_INCLUDES="$NGINX_INCLUDES"
+export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
+export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"
+export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
+export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-$ACCESS_LOG_FORMAT}"
 
 if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
     export NEW_RELIC_LOG=\${NEW_RELIC_LOG:=/app/vendor/newrelic/daemon.log}

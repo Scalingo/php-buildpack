@@ -5,6 +5,7 @@ daemon off;
 events {
     worker_connections  1024;
 }
+
 http {
     # Hide nginx version information.
     server_tokens off;
@@ -15,9 +16,13 @@ http {
 
     keepalive_timeout  65;
 
+    <% if ENV.has_key?("ACCESS_LOG_FORMAT") and ENV["ACCESS_LOG_FORMAT"].to_s != "" %>
+    log_format specialLog '<%= ENV['ACCESS_LOG_FORMAT'].gsub("'", "\\\\'") %>';
+    <% else %>
     log_format specialLog '$http_x_forwarded_for - '
                       '"$request" $status $body_bytes_sent '
                       '"$http_referer" "$http_user_agent"';
+    <% end %>
 
     error_log logs/error.log notice;
     access_log logs/access.log specialLog;
