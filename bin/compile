@@ -272,16 +272,19 @@ for conf in $PHP_EXTRA_CONFIG; do
 done
 
 for conf in $PHP_FPM_EXTRA_CONFIG; do
-    echo "$conf" >> "/app/vendor/php/etc/php-fpm.ini"
+    echo "$conf" >> "/app/vendor/php/etc/php-fpm.conf"
 done
 
 for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
 done
 
-for include in $PHP_FPM_INCLUDES; do
-    cp "$BUILD_DIR/$include" "/app/vendor/php/etc/fpm.d/"
-done
+if [ -n "$PHP_FPM_INCLUDES" ] ; then
+    sed -i 's+; include=etc/fpm.d/\*+include=etc/fpm.d/*+' "/app/vendor/php/etc/php-fpm.conf"
+    for include in $PHP_FPM_INCLUDES; do
+        cp "$BUILD_DIR/$include" "/app/vendor/php/etc/fpm.d/"
+    done
+fi
 
 install_node_deps "$BUILD_DIR"
 install_composer_deps "$BUILD_DIR"
