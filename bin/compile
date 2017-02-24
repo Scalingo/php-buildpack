@@ -267,11 +267,11 @@ mkdir -p /app/vendor/php/etc/fpm.d
 
 pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
 
-for conf in $PHP_EXTRA_CONFIG; do
+echo $PHP_EXTRA_CONFIG | while read conf ; do
     echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
-for conf in $PHP_FPM_EXTRA_CONFIG; do
+echo $PHP_FPM_EXTRA_CONFIG | while read conf ; do
     echo "$conf" >> "/app/vendor/php/etc/php-fpm.conf"
 done
 
