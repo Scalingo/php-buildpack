@@ -105,6 +105,14 @@ function package_php_includes() {
   jq --raw-output ".extra.${composer_extra_key}[\"php-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
+function package_php_fpm_config() {
+  jq --raw-output ".extra.${composer_extra_key}[\"php-fpm-config\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+}
+
+function package_php_fpm_includes() {
+  jq --raw-output ".extra.${composer_extra_key}[\"php-fpm-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+}
+
 function package_nginx_includes() {
   jq --raw-output ".extra.${composer_extra_key}[\"nginx-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
@@ -152,6 +160,8 @@ INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK=
 PHP_EXTRA_CONFIG=
 PHP_INCLUDES=
+PHP_FPM_INCLUDES=
+PHP_FPM_EXTRA_CONFIG=
 COMPILE_CMD=
 NGINX_INCLUDES=
 ACCESS_LOG_FORMAT_COMPOSER_JSON=
@@ -176,6 +186,8 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   FRAMEWORK=$(package_framework)
   PHP_EXTRA_CONFIG=$(package_php_config)
   PHP_INCLUDES=$(package_php_includes)
+  PHP_FPM_EXTRA_CONFIG=$(package_php_fpm_config)
+  PHP_FPM_INCLUDES=$(package_php_fpm_includes)
   COMPILE_CMD=$(package_compile_cmd)
   NGINX_INCLUDES=$(package_nginx_includes)
   USER_LOG_FILES=$(package_log_files)
@@ -251,14 +263,24 @@ cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
 
+mkdir app/vendor/php/etc/fpm.d
+
 pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
 
 for conf in $PHP_EXTRA_CONFIG; do
     echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
+for conf in $PHP_FPM_EXTRA_CONFIG; do
+    echo "$conf" >> "/app/vendor/php/etc/php-fpm.ini"
+done
+
 for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
+done
+
+for include in $PHP_FPM_INCLUDES; do
+    cp "$BUILD_DIR/$include" "/app/vendor/php/etc/fpm.d/"
 done
 
 install_node_deps "$BUILD_DIR"
