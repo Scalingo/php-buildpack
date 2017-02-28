@@ -185,8 +185,8 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   INDEX_DOCUMENT=$(package_index_file)
   FRAMEWORK=$(package_framework)
   PHP_EXTRA_CONFIG=$(package_php_config)
-  PHP_INCLUDES=$(package_php_includes)
   PHP_FPM_EXTRA_CONFIG=$(package_php_fpm_config)
+  PHP_INCLUDES=$(package_php_includes)
   PHP_FPM_INCLUDES=$(package_php_fpm_includes)
   COMPILE_CMD=$(package_compile_cmd)
   NGINX_INCLUDES=$(package_nginx_includes)
@@ -267,15 +267,19 @@ mkdir -p /app/vendor/php/etc/fpm.d
 
 pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
 
+echo "; extra configuration for php fpm" >> "/app/vendor/php/etc/fpm.d/extra.conf"
+
+# IFS= to set on multipleline each configuration item
+OLDIFS=$IFS
+IFS=
 echo $PHP_EXTRA_CONFIG | while read conf ; do
     echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
-echo "; extra configuration for php fpm" >> "/app/vendor/php/etc/fpm.d/extra.conf"
-
 echo $PHP_FPM_EXTRA_CONFIG | while read conf ; do
     echo "$conf" >> "/app/vendor/php/etc/fpm.d/extra.conf"
 done
+IFS=$OLDIFS
 
 for include in $PHP_INCLUDES; do
     cp "$BUILD_DIR/$include" "/app/vendor/php/etc/conf.d/"
