@@ -271,8 +271,10 @@ echo $PHP_EXTRA_CONFIG | while read conf ; do
     echo "$conf" >> "/app/vendor/php/etc/php.ini"
 done
 
+echo "; extra configuration for php fpm" >> "/app/vendor/php/etc/fpm.d/extra.conf"
+
 echo $PHP_FPM_EXTRA_CONFIG | while read conf ; do
-    echo "$conf" >> "/app/vendor/php/etc/php-fpm.conf"
+    echo "$conf" >> "/app/vendor/php/etc/fpm.d/extra.conf"
 done
 
 for include in $PHP_INCLUDES; do
@@ -280,7 +282,6 @@ for include in $PHP_INCLUDES; do
 done
 
 if [ -n "$PHP_FPM_INCLUDES" ] ; then
-    sed -i 's+; include=etc/fpm.d/\*+include=etc/fpm.d/*+' "/app/vendor/php/etc/php-fpm.conf"
     for include in $PHP_FPM_INCLUDES; do
         cp "$BUILD_DIR/$include" "/app/vendor/php/etc/fpm.d/"
     done
