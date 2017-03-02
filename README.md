@@ -31,7 +31,7 @@ and dependencies will be installed according to the `package.json` file.
 
 ## Available versions
 
-[Available PHP Versions](https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.php
+[Available PHP Versions](https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.php)
 
 [Available NGINX Versions](https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.nginx)
 
