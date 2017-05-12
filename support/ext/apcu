@@ -2,10 +2,10 @@
 
 set -e
 
-php_version=${1:=7.0}
+php_version=${1:=7.1}
 
-if [[ "$php_version" =~ "7.0" ]] ; then
-  apcu_version=5.1.5
+if echo $php_version | grep -q -E '^7.1' ; then
+  apcu_version=5.1.7
 else
   apcu_version=4.0.11
 fi
