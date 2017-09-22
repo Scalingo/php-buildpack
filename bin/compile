@@ -259,6 +259,7 @@ if [ -n "$BUILDPACK_DEBUG" ]; then
 fi
 
 mkdir -p "conf"
+cp "$basedir/util/autotune.php" "conf/autotune.php"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
 cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
@@ -371,6 +372,32 @@ fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
 erb conf/site.conf.erb > /app/vendor/nginx/conf/site.conf
+
+if [[ -z \${WEB_CONCURRENCY:-} ]]; then
+    ram="512M"
+    container_size=\${CONTAINER_SIZE:-M}
+    if [ \$container_size = "S" ] ; then
+        ram="256M"
+    elif [ \$container_size = "L" ] ; then
+        ram="1024M"
+    elif [ \$container_size = "XL" ] ; then
+        ram="2048M"
+    elif [ \$container_size = "2XL" ] ; then
+        ram="4096M"
+    elif [ \$container_size = "3XL" ] ; then
+        ram="8182M"
+    fi
+
+    echo "Optimzing defaults for \${container_size} container..." >&2
+
+    # determine number of FPM processes to run
+    read WEB_CONCURRENCY php_memory_limit <<<\$(php -c "/app/vendor/php/etc/php.ini" /app/conf/autotune.php -y "/app/vendor/php/etc/php-fpm.conf" -t "\$DOCUMENT_ROOT" "\$ram")
+    [[ \$WEB_CONCURRENCY -lt 1 ]] && WEB_CONCURRENCY=1
+    export WEB_CONCURRENCY
+    echo "\${WEB_CONCURRENCY} processes at \${php_memory_limit}B memory limit." >&2
+else
+    echo "Using WEB_CONCURRENCY=\${WEB_CONCURRENCY} processes." >&2
+fi
 
 `init_log_plex ${LOG_FILES}`
 `tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`

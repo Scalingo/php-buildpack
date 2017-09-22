@@ -7,7 +7,7 @@ support.
 
 ## Characteristics
 
-* __Nginx__ 1.3 to 1.9 - __PHP__ 5.3 (without extension), 5.4, 5.5, 5.6 and 7.0 - __PHP FPM__
+* __Nginx__ 1.3 to 1.10 - __PHP__ 5.3 (without extension), 5.4, 5.5, 5.6, 7.0 and 7.1 - __PHP FPM__
 * Lightweight stack compared to Apache-ModPHP
 * Composer support
 * Various frameworks support out of the box (no configuration)
@@ -48,6 +48,13 @@ install --no-dev`.
 
 This buildpack also detects when the app has a node `package.json` in the
 app's root. And will install node dependencies like less for example.
+
+## Web concurrency
+
+The number of `php-fpm` workers is defined dynamically according to the size of the
+container you are using.
+
+If you want to override this value, you can define the environment variable `WEB_CONCURRENCY`
 
 ## Frameworks
 
