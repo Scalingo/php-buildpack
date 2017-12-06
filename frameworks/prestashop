@@ -1,0 +1,73 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source $basedir/../bin/common.sh
+
+function requires_prestashop() {
+    cat "index.php" 2>/dev/null | grep -iq prestashop
+}
+
+function sets_framework_prestashop() {
+    [ $(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json") == "prestashop" ]
+}
+
+# PrestaShop is based on Symfony, so it's really closed to symfony logics
+function is_symfony2() {
+    test -e "app/console"
+}
+
+function is_symfony3() {
+    test -e "bin/console"
+}
+
+function get_workdir() {
+    is_symfony2 && echo "app"
+    is_symfony3 && echo "var"
+}
+
+function get_console() {
+    is_symfony2 && echo "app/console"
+    is_symfony3 && echo "bin/console"
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.lock" ]; then
+            exit 1
+        fi
+
+        if requires_prestashop || sets_framework_prestashop; then
+            echo "-----> Detected PrestaShop App"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    get-log-files)
+        workdir=$(get_workdir)
+        echo "$workdir/logs/prod.log" "$workdir/logs/dev.log"
+        ;;
+    compile)
+        echo "-----> Setting up PrestaShop app"
+        cp "$basedir/../conf/nginx/prestashop.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+    end)
+        BUILD_DIR="$1"
+        CACHE_DIR="$2"
+        APP_DIR="/app"
+
+        status "Warmuping cache"
+        rm -rf app/cache/*
+
+        workdir=$(get_workdir)
+        console=$(get_console)
+        php $console cache:warmup --env=prod --no-debug | indent
+
+        status "Inplace replacment of $CACHE_DIR to $APP_DIR"
+        find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
+        grep $CACHE_DIR/$workdir/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
+
+        status "End"
+        ;;
+esac
