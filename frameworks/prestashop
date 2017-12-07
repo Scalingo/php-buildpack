@@ -64,6 +64,9 @@ case "$1" in
         console=$(get_console)
         php $console cache:warmup --env=prod --no-debug | indent
 
+        status "Update configuration to write exceptions to app/logs/prod.log"
+        sed -i "s/'.date('Ymd').'_exception/prod/g" $workdir/classes/exception/PrestaShopException.php
+
         status "Inplace replacment of $CACHE_DIR to $APP_DIR"
         find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
         grep $CACHE_DIR/$workdir/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
