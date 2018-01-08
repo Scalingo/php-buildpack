@@ -20,18 +20,24 @@ function is_symfony2() {
     test -e "app/console"
 }
 
-function is_symfony3or4() {
+function is_symfony3() {
     test -e "bin/console"
+}
+
+function is_symfony4() {
+    jq --raw-output '.packages | .[] | .name' < "composer.lock" | grep -q '^symfony/flex$'
 }
 
 function get_workdir() {
     is_symfony2 && echo "app"
     is_symfony3 && echo "var"
+    is_symfony4 && echo "var"
 }
 
 function get_console() {
     is_symfony2 && echo "app/console"
-    is_symfony3or4 && echo "bin/console"
+    is_symfony3 && echo "bin/console"
+    is_symfony4 && echo "bin/console"
 }
 
 case "$1" in
@@ -65,11 +71,17 @@ case "$1" in
         APP_DIR="/app"
 
         status "Warmping cache"
-        rm -rf app/cache/*
 
         workdir=$(get_workdir)
         console=$(get_console)
-        php $console cache:warmup --env=prod --no-debug | indent
+        rm -rf $workdir/cache/*
+        if is_symfony4 ; then
+          cd bin
+          php console cache:warmup --env=prod --no-debug | indent
+          cd ..
+        else
+          php $console cache:warmup --env=prod --no-debug | indent
+        fi
 
         status "Inplace replacment of $CACHE_DIR to $APP_DIR"
         find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
