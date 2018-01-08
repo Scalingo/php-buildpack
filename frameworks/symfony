@@ -4,8 +4,16 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
+function test_symfony_flex() {
+    jq --raw-output '.packages | .[] | .name' < "$1" | grep -q '^symfony/flex$'
+}
+
 function requires_symfony() {
     jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/symfony$'
+}
+
+function requires_symfony_flex() {
+  test_symfony_flex "$BUILD_DIR/composer.lock"
 }
 
 function sets_framework_symfony() {
@@ -20,14 +28,20 @@ function is_symfony3() {
     test -e "bin/console"
 }
 
+function is_symfony4() {
+    test_symfony_flex "composer.lock"
+}
+
 function get_workdir() {
     is_symfony2 && echo "app"
     is_symfony3 && echo "var"
+    is_symfony4 && echo "var"
 }
 
 function get_console() {
     is_symfony2 && echo "app/console"
     is_symfony3 && echo "bin/console"
+    is_symfony4 && echo "bin/console"
 }
 
 case "$1" in
@@ -36,7 +50,7 @@ case "$1" in
             exit 1
         fi
 
-        if requires_symfony || sets_framework_symfony; then
+        if requires_symfony || sets_framework_symfony || requires_symfony_flex; then
             echo "-----> Detected symfony App"
             exit 0
         else
@@ -49,19 +63,31 @@ case "$1" in
         ;;
     compile)
         echo "-----> Setting up symfony app"
-        cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        if requires_symfony_flex; then
+          cp "$basedir/../conf/nginx/symfony4.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        else
+          cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        fi
         ;;
     end)
         BUILD_DIR="$1"
         CACHE_DIR="$2"
         APP_DIR="/app"
 
-        status "Warmuping cache"
-        rm -rf app/cache/*
+        status "Warming up cache"
 
         workdir=$(get_workdir)
         console=$(get_console)
-        php $console cache:warmup --env=prod --no-debug | indent
+        rm -rf $workdir/cache/*
+        if is_symfony4 ; then
+          # We are unable to use the $console variable since bin/console will fail with the following message:
+          # Command "bin/console" is not defined.
+          cd bin
+          php console cache:warmup --env=prod --no-debug | indent
+          cd ..
+        else
+          php $console cache:warmup --env=prod --no-debug | indent
+        fi
 
         status "Inplace replacment of $CACHE_DIR to $APP_DIR"
         find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent

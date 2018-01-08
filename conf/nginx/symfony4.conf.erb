@@ -1,0 +1,23 @@
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
+
+location / {
+    # try to serve file directly, fallback to rewrite
+    try_files $uri <%= "#{ENV['ASSETS_ROOT']}/$uri" if ENV['ASSETS_ROOT'] %> /index.php$is_args$args;
+}
+
+location ~ ^/index\.php(/|$) {
+    fastcgi_pass php;
+    fastcgi_split_path_info ^((?U).+\.php)(/.*)$;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    fastcgi_param DOCUMENT_ROOT $realpath_root;
+    fastcgi_param HTTPS off;
+
+    fastcgi_buffer_size 128k;
+    fastcgi_buffers 4 256k;
+    fastcgi_busy_buffers_size 256k;
+}
