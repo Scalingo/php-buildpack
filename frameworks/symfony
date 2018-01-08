@@ -4,12 +4,16 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
+function test_symfony_flex() {
+    jq --raw-output '.packages | .[] | .name' < "$1" | grep -q '^symfony/flex$'
+}
+
 function requires_symfony() {
     jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/symfony$'
 }
 
 function requires_symfony_flex() {
-    jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/flex$'
+  test_symfony_flex "$BUILD_DIR/composer.lock"
 }
 
 function sets_framework_symfony() {
@@ -25,7 +29,7 @@ function is_symfony3() {
 }
 
 function is_symfony4() {
-    jq --raw-output '.packages | .[] | .name' < "composer.lock" | grep -q '^symfony/flex$'
+    test_symfony_flex "composer.lock"
 }
 
 function get_workdir() {
@@ -70,12 +74,14 @@ case "$1" in
         CACHE_DIR="$2"
         APP_DIR="/app"
 
-        status "Warmping cache"
+        status "Warming up cache"
 
         workdir=$(get_workdir)
         console=$(get_console)
         rm -rf $workdir/cache/*
         if is_symfony4 ; then
+          # We are unable to use the $console variable since bin/console will fail with the following message:
+          # Command "bin/console" is not defined.
           cd bin
           php console cache:warmup --env=prod --no-debug | indent
           cd ..
