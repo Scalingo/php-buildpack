@@ -8,6 +8,10 @@ function requires_symfony() {
     jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/symfony$'
 }
 
+function requires_symfony_flex() {
+    jq --raw-output '.packages | .[] | .name' < "$BUILD_DIR/composer.lock" | grep -q '^symfony/flex$'
+}
+
 function sets_framework_symfony() {
     [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony" ]
 }
@@ -16,7 +20,7 @@ function is_symfony2() {
     test -e "app/console"
 }
 
-function is_symfony3() {
+function is_symfony3or4() {
     test -e "bin/console"
 }
 
@@ -27,7 +31,7 @@ function get_workdir() {
 
 function get_console() {
     is_symfony2 && echo "app/console"
-    is_symfony3 && echo "bin/console"
+    is_symfony3or4 && echo "bin/console"
 }
 
 case "$1" in
@@ -36,7 +40,7 @@ case "$1" in
             exit 1
         fi
 
-        if requires_symfony || sets_framework_symfony; then
+        if requires_symfony || sets_framework_symfony || requires_symfony_flex; then
             echo "-----> Detected symfony App"
             exit 0
         else
@@ -49,14 +53,18 @@ case "$1" in
         ;;
     compile)
         echo "-----> Setting up symfony app"
-        cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        if requires_symfony_flex; then
+          cp "$basedir/../conf/nginx/symfony4.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        else
+          cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        fi
         ;;
     end)
         BUILD_DIR="$1"
         CACHE_DIR="$2"
         APP_DIR="/app"
 
-        status "Warmuping cache"
+        status "Warmping cache"
         rm -rf app/cache/*
 
         workdir=$(get_workdir)
