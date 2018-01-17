@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-php_memcached_version=2.2.0
+set -x
 
-curl -L "https://github.com/php-memcached-dev/php-memcached/archive/${php_memcached_version}.tar.gz" \
+php_memcached_version=3.0.4
+
+curl -L "https://github.com/php-memcached-dev/php-memcached/archive/v${php_memcached_version}.tar.gz" \
     | tar xzv
 
 mkdir -p /app/vendor/libmemcached

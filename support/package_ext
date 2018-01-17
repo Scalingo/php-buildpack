@@ -35,9 +35,9 @@ build_ext() {
     tempbuilddir=$(mktmpdir php-build${ext_name})
     cd $tempdir
 
-    local php_version=$(\
+    local php_version=$(echo ${php_series}.$(\
         echo "$php_versions" \
-        | grep "^${php_series}.*$" | sort -r | head -n1)
+        | grep "^${php_series}.*$" | cut -d'.' -f3 | sort -r -n | head -n1))
 
     echo "-----> Building $ext_name for PHP module API version ${zend_api_version} using PHP ${php_version}"
 
