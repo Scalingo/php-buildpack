@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 php_memcached_version=3.0.4
 
 curl -L "https://github.com/php-memcached-dev/php-memcached/archive/v${php_memcached_version}.tar.gz" \
