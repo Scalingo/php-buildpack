@@ -46,7 +46,8 @@ package_internal_ext() {
     install_php_src "${php_version}" "${tempsrcdir}"
 
     local tempbuilddir=$(mktmpdir php-build${ext_name})
-    build_ext "${tempbuilddir}" "${php_version}" "${zend_api_version}" "${ext_name}"
+    local package_name="${ext_name}"
+    build_ext "${tempbuilddir}" "${php_version}" "${zend_api_version}" "${ext_name}" "${tempsrcdir}"
     upload_ext "${tempbuilddir}" "${tempdir}" "${package_name}" "${zend_api_version}"
 
     rm -r "${tempdir}"

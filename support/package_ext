@@ -20,7 +20,10 @@ export PATH=${basedir}/../vendor/bin:$PATH
 
 package_ext() {
     local ext_name="$1"
-    local php_series="$2"
+    # Package name of the file uploaded on object storage
+    # If empty, ext_name is taken
+    local ext_package_name="$2"
+    local php_series="$3"
 
     local zend_api_version=$(zend_api_from_php_series $basedir $php_series)
     if [ -z "$zend_api_version" ] ; then
@@ -37,6 +40,12 @@ package_ext() {
     install_php "${php_version}"
     cp "$basedir/ext/${ext_name}" "$tempdir/build.sh"
 
+    package_name="${ext_name}"
+    if [ -n "$ext_package_name" ] ; then
+      package_name="${ext_package_name}"
+    fi
+
+    local tempbuilddir=$(mktmpdir php-build${ext_name})
     build_ext "${tempbuilddir}" "${php_version}" "${zend_api_version}" "${ext_name}"
     upload_ext "${tempbuilddir}" "${tempdir}" "${package_name}" "${zend_api_version}"
 
@@ -45,6 +54,7 @@ package_ext() {
 }
 
 ext_name="$1"
+package_name="$2"
 shift
 php_api="$@"
 
@@ -56,5 +66,5 @@ fi
 echo "-----> Building $ext_name for PHP versions [$php_api]"
 
 for api in $php_api; do
-    package_ext "$ext_name" "$api"
+    package_ext "$ext_name" "$package_name" "$api"
 done
