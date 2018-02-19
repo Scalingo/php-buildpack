@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -x
+
+gmp_version="6.1.2"
+
+php_version=$1
+php_src_dir=$2
+zend_api_version=$3
+
+gmp_package="${SWIFT_URL}/package/gmp-${gmp_version}.tgz"
+
+curl -L "$gmp_package" > /tmp/gmp-${gmp_version}.tgz
+
+mkdir -p /app/vendor/gmp
+tar -xzv -C /app/vendor/gmp -f /tmp/gmp-${gmp_version}.tgz
+
+pushd $php_src_dir/php-${php_version}/ext/gmp
+
+export PATH=$PATH:/app/vendor/php/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/vendor/gmp/lib
+
+phpize
+./configure --with-gmp=/app/vendor/gmp
+make
+make install
+
+dir="$PREFIX/lib/php/extensions/no-debug-non-zts-${zend_api_version}/"
+mkdir -p $dir
+
+cp modules/gmp.so "$dir"
+popd
+
+rm /tmp/gmp-${gmp_version}.tgz
+
+echo "extension=gmp.so" > "$PREFIX/etc/conf.d/gmp.ini"
