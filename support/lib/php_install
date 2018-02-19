@@ -1,0 +1,34 @@
+function install_php() {
+  php_version=$1
+
+  local php_package="${SWIFT_URL}/package/php-${php_version}.tgz"
+  local php_md5="${SWIFT_URL}/package/php-${php_version}.md5"
+
+  mkdir -p /app/vendor/php
+  curl -L "$php_md5" > /tmp/php-${php_version}.md5
+  if [ -e "/tmp/php-${php_version}.tgz" ] ; then
+    remote_php_md5=$(cat "/tmp/php-${php_version}.md5")
+    local_php_md5=$(md5 "/tmp/php-${php_version}.tgz")
+
+    if [ "$local_php_md5" != "$remote_php_md5" ] ; then
+      curl -L "$php_package" > /tmp/php-${php_version}.tgz
+    else
+      echo "/tmp/php-${php_version}.tgz exists, skip downloading"
+    fi
+  else
+    curl -L "$php_package" > /tmp/php-${php_version}.tgz
+  fi
+
+  tar -xzv -C /app/vendor/php -f /tmp/php-${php_version}.tgz
+}
+
+function install_php_src() {
+  php_version=$1
+  dst=$2
+
+  pushd $dst
+  echo "-----> Downloading PHP $php_version"
+  curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
+  tar -xzvf "php-${php_version}.tar.gz"
+  popd
+}

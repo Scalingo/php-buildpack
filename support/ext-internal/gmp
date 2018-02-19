@@ -25,10 +25,7 @@ phpize
 make
 make install
 
-dir="$PREFIX/lib/php/extensions/no-debug-non-zts-${zend_api_version}/"
-mkdir -p $dir
-
-cp modules/gmp.so "$dir"
+cp modules/gmp.so "$EXT_DIR"
 popd
 
 rm /tmp/gmp-${gmp_version}.tgz
