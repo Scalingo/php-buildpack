@@ -1,0 +1,15 @@
+function zend_api_from_php_series() {
+  support_dir=$1
+  # PHP Major -> 5.6, 7.0, 7.1, etc.
+  php_series=$2
+
+  source "$support_dir/../conf/buildpack.conf"
+  echo ${PHP_MODULE_API_VERSIONS["$php_series"]}
+}
+
+function php_series_last_version() {
+  local php_versions=$(curl --silent "${SWIFT_URL}/manifest.php")
+  echo ${php_series}.$(\
+      echo "$php_versions" \
+      | grep "^${php_series}.*$" | cut -d'.' -f3 | sort -r -n | head -n1)
+}

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -e
+
+gmp_version="$1"
+
+if [ -z "$gmp_version" ]; then
+    echo "Usage: $(basename "$0") VERSION" >&2
+    exit 1
+fi
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+export PATH=${basedir}/../vendor/bin:$PATH
+
+tempdir=$(mktmpdir gmp)
+cd $tempdir
+
+echo "-----> Downloading gmp ${gmp_version}"
+curl -L "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
+    | tar xJv
+
+mkdir -p /app/vendor/gmp \
+  && pushd gmp-${gmp_version} > /dev/null \
+  && ./configure --prefix=/app/vendor/gmp \
+  && make && make install \
+  && popd > /dev/null
+
+mkdir package
+pushd /app/vendor/gmp > /dev/null
+tar zcvf "${tempdir}/package/gmp-${gmp_version}.tgz" .
+popd > /dev/null
+
+swift_upload package/gmp-${gmp_version}.tgz
+
+"$basedir/package-checksum" "gmp-${gmp_version}" 

@@ -343,6 +343,7 @@ mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
+[ -d "/app/vendor/gmp" ] && mv /app/vendor/gmp vendor/gmp
 
 mkdir -p "bin" "vendor/bin"
 cp ${basedir}/heroku* "bin"

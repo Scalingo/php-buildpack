@@ -59,6 +59,8 @@ function install_composer_deps() {
             # TODO: Find a better way to ignore extensions which were not found in S3
             if [ "$ext" = "memcached" ] ; then
               fetch_package "libmemcached-${memcached_version}" "/app/vendor/libmemcached" | indent
+            elif [ "$ext" = "gmp" ] ; then
+              fetch_package "gmp-${gmp_version}" "/app/vendor/gmp" | indent
             fi
             fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done

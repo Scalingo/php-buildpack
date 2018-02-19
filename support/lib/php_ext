@@ -1,0 +1,33 @@
+function build_ext() {
+  local tempbuilddir=$1
+  local php_version=$2
+  local zend_api_version=$3
+  local ext_name=$4
+
+  # Only used for internal extensions
+  local php_src_dir=$5
+
+  local ext_dir="lib/php/extensions/no-debug-non-zts-${zend_api_version}"
+  mkdir -p "$tempbuilddir/$ext_dir" \
+    && mkdir -p "$tempbuilddir/etc/conf.d" \
+    && PREFIX="$tempbuilddir" EXT_DIR="$tempbuilddir/$ext_dir" ./build.sh "$php_version" "$zend_api_version" "$php_src_dir"; rc=$?
+  if [ $rc -ne 0 ] ; then
+    echo "Fail to build package"
+    exit 1
+  fi
+}
+
+function upload_ext() {
+  local tempbuilddir=$1
+  local tempdir=$2
+  local package_name=$3
+  local zend_api_version=$4
+
+  mkdir -p package/ext/${zend_api_version}
+  pushd $tempbuilddir > /dev/null
+  tar zcvf $tempdir/package/ext/${zend_api_version}/php-${package_name}.tgz .
+  popd
+
+  swift_upload package/ext/${zend_api_version}/php-${package_name}.tgz
+  "$basedir/package-checksum" "ext/${zend_api_version}/php-${package_name}"
+}
