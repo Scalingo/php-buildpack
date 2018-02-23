@@ -51,7 +51,7 @@ function install_composer_deps() {
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
 
-    local required_extensions=$(jq --raw-output '.require | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+    local required_extensions=$(jq --raw-output '.require // {} | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
     if [ -n "$required_extensions" ]; then
         status "Bundling additional extensions $required_extensions"
         for ext in $required_extensions; do
