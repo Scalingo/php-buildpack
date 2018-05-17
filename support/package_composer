@@ -8,7 +8,11 @@ source "$basedir/lib/swift"
 tempdir=$(mktmpdir composer)
 cd $tempdir
 
-curl -L http://getcomposer.org/composer.phar > composer.phar
+BASE_COMPOSER_URL="https://getcomposer.org/"
+
+current_composer_version_path=$(curl --silent "$BASE_COMPOSER_URL/versions" | jq -r '.stable[0].path')
+
+curl -L "$BASE_COMPOSER_URL/$current_composer_version_path" > composer.phar
 md5 composer.phar > composer.phar.md5
 
 mkdir composer
