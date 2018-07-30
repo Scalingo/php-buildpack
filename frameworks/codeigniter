@@ -1,0 +1,19 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+case "$1" in
+    detect)
+        if [ -e "./system/core/CodeIgniter.php" ]; then
+            echo "-----> Detected CodeIgniter"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up CodeIgniter"
+        cp "$basedir/../conf/nginx/codeigniter.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
