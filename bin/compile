@@ -93,7 +93,7 @@ function package_nginx_version() {
 
 function package_php_version() {
   local require_php=$(jq --raw-output ".require.php // \"${DEFAULT_PHP}\"" < "$BUILD_DIR/composer.json")
-  require_php=$(curl --fail --location --silent "${SEMVER_SERVER}/php/resolve/${require_php}")
+  require_php=$(curl --fail --location --silent "${SEMVER_SERVER}/php-scalingo/resolve/${require_php}")
   jq --raw-output ".extra.${composer_extra_key}.engines.php // \"${require_php}\"" < "$BUILD_DIR/composer.json"
 }
 
@@ -147,7 +147,7 @@ export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
-DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php/resolve/~5.6")
+DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-scalingo/resolve/~5.6")
 DEFAULT_NGINX="1.10.1"
 
 AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
