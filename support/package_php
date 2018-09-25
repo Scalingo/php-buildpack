@@ -91,6 +91,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 --enable-pcntl \
 --enable-sockets \
 --enable-bcmath \
+--enable-ftp \
 --with-readline \
 --with-mcrypt=/app/vendor/libmcrypt \
 --disable-debug \
