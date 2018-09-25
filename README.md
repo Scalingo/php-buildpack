@@ -11,11 +11,11 @@ support.
 * Lightweight stack compared to Apache-ModPHP
 * Composer support
 * Various frameworks support out of the box (no configuration)
-* Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirments in `composer.json`.
+* Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirements in `composer.json`.
 
 ## How to use it
 
-This buildpack is used automatically by Scalingo. So you juste need to create a
+This buildpack is used automatically by Scalingo. So you just need to create a
 PHP application and to deploy it.
 
 ```
