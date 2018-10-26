@@ -347,8 +347,6 @@ mv /app/vendor/php vendor/php
 [ -d "/app/vendor/libtidy" ] && mv /app/vendor/libtidy vendor/libtidy
 
 mkdir -p "bin" "vendor/bin"
-cp ${basedir}/heroku* "bin"
-cp ${basedir}/heroku* "vendor/bin"
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash

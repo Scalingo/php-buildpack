@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [ $# -eq 1 ] ; then
-  export DOCUMENT_ROOT=$1
-fi
-
-exec "/app/bin/run"
-
