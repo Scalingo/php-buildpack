@@ -153,13 +153,12 @@ export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
-DEFAULT_PHP="~7.2"
+DEFAULT_PHP="7.2"
 DEFAULT_NGINX="1.10.1"
 
-AVAILABLE_PHP_VERSIONS=$(curl "${SWIFT_URL}/manifest.php" 2> /dev/null)
 AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
 
-PHP_VERSION="${PHP_VERSION:-default}"
+PHP_VERSION=$(best_php_version)
 NGINX_VERSION="${NGINX_VERSION:-default}"
 DOCUMENT_ROOT=
 INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
@@ -185,7 +184,6 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
     composer_extra_key="heroku"
   fi
 
-  PHP_VERSION=$(best_php_version)
   NGINX_VERSION=$(package_nginx_version)
   DOCUMENT_ROOT=$(package_document_root)
   INDEX_DOCUMENT=$(package_index_file)
@@ -200,22 +198,12 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   ACCESS_LOG_FORMAT_COMPOSER_JSON=$(package_access_log_format)
 fi
 
-# Try reading PHP version from .php-version file in project
-if [ -f "$BUILD_DIR/.php-version" ]; then
-    PHP_VERSION=$(cat "$BUILD_DIR/.php-version")
-fi
-
-if [ "$PHP_VERSION" = "default" ]; then
-    PHP_VERSION="$DEFAULT_PHP"
-fi
-
 if [ "$NGINX_VERSION" = "default" ]; then
     NGINX_VERSION="$DEFAULT_NGINX"
 fi
 
 # Look for ".*" versions, match them against all available versions
 # and select the latest version which was found.
-PHP_VERSION=$(find_version "${AVAILABLE_PHP_VERSIONS}" "${PHP_VERSION}" "PHP")
 NGINX_VERSION=$(find_version "${AVAILABLE_NGINX_VERSIONS}" "${NGINX_VERSION}" "Nginx")
 
 VENDORED_NGINX=/app/vendor/nginx
