@@ -158,6 +158,15 @@ DEFAULT_NGINX="1.10.1"
 
 AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
 
+# Read config variables from composer.json if it exists
+if [ -f "$BUILD_DIR/composer.json" ]; then
+  composer_extra_key="paas"
+  if [ -n "$(has_heroku_extra)" ] ; then
+    protip "Your composer.json is using the key 'extra' → 'heroku', you should switch to 'extra' → 'paas' for standardization"
+    composer_extra_key="heroku"
+  fi
+fi
+
 PHP_VERSION=$(best_php_version)
 NGINX_VERSION="${NGINX_VERSION:-default}"
 DOCUMENT_ROOT=
@@ -178,12 +187,6 @@ check_composer_json_and_lock "$BUILD_DIR"
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
-  composer_extra_key="paas"
-  if [ -n "$(has_heroku_extra)" ] ; then
-    protip "Your composer.json is using the key 'extra' → 'heroku', you should switch to 'extra' → 'paas' for standardization"
-    composer_extra_key="heroku"
-  fi
-
   NGINX_VERSION=$(package_nginx_version)
   DOCUMENT_ROOT=$(package_document_root)
   INDEX_DOCUMENT=$(package_index_file)
