@@ -389,7 +389,7 @@ if [[ -z \${WEB_CONCURRENCY:-} ]]; then
 
     # determine number of FPM processes to run
     read WEB_CONCURRENCY php_memory_limit <<<\$(php -c "/app/vendor/php/etc/php.ini" /app/conf/autotune.php -y "/app/vendor/php/etc/php-fpm.conf" -t "\$DOCUMENT_ROOT" "\$ram")
-    [[ \$WEB_CONCURRENCY -lt 1 ]] && WEB_CONCURRENCY=1
+    [[ \$WEB_CONCURRENCY -lt 3 ]] && WEB_CONCURRENCY=3
     export WEB_CONCURRENCY
     echo "\${WEB_CONCURRENCY} processes at \${php_memory_limit}B memory limit." >&2
 else
