@@ -27,9 +27,12 @@ tempdir=$(mktmpdir php)
 cd $tempdir
 
 echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
-
 curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
+
+echo "-----> Downloading dependency libzip ${zip_version}"
+mkdir /app/vendor/libzip
+curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvf
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
@@ -74,6 +77,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 --with-pgsql \
 --enable-shmop \
 --enable-zip \
+--with-libzip=/app/vendor/libzip \
 --with-jpeg-dir=/usr \
 --with-png-dir=/usr \
 --with-freetype-dir=/usr \
