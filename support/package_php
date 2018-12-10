@@ -33,7 +33,7 @@ tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 echo "-----> Downloading dependency libzip ${zip_version}"
 mkdir /app/vendor/libzip -p
 curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/vendor/libzip/include
+export C_LIBRARY_PATH="$C_LIBRARY_PATH:/app/vendor/libzip/include"
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
