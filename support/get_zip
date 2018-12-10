@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+which cmake3 2>/dev/null || (apt-get update && apt-get install -y cmake3)
+
+zip_version="$1"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir zip)
+cd $tempdir
+
+echo "-----> Downloading ZIP v${zip_version}"
+curl -L -o - "https://libzip.org/download/libzip-${zip_version}.tar.gz" | tar xzv
+
+mkdir -p /app/vendor/libzip \
+  && pushd libzip-${zip_version} > /dev/null \
+  && mkdir build \
+  && pushd build > /dev/null \
+  && cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libzip \
+  && make && make install \
+  && popd > /dev/null \
+  && popd > /dev/null
+
+mkdir package
+pushd /app/vendor/libzip > /dev/null
+rm -r ./share ./bin
+tar zcvf "${tempdir}/package/libzip-${zip_version}.tgz" .
+popd > /dev/null
+
+swift_upload package/libzip-${zip_version}.tgz
+
+"$basedir/package-checksum" "libzip-${zip_version}"
+
