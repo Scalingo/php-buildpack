@@ -64,7 +64,7 @@ init_log_plex() {
 
 tail_log_plex() {
   for log_file in $*; do
-    echo "tail -n 0 -qF --pid=\$\$ ${log_file} 2>&1 | grep -v 'unrecognized file system type' &"
+    echo "tail -n 0 -qF --pid=\$\$ ${log_file} 2>&1 &"
   done
 }
 

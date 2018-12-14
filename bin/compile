@@ -233,6 +233,10 @@ export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/app/bin:${VENDORED_NGINX}/sbin:${VEND
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
+if [ $STACK = "scalingo" ] ; then
+  fetch_package "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
+fi
+
 source ".profile.d/php.sh"
 
 # Fetch additional extensions
@@ -338,14 +342,19 @@ fi
 
 status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
-mv /app/vendor/libzip vendor/libzip
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
+[ -d "/app/vendor/libzip" ] && mv /app/vendor/libzip vendor/libzip
+[ -d "/app/vendor/coreutils" ] && mv /app/vendor/coreutils vendor/coreutils
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
 [ -d "/app/vendor/gmp" ] && mv /app/vendor/gmp vendor/gmp
 [ -d "/app/vendor/libtidy" ] && mv /app/vendor/libtidy vendor/libtidy
 
 mkdir -p "bin" "vendor/bin"
+
+if [ "$STACK" = "scalingo" ] ; then
+  test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
+fi
 
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
