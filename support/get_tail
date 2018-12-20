@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -e
+
+coreutils_version=8.30
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir coreutils)
+cd $tempdir
+
+echo "-----> Downloading Coreutils v${coreutils_version}"
+curl -L -o - "https://ftp.gnu.org/gnu/coreutils/coreutils-${coreutils_version}.tar.xz" | tar xJv
+
+export FORCE_UNSAFE_CONFIGURE=1
+
+pushd "coreutils-${coreutils_version}"
+./configure
+make
+
+mkdir -p /app/vendor/coreutils/bin
+cp src/tail /app/vendor/coreutils/bin
+
+popd
+
+mkdir -p package
+
+pushd /app/vendor/coreutils > /dev/null
+tar zcvf "${tempdir}/package/tail-${coreutils_version}.tgz" .
+popd > /dev/null
+
+swift_upload package/tail-${coreutils_version}.tgz
+
+"$basedir/package-checksum" "tail-${coreutils_version}"
+
