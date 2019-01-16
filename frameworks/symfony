@@ -29,13 +29,19 @@ function is_symfony3() {
 }
 
 function is_symfony4() {
-    test_symfony_flex "composer.lock"
+    test_symfony_flex "$BUILD_DIR/composer.lock"
 }
 
 function get_workdir() {
     is_symfony2 && echo "app"
     is_symfony3 && echo "var"
     is_symfony4 && echo "var"
+}
+
+function get_logdir() {
+    is_symfony2 && echo "logs"
+    is_symfony3 && echo "logs"
+    is_symfony4 && echo "log"
 }
 
 function get_console() {
@@ -59,11 +65,8 @@ case "$1" in
         ;;
     get-log-files)
         workdir=$(get_workdir)
-        if requires_symfony_flex; then
-          echo "$workdir/log/prod.log" "$workdir/log/dev.log"
-        else
-          echo "$workdir/logs/prod.log" "$workdir/logs/dev.log"
-        fi
+        logdir=$(get_logdir)
+        echo "$workdir/$logdir/prod.log" "$workdir/$logdir/dev.log"
         ;;
     compile)
         echo "-----> Setting up symfony app"
