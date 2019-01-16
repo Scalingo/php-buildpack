@@ -34,21 +34,21 @@ function is_symfony4() {
 }
 
 function get_workdir() {
-    is_symfony2 && echo "app"
-    is_symfony3 && echo "var"
-    is_symfony4 && echo "var"
+    is_symfony4 && echo -n "var" && return
+    is_symfony3 && echo -n "var" && return
+    is_symfony2 && echo -n "app" && return
 }
 
 function get_logdir() {
-    is_symfony2 && echo "logs"
-    is_symfony3 && echo "logs"
-    is_symfony4 && echo "log"
+    is_symfony4 && echo -n "log" && return
+    is_symfony3 && echo -n "logs" && return
+    is_symfony2 && echo -n "logs" && return
 }
 
 function get_console() {
-    is_symfony2 && echo "app/console"
-    is_symfony3 && echo "bin/console"
-    is_symfony4 && echo "bin/console"
+    is_symfony4 && echo -n "bin/console" && return
+    is_symfony3 && echo -n "bin/console" && return
+    is_symfony2 && echo -n "app/console" && return
 }
 
 case "$1" in
