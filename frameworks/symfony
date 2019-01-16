@@ -59,7 +59,11 @@ case "$1" in
         ;;
     get-log-files)
         workdir=$(get_workdir)
-        echo "$workdir/logs/prod.log" "$workdir/logs/dev.log"
+        if requires_symfony_flex; then
+          echo "$workdir/log/prod.log" "$workdir/log/dev.log"
+        else
+          echo "$workdir/logs/prod.log" "$workdir/logs/dev.log"
+        fi
         ;;
     compile)
         echo "-----> Setting up symfony app"
