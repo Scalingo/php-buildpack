@@ -95,9 +95,11 @@ case "$1" in
           php $console cache:warmup --env=prod --no-debug | indent
         fi
 
-        status "Inplace replacment of $CACHE_DIR to $APP_DIR"
-        find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
-        grep $CACHE_DIR/$workdir/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
+        if [ -d "$CACHE_DIR/$workdir/cache/prod" ] ; then
+          status "Inplace replacment of $CACHE_DIR to $APP_DIR"
+          find $CACHE_DIR/$workdir/cache/prod -type f -exec sed -i "s@$CACHE_DIR@$APP_DIR@g" {} \; | indent
+          grep $CACHE_DIR/$workdir/cache/prod -r . && error "Could find some '$CACHE_DIR' :/ "
+        fi
 
         status "End"
         ;;
