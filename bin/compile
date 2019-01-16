@@ -322,7 +322,7 @@ fi
 
 LOG_FILES=$(unique_array ${LOG_FILES[@]} ${USER_LOG_FILES[@]})
 if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
-    FRAMEWORK_LOG_FILES=$("$FRAMEWORK" get-log-files)
+    FRAMEWORK_LOG_FILES=$("$FRAMEWORK" get-log-files "$BUILD_DIR")
     LOG_FILES=$(unique_array ${LOG_FILES[@]} ${FRAMEWORK_LOG_FILES[@]})
 fi
 

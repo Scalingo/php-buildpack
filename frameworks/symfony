@@ -1,6 +1,7 @@
 #!/bin/bash
 
 BUILD_DIR="$2"
+CACHE_DIR="$3"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
@@ -77,8 +78,6 @@ case "$1" in
         fi
         ;;
     end)
-        BUILD_DIR="$1"
-        CACHE_DIR="$2"
         APP_DIR="/app"
 
         status "Warming up cache"
