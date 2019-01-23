@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e
+
+php_version=${1:=7.2}
+
+mcrypt_version=1.0.1
+
+curl -L "http://pecl.php.net/get/mcrypt-${mcrypt_version}.tgz" \
+    | tar xzv
+
+cd mcrypt-${mcrypt_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/mcrypt.so "$EXT_DIR/mcrypt.so"
+echo "extension=mcrypt.so" > "$PREFIX/etc/conf.d/mcrypt.ini"
