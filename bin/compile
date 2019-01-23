@@ -234,7 +234,7 @@ export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
 if [ $STACK = "scalingo" ] ; then
-  fetch_package "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
+    fetch_package "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
 fi
 
 source ".profile.d/php.sh"
@@ -251,8 +251,8 @@ echo "       mongodb"
 fetch_package "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
 
 if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
-  echo "       mcrypt"
-  fetch_package "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
+    echo "       mcrypt"
+    fetch_package "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
 fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
@@ -358,7 +358,7 @@ mv /app/vendor/php vendor/php
 mkdir -p "bin" "vendor/bin"
 
 if [ "$STACK" = "scalingo" ] ; then
-  test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
+    test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
 fi
 
 cat > "bin/run" <<SH
