@@ -250,6 +250,11 @@ fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 echo "       mongodb"
 fetch_package "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
 
+if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
+  echo "       mcrypt"
+  fetch_package "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
+fi
+
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
     install_newrelic "$NEWRELIC_VERSION"
