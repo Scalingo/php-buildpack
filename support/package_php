@@ -33,7 +33,7 @@ tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 echo "-----> Downloading dependency libzip ${zip_version}"
 mkdir /app/vendor/libzip -p
 curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
-export C_LIBRARY_PATH="$C_LIBRARY_PATH:/app/vendor/libzip/include"
+export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libzip/include"
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
@@ -44,12 +44,12 @@ install_zend_optimizer=":"
 if [[ "$php_version" =~ 5.4.[0-9]+ ]]; then
     install_zend_optimizer=$(cat <<SH
     /app/vendor/php/bin/pecl install ZendOpcache-beta \
-        && echo "zend_extension=\$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
+        && echo "zend_extension=\$(/app/vendor/php/bin/php-config --extension-dir)/opcache.so" > /app/vendor/php/etc/conf.d/opcache.ini
 SH
 )
 else
     install_zend_optimizer=$(cat <<SH
-    echo "zend_extension=opcache.so" >> /app/vendor/php/etc/conf.d/opcache.ini
+    echo "zend_extension=opcache.so" > /app/vendor/php/etc/conf.d/opcache.ini
 SH
 )
 fi
