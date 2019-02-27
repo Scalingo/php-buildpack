@@ -401,7 +401,7 @@ if [[ -z \${WEB_CONCURRENCY:-} ]]; then
         ram="8182M"
     fi
 
-    echo "Optimzing defaults for \${container_size} container..." >&2
+    echo "Optimizing defaults for \${container_size} container..." >&2
 
     # determine number of FPM processes to run
     read WEB_CONCURRENCY php_memory_limit <<<\$(php -c "/app/vendor/php/etc/php.ini" /app/conf/autotune.php -y "/app/vendor/php/etc/php-fpm.conf" -t "\$DOCUMENT_ROOT" "\$ram")
