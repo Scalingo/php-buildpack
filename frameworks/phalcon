@@ -1,0 +1,31 @@
+#!/bin/bash
+
+BUILD_DIR="$2"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+function requires_phalcon() {
+    jq --raw-output '.platform["ext-phalcon"]' < "$BUILD_DIR/composer.lock" | grep -q '^*$'
+}
+
+function sets_framework_phalcon() {
+    [ $(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json") == "phalcon" ]
+}
+
+case "$1" in
+    detect)
+        if [ ! -f "$BUILD_DIR/composer.lock" ]; then
+            exit 1
+        fi
+
+        if requires_phalcon || sets_framework_phalcon; then
+            echo "-----> Detected Phalcon app"
+            exit 0
+        else
+            exit 1
+        fi
+        ;;
+    compile)
+        echo "-----> Setting up Phalcon app"
+        cp "$basedir/../conf/nginx/phalcon.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
+        ;;
+esac
