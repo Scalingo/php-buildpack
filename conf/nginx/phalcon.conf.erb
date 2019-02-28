@@ -1,0 +1,40 @@
+# Inspired from https://docs.phalconphp.com/3.4/en/webserver-setup#nginx
+
+<% if ENV.has_key? "DOCUMENT_ROOT" and ENV['DOCUMENT_ROOT'].to_s != "" %>
+root /app/<%= ENV['DOCUMENT_ROOT'] %>;
+<% else %>
+root /app/public;
+<% end %>
+
+location / {
+    try_files $uri $uri/ /index.php?_url=$uri&$args;
+}
+
+location @rewriteapp {
+    # rewrite all to app.php
+    rewrite ^(.*)$ /index.php/$1 last;
+}
+
+location ~ [^/]\.php(/|$) {
+    fastcgi_pass php;
+    fastcgi_split_path_info ^((?U).+\.php)(/.*)$;
+    include fastcgi_params;
+
+    fastcgi_param PATH_INFO       $fastcgi_path_info;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+    fastcgi_buffer_size 128k;
+    fastcgi_buffers 4 256k;
+    fastcgi_busy_buffers_size 256k;
+}
+
+
+location ~ /\.ht {
+    deny all;
+}
+
+location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+    expires       max;
+    log_not_found off;
+    access_log    off;
+}
