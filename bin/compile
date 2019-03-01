@@ -366,6 +366,11 @@ if [ "$STACK" = "scalingo" ] ; then
     test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
 fi
 
+# If this buildpack is run after the nodejs buildpack remove the WEB_CONCURRENCY script
+if [ -f "$BUILD_DIR/.profile.d/WEB_CONCURRENCY.sh" ] ; then
+  rm "$BUILD_DIR/.profile.d/WEB_CONCURRENCY.sh"
+fi
+
 cat > "bin/run" <<SH
 #!/usr/bin/env bash
 
