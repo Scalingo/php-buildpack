@@ -382,6 +382,8 @@ for var in \`env | cut -f1 -d=\`; do
     echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
+# Set APP_ENV to prod by default for symfony based framework.
+export APP_ENV="\${APP_ENV:-prod}"
 export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
 export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"
 export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
