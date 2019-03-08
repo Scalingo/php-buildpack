@@ -17,8 +17,8 @@ case "$1" in
             exit 1
         fi
 
-        if requires_drupal|| sets_framework_drupal; then
-            echo "-----> Detected drupal app"
+        if requires_drupal || sets_framework_drupal; then
+            echo "-----> Detected Drupal app"
             exit 0
         else
             exit 1
