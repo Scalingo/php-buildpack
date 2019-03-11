@@ -54,6 +54,11 @@ SH
 )
 fi
 
+WITH_CURL_CONFIGURE=""
+if [ -d '/app/.apt/usr' ] ; then
+    WITH_CURL_CONFIGURE="--with-curl=/app/.apt/usr"
+fi
+
 mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
 && mkdir -p "/app/vendor/php/etc/conf.d" \
@@ -72,6 +77,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 --with-pgsql \
 --enable-shmop \
 --enable-zip \
+${WITH_CURL_CONFIGURE} \
 --with-libzip=/app/vendor/libzip \
 --with-jpeg-dir=/usr \
 --with-png-dir=/usr \
