@@ -1,0 +1,16 @@
+{
+    "name": "scalingo/php-buildpack-builder",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Soulou",
+            "email": "leo@scalingo.com"
+        }
+    ],
+    "require": {},
+    "extra": {
+      "paas": {
+        "nginx-includes": ["support/conf/nginx.conf"]
+      }
+    }
+}
