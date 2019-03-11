@@ -54,12 +54,6 @@ SH
 )
 fi
 
-# Small hack to find FreeType dependency with ubuntu Trusty
-if [ ! -d "/usr/include/freetype2/freetype" ] ; then
-  mkdir /usr/include/freetype2/freetype
-  cp /usr/include/freetype2/*.h /usr/include/freetype2/freetype
-fi
-
 mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
 && mkdir -p "/app/vendor/php/etc/conf.d" \
