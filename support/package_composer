@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+which jq 2>/dev/null || (apt-get update && apt-get install -y jq) 
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"

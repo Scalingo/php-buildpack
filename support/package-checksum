@@ -17,5 +17,8 @@ echo "-----> Creating checksum for ${package}"
 
 swift_download "package/${package}.tgz"
 
+[ -d "./package" ] && rm -r ./package
+mv "${STACK}/package" "package"
+
 md5 "package/${package}.tgz" > "package/${package}.md5"
 swift_upload "package/${package}.md5"

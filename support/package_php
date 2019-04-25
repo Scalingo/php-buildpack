@@ -18,7 +18,7 @@ php_version="$1"
 mcrypt_version="2.5.8"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
-    PHP_ZLIB_VERSION=1.2.8
+    PHP_ZLIB_VERSION=1.2.11
 fi
 
 echo "-----> Packaging PHP $php_version"
@@ -30,10 +30,16 @@ echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
 curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
-echo "-----> Downloading dependency libzip ${zip_version}"
-mkdir /app/vendor/libzip -p
-curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
-export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libzip/include"
+# If we're using the stack scalingo
+# - it requires a custom libzip
+libzip_flag=""
+if [ "$STACK" = "scalingo" ] ; then
+  echo "-----> Downloading dependency libzip ${zip_version}"
+  mkdir /app/vendor/libzip -p
+  curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
+  export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libzip/include"
+  libzip_flag="--with-libzip=/app/vendor/libzip"
+fi
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
@@ -78,7 +84,7 @@ mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
 --enable-shmop \
 --enable-zip \
 ${WITH_CURL_CONFIGURE} \
---with-libzip=/app/vendor/libzip \
+${libzip_flag} \
 --with-jpeg-dir=/usr \
 --with-png-dir=/usr \
 --with-freetype-dir=/usr \

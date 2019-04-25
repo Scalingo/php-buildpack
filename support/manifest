@@ -32,7 +32,7 @@ pushd $tempdir > /dev/null
 echo "-----> Manifest for $manifest_type"
 
 swift list ${SWIFT_BUCKET} \
-    | sed "s/^package\///" \
+    | sed "s/^$STACK\/package\///" \
     | grep "\.tgz$" \
     | grep "^${manifest_type}" \
     | grep -v -e ".md5" \
