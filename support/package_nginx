@@ -19,7 +19,7 @@ if [ -z "$nginx_version" ]; then
 fi
 
 if [ -z "$NGINX_ZLIB_VERSION" ]; then
-    NGINX_ZLIB_VERSION=1.2.8
+    NGINX_ZLIB_VERSION=1.2.11
 fi
 
 if [ -z "$NGINX_PCRE_VERSION" ]; then

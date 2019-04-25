@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-which cmake3 2>/dev/null || (apt-get update && apt-get install -y cmake3)
+package=cmake
+if [ "$STACK" = "scalingo" ] ; then
+  package="cmake3"
+fi
+
+which $package 2>/dev/null || (apt-get update && apt-get install -y $package)
 
 zip_version="$1"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
