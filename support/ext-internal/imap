@@ -1,0 +1,21 @@
+#!/bin/bash
+
+php_version=$1
+zend_api_version=$2
+php_src_dir=$3
+
+apt-get install libc-client-dev libkrb5-dev
+
+pushd $php_src_dir/php-${php_version}/ext/imap
+
+export PATH=$PATH:/app/vendor/php/bin
+
+phpize
+./configure --with-imap --with-kerberos --with-imap-ssl
+make
+make install
+
+cp modules/imap.so "$EXT_DIR"
+popd
+
+echo "extension=imap.so" > "$PREFIX/etc/conf.d/imap.ini"
