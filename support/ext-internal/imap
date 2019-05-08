@@ -1,17 +1,21 @@
 #!/bin/bash
 
+set -e
+
 php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-apt-get install libc-client-dev libkrb5-dev
+if [ ! -d /app/vendor/libc-client ] ; then
+  /buildpack/support/get_libc_client
+fi
 
 pushd $php_src_dir/php-${php_version}/ext/imap
 
 export PATH=$PATH:/app/vendor/php/bin
 
 phpize
-./configure --with-imap --with-kerberos --with-imap-ssl
+./configure --with-imap=/app/vendor/libc-client --with-imap-ssl
 make
 make install
 

@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set -e
+
+# Require for imap extension
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir libc-client)
+cd $tempdir
+
+dep_output=/app/vendor/libc-client
+dep_version=2007f
+dep_dirname=uw-imap-${dep_version}~dfsg
+
+dep_urls=(
+	http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz
+)
+if [[ "$STACK" == "scalingo" ]]; then
+	dep_urls+=(
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.debian.tar.gz
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.dsc
+	)
+elif [[ "$STACK" == "scalingo-18" ]]; then
+	dep_urls+=(
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-5build1.debian.tar.xz
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-5build1.dsc
+	)
+fi
+
+
+echo "-----> Downloading libc-client ${version}"
+
+# we need that for IMAP
+needed=( libpam0g-dev )
+if [[ $STACK == "scalingo" ]]; then
+	gpg --keyserver keyserver.ubuntu.com --recv-keys 7D61E3E6
+	gpg --no-default-keyring -a --export 7D61E3E6 | gpg --no-default-keyring --keyring ~/.gnupg/trustedkeys.gpg --import -
+else
+	needed+=( debian-keyring )
+fi
+
+missing=$(comm -1 -3 <(dpkg-query -W -f '${package}\n' | sort) <(IFS=$'\n'; echo "${needed[*]}" | sort))
+if [[ "$missing" ]]; then
+	apt-get update -qq || { echo "Failed to 'apt-get update'. You must build this formula using Docker."; exit 1; }
+	apt-get install -q -y $missing
+fi
+
+curl -L --remote-name-all "${dep_urls[@]}"
+
+dpkg-source --require-valid-signature -x $(basename ${dep_urls[-1]})
+
+pushd ${dep_dirname}
+touch ip6 # so we do not get prompted
+mkdir -p ${dep_output}
+make ldb EXTRACFLAGS=-fPIC # need PIC so relocations work in the shared imap.so ext later
+mkdir -p ${dep_output}/include ${dep_output}/lib
+cp c-client/*.h ${dep_output}/include
+cp c-client/*.c ${dep_output}/lib
+cp c-client/*.a ${dep_output}/lib
+strip --strip-unneeded ${dep_output}/lib/*.a
+popd
+
+cd $tempdir
+mkdir package
+cd package
+tar -C ${dep_output} -czvf "libc-client-${dep_version}.tgz" .
+cd ..
+
+swift_upload package/libc-client-${dep_version}.tgz
+
+"$basedir/package-checksum" "libc-client-${dep_version}" 
+
