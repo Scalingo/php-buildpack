@@ -378,8 +378,10 @@ pmsgr=/tmp/pmsgr
 rm -f \$pmsgr
 mkfifo \$pmsgr
 
-for var in \`env | cut -f1 -d=\`; do
-    echo "env[\$var] = \\$\${var}" >> /app/vendor/php/etc/php-fpm.conf
+# Loop through all environment variables. Work even though there are multi-lines
+# env variables.
+env -0 | while IFS='=' read -r -d '' name value; do
+    echo "env[\$name] = \\$\${name}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
 # Set APP_ENV to prod by default for symfony based framework.
