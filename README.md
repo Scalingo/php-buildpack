@@ -29,6 +29,12 @@ Install CLI tool → http://cli.scalingo.com
 If you have `package.json` file in your repository, Node.JS will be installed automatically
 and dependencies will be installed according to the `package.json` file.
 
+You can disable this feature by defining the environment variable `PHP_BUILDPACK_NO_NODE=true`.
+
+You might want to disable it when you want a fined grained management of the Node.js part by using
+the official [Node.js buildpack](https://github.com/Scalingo/nodejs-buildpack) in combination with this
+buildpack thanks to the [Multi buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/multi).
+
 ## Available versions
 
 [Available PHP Versions](https://storage.sbg1.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.php)
