@@ -8,8 +8,11 @@ basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source $basedir/common.sh
 source $basedir/../lib/composer
-source $basedir/../lib/nodejs
 source $basedir/../lib/newrelic
+
+if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
+  source $basedir/../lib/nodejs
+fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
@@ -304,7 +307,10 @@ if [ -n "$PHP_FPM_INCLUDES" ] ; then
     done
 fi
 
-install_node_deps "$BUILD_DIR"
+if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
+  install_node_deps "$BUILD_DIR"
+fi
+
 install_composer_deps "$BUILD_DIR"
 
 # Detect PHP framework
