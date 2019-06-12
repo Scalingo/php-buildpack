@@ -29,7 +29,7 @@ Install CLI tool → http://cli.scalingo.com
 If you have `package.json` file in your repository, Node.JS will be installed automatically
 and dependencies will be installed according to the `package.json` file.
 
-You can disable this feature by defining the environment variable `PHP_BUILDPACK_NO_NODE=true`
+You can disable this feature by defining the environment variable `PHP_BUILDPACK_NO_NODE=true`.
 
 ## Available versions
 
