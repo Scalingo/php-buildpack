@@ -33,7 +33,7 @@ You can disable this feature by defining the environment variable `PHP_BUILDPACK
 
 You might want to disable it when you want a fined grained management of the Node.js part by using
 the official [Node.js buildpack](https://github.com/Scalingo/nodejs-buildpack) in combination with this
-buildpack thanks to the [Multi buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/multi)
+buildpack thanks to the [Multi buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/multi).
 
 ## Available versions
 
