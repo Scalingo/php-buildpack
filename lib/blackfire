@@ -9,7 +9,6 @@ install_blackfire_ext() {
 		if php -n "vendor/composer/bin/composer.phar" require --update-no-dev -d "$BUILD_DIR/vendor/php" -- "ext-blackfire:*" >> $BUILD_DIR/vendor/php/install.log 2>&1; then
 			echo "- Blackfire detected, installed ext-blackfire" | indent
 		else
-			mcount "warnings.addons.blackfire.extension_missing"
 			warning_inline "Blackfire detected, but no suitable extension available"
 		fi
 	fi
