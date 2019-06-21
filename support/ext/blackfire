@@ -51,7 +51,7 @@ if [[ -n "$BLACKFIRE_SERVER_TOKEN" && -n "$BLACKFIRE_SERVER_ID" ]]; then
 fi
 EOF
 mkdir -p ${PREFIX}/etc/php/conf.d
-cat > ${PREFIX}/etc/php/conf.d/blackfire.ini-dist <<'EOF'
+cat > ${PREFIX}/etc/conf.d/blackfire.ini <<'EOF'
 extension = blackfire.so
 
 blackfire.server_token = ${BLACKFIRE_SERVER_TOKEN}
