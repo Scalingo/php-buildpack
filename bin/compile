@@ -10,6 +10,7 @@ source $basedir/common.sh
 source $basedir/../lib/composer
 source $basedir/../lib/nodejs
 source $basedir/../lib/newrelic
+source $basedir/../lib/blackfire
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
@@ -259,6 +260,8 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
     install_newrelic "$NEWRELIC_VERSION"
 fi
+
+install_blackfire_ext
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     ls -R /app/vendor/nginx
