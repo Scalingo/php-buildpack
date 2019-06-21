@@ -174,10 +174,18 @@ For example, to install the Sundown extension:
 Note that the extension requirements defined by dependencies are not taken into account there.
 It must be required by the project itself.
 
-##Logging
+## Logging
 
 This buildpack defines default log files by framework.
 It also defines log files nginx and php.
+
+## Blackfire
+
+The buildpack support automatically [Blackfire](https://blackfire.io) for monitoring if the
+following environment variables are set:
+
+* `BLACKFIRE_SERVER_ID`
+* `BLACKFIRE_SERVER_TOKEN`
 
 ## Configuration
 
