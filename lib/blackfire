@@ -5,11 +5,11 @@ install_blackfire_ext() {
 	# otherwise users would have to have it in their require section, which is annoying in development environments
 	BLACKFIRE_SERVER_ID=${BLACKFIRE_SERVER_ID:-}
 	BLACKFIRE_SERVER_TOKEN=${BLACKFIRE_SERVER_TOKEN:-}
-	if [[ -n "$BLACKFIRE_SERVER_TOKEN" && -n "$BLACKFIRE_SERVER_ID" ]] && ! php -n "vendor/composer/bin/composer.phar" show -d "$BUILD_DIR/vendor/php" --installed --quiet ext-blackfire 2>/dev/null; then
-		if php -n "vendor/composer/bin/composer.phar" require --update-no-dev -d "$BUILD_DIR/vendor/php" -- "ext-blackfire:*" >> $BUILD_DIR/vendor/php/install.log 2>&1; then
+	if [[ -n "$BLACKFIRE_SERVER_TOKEN" && -n "$BLACKFIRE_SERVER_ID" ]] && ! php -n "/app/vendor/composer/bin/composer.phar" show -d "/app/vendor/php" --installed --quiet ext-blackfire 2>/dev/null; then
+		if php -n "/app/vendor/composer/bin/composer.phar" require --update-no-dev -d "/app/vendor/php" -- "ext-blackfire:*" >> /app/vendor/php/install.log 2>&1; then
 			echo "- Blackfire detected, installed ext-blackfire" | indent
 		else
-			warning_inline "Blackfire detected, but no suitable extension available"
+			warn "Blackfire detected, but no suitable extension available"
 		fi
 	fi
 }
