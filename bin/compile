@@ -261,7 +261,10 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     install_newrelic "$NEWRELIC_VERSION"
 fi
 
-install_blackfire_ext
+if [ -n "$BLACKFIRE_SERVICE_ID" -a -n "$BLACKFIRE_SERVICE_TOKEN" ] ; then
+    fetch_package "ext/$(php_api_version)/php-blackfire" "/app/vendor/php" | indent
+    install_blackfire_ext
+fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
     ls -R /app/vendor/nginx
