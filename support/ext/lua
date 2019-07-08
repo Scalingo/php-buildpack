@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -e
+
+php_version=${1:=7.2}
+
+phplua_version="2.0.6"
+
+curl -L "https://pecl.php.net/get/lua-${phplua_version}.tgz" \
+    | tar -xzv
+
+cd lua-${phplua_version}
+
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config \
+            --enable-lua --with-lua=/app/vendor/lua
+
+make
+cp modules/lua.so "$EXT_DIR/lua.so"
+echo "extension=lua.so" > "$PREFIX/etc/conf.d/lua.ini"
