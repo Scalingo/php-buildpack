@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 package=cmake
-if [ "$STACK" = "scalingo" ] ; then
+if [ "$STACK" = "scalingo-14" ] ; then
   package="cmake3"
 fi
 
