@@ -79,7 +79,7 @@ function best_php_version() {
     done
   fi
   [ -z "${require_php}" ] && require_php="$DEFAULT_PHP"
-  curl --fail --location --silent "${SEMVER_SERVER}/php-scalingo/resolve/${require_php}"
+  curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}/resolve/${require_php}"
 }
 
 function php_api_version() {
