@@ -236,7 +236,7 @@ export PATH=/app/bin:${VENDORED_NGINX}/sbin:${VENDORED_PHP}/sbin:${VENDORED_PHP}
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 SH
 
-if [ $STACK = "scalingo" ] ; then
+if [ $STACK = "scalingo-14" ] ; then
     fetch_package "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
 fi
 
