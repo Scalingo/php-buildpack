@@ -140,7 +140,7 @@ Imagick, Libevent,…
 * Symfony apps now only expose `app.php`, previously also `app_dev.php`
   was reachable.
 
-[phpredis]: http://github.com/nicolasff/phpredis
+[phpredis]: https://github.com/nicolasff/phpredis
 
 ## v0.2.1, 2013-09-10
 

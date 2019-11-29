@@ -3,7 +3,7 @@ root /app/<%= ENV['DOCUMENT_ROOT'] %>;
 include fastcgi_params;
 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
 
-# http://alanstorm.com/magento_exception_handling_developer_mode
+# https://alanstorm.com/magento_exception_handling_developer_mode
 # fastcgi_param MAGE_IS_DEVELOPER_MODE true;
 
 location @handler {

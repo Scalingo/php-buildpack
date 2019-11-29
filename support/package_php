@@ -42,7 +42,7 @@ if [ "$STACK" = "scalingo-14" ] ; then
 fi
 
 echo "-----> Downloading PHP $php_version"
-curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
+curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
 tar -xzvf "php-${php_version}.tar.gz"
 
 install_zend_optimizer=":"

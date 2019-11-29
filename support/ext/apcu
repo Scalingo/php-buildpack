@@ -10,7 +10,7 @@ else
   apcu_version=4.0.11
 fi
 
-curl -L "http://pecl.php.net/get/apcu-${apcu_version}.tgz" \
+curl -L "https://pecl.php.net/get/apcu-${apcu_version}.tgz" \
     | tar xzv
 
 cd apcu-${apcu_version}

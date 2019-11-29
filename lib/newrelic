@@ -7,7 +7,7 @@ function install_newrelic() {
     local tempdir=$(mktmpdir "newrelic")
     cd "$tempdir"
 
-    curl --silent -L "http://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
+    curl --silent -L "https://download.newrelic.com/php_agent/archive/${version}/newrelic-php5-${version}-linux.tar.gz" | tar xz
     mkdir -p $BUILD_DIR/vendor/newrelic/{bin,etc}
     cd "newrelic-php5-${version}-linux"
 

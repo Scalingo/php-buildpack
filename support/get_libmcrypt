@@ -20,7 +20,7 @@ tempdir=$(mktmpdir libmcrypt)
 cd $tempdir
 
 echo "-----> Downloading libmcrypt ${mcrypt_version}"
-curl -L "http://sourceforge.net/projects/mcrypt/files/Libmcrypt/${mcrypt_version}/libmcrypt-${mcrypt_version}.tar.gz/download" \
+curl -L "https://sourceforge.net/projects/mcrypt/files/Libmcrypt/${mcrypt_version}/libmcrypt-${mcrypt_version}.tar.gz/download" \
     | tar xzv
 
 mkdir -p /app/vendor/libmcrypt \

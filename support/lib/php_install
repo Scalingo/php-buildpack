@@ -28,7 +28,7 @@ function install_php_src() {
 
   pushd $dst
   echo "-----> Downloading PHP $php_version"
-  curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
+  curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
   tar -xzf "php-${php_version}.tar.gz"
   popd
 }

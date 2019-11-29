@@ -2,7 +2,7 @@
 
 sundown_version=0.3.11
 
-curl -L "http://pecl.php.net/get/sundown-${sundown_version}.tgz" \
+curl -L "https://pecl.php.net/get/sundown-${sundown_version}.tgz" \
     | tar xzv
 
 cd sundown-${sundown_version}
