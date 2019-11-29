@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 sundown_version=0.3.11
 
 curl -L "https://pecl.php.net/get/sundown-${sundown_version}.tgz" \

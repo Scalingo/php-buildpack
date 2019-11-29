@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 igbinary_version="3.0.1"
 
 curl -L "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \

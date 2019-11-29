@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 php_memcache_version=3.0.8
 
 curl -L "https://github.com/php/pecl-caching-memcache/archive/memcache-${php_memcache_version}.tar.gz" \

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# Package all extensions: both internal and non-internal.
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 PHP_VERSION"
+    echo "Example: $0 7.4"
+    exit 1
+fi
+
+php_version=$1
+
+cd $( cd -P "$( dirname "$0" )" && pwd )
+
+for e in $(ls ./ext-internal/*); do
+  ext_name=$(basename $e)
+  ./package_internal_ext $ext_name $php_version
+  if [[ $? -ne 0 ]]; then
+    echo "Error packaging internal extension ${ext_name}"
+    exit -1
+  fi
+done
