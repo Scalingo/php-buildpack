@@ -3,8 +3,9 @@
 set -e
 set -o pipefail
 
-if [ -z "$1" ]; then
-    echo "Usage: package_ext EXT API..."
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 ext_name package_ext EXT API..."
+    echo "Example: $0 apcu apcu 7.4"
     exit 1
 fi
 
