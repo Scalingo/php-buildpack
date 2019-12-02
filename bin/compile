@@ -277,7 +277,7 @@ mkdir -p "conf"
 cp "$basedir/util/autotune.php" "conf/autotune.php"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
 # If PHP 7.3, custom config file to improve logging
-if [ "$(php_api_version)" = "20180731" ] ; then
+if [ "$(php_api_version)" = "20180731" ] || [ "$(php_api_version)" = "20190902" ] ; then
   cp "$basedir/../conf/php/php-fpm-73.conf" "/app/vendor/php/etc/php-fpm.conf"
 else
   cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
