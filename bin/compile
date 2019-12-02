@@ -276,7 +276,9 @@ fi
 mkdir -p "conf"
 cp "$basedir/util/autotune.php" "conf/autotune.php"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
-# If PHP 7.3, custom config file to improve logging
+# Fix dirty logging on stdout/stderr (WARNING child with PID said on stderr). It
+# has been fixed in PHP 7.3 (https://github.com/php/php-src/pull/2458) with a
+# custom php-fpm parameter: `decorate_workers_output`
 if [ "$(php_api_version)" = "20180731" ] || [ "$(php_api_version)" = "20190902" ] ; then
   cp "$basedir/../conf/php/php-fpm-73.conf" "/app/vendor/php/etc/php-fpm.conf"
 else
@@ -285,8 +287,6 @@ fi
 cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
 
 mkdir -p /app/vendor/php/etc/fpm.d
-
-pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
 
 echo "; extra configuration for php fpm" >> "/app/vendor/php/etc/fpm.d/extra.conf"
 
