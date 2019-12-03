@@ -16,10 +16,10 @@ cd $tempdir
 
 echo "-----> Downloading libmemcached"
 
-curl -LO "https://launchpad.net/libmemcached/1.0/${memcached_version}/+download/libmemcached-${memcached_version}.tar.gz"
-tar -xzvf "libmemcached-${memcached_version}.tar.gz"
+curl -LO "https://launchpad.net/libmemcached/1.0/${libmemcached_version}/+download/libmemcached-${libmemcached_version}.tar.gz"
+tar -xzvf "libmemcached-${libmemcached_version}.tar.gz"
 
-pushd libmemcached-${memcached_version} >/dev/null && \
+pushd libmemcached-${libmemcached_version} >/dev/null && \
     mkdir -p /app/vendor/libmemcached && \
     ./configure --with-memcached=no --prefix=/app/vendor/libmemcached && \
     make && make install && popd > /dev/null
@@ -28,12 +28,12 @@ rm -r /app/vendor/libmemcached/share/man
 
 mkdir package
 pushd /app/vendor/libmemcached
-tar zcvf ${tempdir}/package/libmemcached-${memcached_version}.tgz .
+tar zcvf ${tempdir}/package/libmemcached-${libmemcached_version}.tgz .
 popd
 
 echo "-----> Uploading package to Swift"
-swift_upload package/libmemcached-${memcached_version}.tgz
+swift_upload package/libmemcached-${libmemcached_version}.tgz
 
-"$basedir/package-checksum" libmemcached-${memcached_version}
+"$basedir/package-checksum" libmemcached-${libmemcached_version}
 
 echo "-----> Done building libmemcached package!"

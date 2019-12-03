@@ -9,7 +9,7 @@ tempdir=$(mktmpdir jq)
 cd $tempdir
 
 echo "----> Vendoring 'jq'"
-curl -L http://stedolan.github.io/jq/download/linux64/jq > jq_bin
+curl -L https://stedolan.github.io/jq/download/linux64/jq > jq_bin
 
 mkdir jq
 mv jq_bin jq/jq

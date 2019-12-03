@@ -20,7 +20,7 @@ dep_dirname=uw-imap-${dep_version}~dfsg
 dep_urls=(
 	http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz
 )
-if [[ "$STACK" == "scalingo" ]]; then
+if [[ "$STACK" == "scalingo-14" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.debian.tar.gz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.dsc
@@ -37,7 +37,7 @@ echo "-----> Downloading libc-client ${version}"
 
 # we need that for IMAP
 needed=( libpam0g-dev )
-if [[ $STACK == "scalingo" ]]; then
+if [[ $STACK == "scalingo-14" ]]; then
 	gpg --keyserver keyserver.ubuntu.com --recv-keys 7D61E3E6
 	gpg --no-default-keyring -a --export 7D61E3E6 | gpg --no-default-keyring --keyring ~/.gnupg/trustedkeys.gpg --import -
 else
@@ -73,5 +73,5 @@ cd ..
 
 swift_upload package/libc-client-${dep_version}.tgz
 
-"$basedir/package-checksum" "libc-client-${dep_version}" 
+"$basedir/package-checksum" "libc-client-${dep_version}"
 

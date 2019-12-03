@@ -2,11 +2,11 @@
 
 set -e
 
-php_version=${1:=7.2}
+php_version=${1:=7.4}
 
-mcrypt_version=1.0.1
+mcrypt_version=1.0.3
 
-curl -L "http://pecl.php.net/get/mcrypt-${mcrypt_version}.tgz" \
+curl -L "https://pecl.php.net/get/mcrypt-${mcrypt_version}.tgz" \
     | tar xzv
 
 cd mcrypt-${mcrypt_version}

@@ -22,7 +22,7 @@ PHP application and to deploy it.
 scalingo create my-php-app
 ```
 
-Install CLI tool → http://cli.scalingo.com
+Install CLI tool → https://cli.scalingo.com
 
 ### Node.JS for assets building
 
@@ -326,7 +326,7 @@ _Note: pecl is not runnable this way._
 
 _Default: false_
 
-Enable instrumentation support via [New Relic](http://newrelic.com).
+Enable instrumentation support via [New Relic](https://newrelic.com).
 You need to define the environment variable `NEW_RELIC_LICENSE_KEY` for your
 application on your dashboard.
 

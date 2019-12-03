@@ -8,7 +8,7 @@ set -e
 set -o pipefail
 
 if [ -z "$1" ]; then
-    echo "Usage: package_internal_ext EXT_NAME PHP_VERSIONS"
+    echo "Usage: package_internal_ext EXT_NAME PHP_VERSIONS..."
     exit 1
 fi
 

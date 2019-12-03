@@ -11,7 +11,7 @@ tempdir=$(mktmpdir zlib)
 cd $tempdir
 
 echo "-----> Downloading ZLib v${zlib_version}"
-curl -LO "http://zlib.net/zlib-${zlib_version}.tar.gz"
+curl -LO "https://zlib.net/zlib-${zlib_version}.tar.gz"
 
 mkdir zlib
 mv zlib-${zlib_version}.tar.gz zlib

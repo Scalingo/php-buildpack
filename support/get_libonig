@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+which cmake 2>/dev/null || (apt-get update && apt-get install -y cmake)
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir libonig)
+cd $tempdir
+
+echo "-----> Downloading Oniguruma v${libonig_version}"
+curl -L -o - "https://github.com/kkos/oniguruma/releases/download/v${libonig_version}/onig-${libonig_version}.tar.gz" | tar xzv
+
+mkdir -p /app/vendor/libonig \
+  && pushd onig-${libonig_version} > /dev/null \
+  && mkdir build \
+  && pushd build > /dev/null \
+  && cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libonig \
+  && make && make install \
+  && popd > /dev/null \
+  && popd > /dev/null
+
+mkdir package
+pushd /app/vendor/libonig > /dev/null
+rm -r ./share
+tar zcvf "${tempdir}/package/libonig-${libonig_version}.tgz" .
+popd > /dev/null
+
+swift_upload package/libonig-${libonig_version}.tgz
+
+"$basedir/package-checksum" "libonig-${libonig_version}"

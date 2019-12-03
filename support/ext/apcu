@@ -2,15 +2,15 @@
 
 set -e
 
-php_version=${1:=7.2}
+php_version=${1:=7.4}
 
 if echo $php_version | grep -q -E '^7.' ; then
-  apcu_version=5.1.15
+  apcu_version=5.1.18
 else
   apcu_version=4.0.11
 fi
 
-curl -L "http://pecl.php.net/get/apcu-${apcu_version}.tgz" \
+curl -L "https://pecl.php.net/get/apcu-${apcu_version}.tgz" \
     | tar xzv
 
 cd apcu-${apcu_version}

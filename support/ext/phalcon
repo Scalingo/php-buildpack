@@ -2,9 +2,11 @@
 
 set -e
 
-phalcon_version="3.4.3"
+phalcon_version="3.4.5"
 
-curl -L "https://github.com/phalcon/cphalcon/archive/v${phalcon_version}.tar.gz" | tar -xzv
+curl --location \
+  "https://github.com/phalcon/cphalcon/archive/v${phalcon_version}.tar.gz" \
+  | tar -xzv
 
 cd cphalcon-${phalcon_version}/build
 
@@ -14,4 +16,3 @@ export PATH=$PATH:/app/vendor/php/bin
 
 cp php7/64bits/modules/phalcon.so "$EXT_DIR/phalcon.so"
 echo "extension=phalcon.so" > "$PREFIX/etc/conf.d/phalcon.ini"
-

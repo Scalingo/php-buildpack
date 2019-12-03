@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+set -e
+
 libevent_version="0.1.0"
 
-curl -L "http://pecl.php.net/get/libevent-${libevent_version}.tgz" \
+curl -L "https://pecl.php.net/get/libevent-${libevent_version}.tgz" \
     | tar xzv
 
 cd libevent-${libevent_version}

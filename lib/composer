@@ -50,7 +50,7 @@ function install_composer_deps() {
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
-    
+
     # Add composer to the path
     cp "$target/vendor/composer/bin/composer.phar" "$target/bin/composer"
     cp "$target/vendor/composer/bin/composer.phar" "$target/bin/composer.phar"

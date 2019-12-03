@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-imagick_version="3.4.3"
+set -e
 
-curl -L "http://pecl.php.net/get/imagick-${imagick_version}.tgz" \
+imagick_version="3.4.4"
+
+curl -L "https://pecl.php.net/get/imagick-${imagick_version}.tgz" \
     | tar xzv
 
 cd imagick-${imagick_version}

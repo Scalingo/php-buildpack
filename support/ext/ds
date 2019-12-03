@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-  
+
 set -e
 
-php_version=${1:=7.2}
-ds_version=1.2.8
+php_version=${1:=7.4}
+ds_version=1.2.9
 
-curl -L "http://pecl.php.net/get/ds-${ds_version}.tgz" \
+curl -L "https://pecl.php.net/get/ds-${ds_version}.tgz" \
     | tar xzv
 
 cd ds-${ds_version}

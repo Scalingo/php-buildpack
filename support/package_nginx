@@ -34,7 +34,7 @@ cd $tempdir
 
 echo "-----> Downloading dependency PCRE ${pcre_version}"
 
-curl -LO "http://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
+curl -LO "https://sourceforge.net/projects/pcre/files/pcre/${pcre_version}/pcre-${pcre_version}.tar.gz"
 tar -xzvf "pcre-${pcre_version}.tar.gz"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
@@ -44,7 +44,7 @@ tar -xzvf "zlib-${zlib_version}.tar.gz"
 
 echo "-----> Downloading NGINX ${nginx_version}"
 
-curl -LO "http://nginx.org/download/nginx-${nginx_version}.tar.gz"
+curl -LO "https://nginx.org/download/nginx-${nginx_version}.tar.gz"
 tar -xzvf "nginx-${nginx_version}.tar.gz"
 
 echo "-----> Uploading source to build server"

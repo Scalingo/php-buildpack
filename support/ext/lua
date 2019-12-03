@@ -2,19 +2,35 @@
 
 set -e
 
-php_version=${1:=7.2}
+php_version=${1:=7.4}
 
+lua_version="5.3.5"
 phplua_version="2.0.6"
 
-curl -L "https://pecl.php.net/get/lua-${phplua_version}.tgz" \
-    | tar -xzv
+echo "-----> Downloading Lua v${lua_version}"
+curl --location --remote-name "https://www.lua.org/ftp/lua-${lua_version}.tar.gz"
 
-cd lua-${phplua_version}
+tar xvf "lua-${lua_version}.tar.gz"
+pushd "lua-${lua_version}"
+
+echo "-----> Compiling Lua v${lua_version}"
+make linux local MYCFLAGS=-fPIC
+
+popd
+
+curl --location \
+  "https://pecl.php.net/get/lua-${phplua_version}.tgz" \
+  | tar -xzv
+
+pushd lua-${phplua_version}
 
 /app/vendor/php/bin/phpize
 ./configure --with-php-config=/app/vendor/php/bin/php-config \
-            --enable-lua --with-lua=/app/vendor/lua
+            --with-lua=$(pwd)/../lua-${lua_version}/install
 
 make
 cp modules/lua.so "$EXT_DIR/lua.so"
+
+popd
+
 echo "extension=lua.so" > "$PREFIX/etc/conf.d/lua.ini"

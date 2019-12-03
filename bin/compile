@@ -222,10 +222,13 @@ fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
 
 status "Bundling PHP ${PHP_VERSION}"
 
-# Install libraries also on build container, so PHP doesn't wayne about missing
+# Install libraries also on build container, so PHP doesn't complain about missing
 # dynamic libraries when running it during the slug compilation.
 fetch_package "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
 fetch_package "libzip-${zip_version}" /app/vendor/libzip > /dev/null
+
+fetch_package "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
+export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
 
 fetch_engine_package php "$PHP_VERSION" "${VENDORED_PHP}" | indent
 
@@ -234,6 +237,7 @@ test ! -d ".profile.d" && mkdir -p .profile.d || true
 cat > ".profile.d/php.sh" <<SH
 export PATH=/app/bin:${VENDORED_NGINX}/sbin:${VENDORED_PHP}/sbin:${VENDORED_PHP}/bin:/app/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
+export LD_LIBRARY_PATH=/app/vendor/libonig:\$LD_LIBRARY_PATH
 SH
 
 if [ $STACK = "scalingo-14" ] ; then
@@ -264,6 +268,7 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
 fi
 
 if [ -n "$BLACKFIRE_SERVER_ID" -a -n "$BLACKFIRE_SERVER_TOKEN" ] ; then
+    echo "       blackfire"
     fetch_package "ext/$(php_api_version)/php-blackfire" "/app/vendor/php" | indent
     cp /app/vendor/php/bin/profile.blackfire.sh $BUILD_DIR/.profile.d
 fi
@@ -276,8 +281,10 @@ fi
 mkdir -p "conf"
 cp "$basedir/util/autotune.php" "conf/autotune.php"
 cp "$basedir/../conf/nginx/base.conf.erb" "conf/nginx.conf.erb"
-# If PHP 7.3, custom config file to improve logging
-if [ "$(php_api_version)" = "20180731" ] ; then
+# Fix dirty logging on stdout/stderr (WARNING child with PID said on stderr). It
+# has been fixed in PHP 7.3 (https://github.com/php/php-src/pull/2458) with a
+# custom php-fpm parameter: `decorate_workers_output`
+if [[ "$(php_api_version)" -gt "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
   cp "$basedir/../conf/php/php-fpm-73.conf" "/app/vendor/php/etc/php-fpm.conf"
 else
   cp "$basedir/../conf/php/php-fpm.conf" "/app/vendor/php/etc/php-fpm.conf"
@@ -286,11 +293,9 @@ cp "$basedir/../conf/php/php.ini" "/app/vendor/php/etc/php.ini"
 
 mkdir -p /app/vendor/php/etc/fpm.d
 
-pear config-set php_ini /app/vendor/php/etc/php.ini &> /dev/null
-
 echo "; extra configuration for php fpm" >> "/app/vendor/php/etc/fpm.d/extra.conf"
 
-# IFS= to set on multipleline each configuration item
+# IFS= to set on multiple line each configuration item
 OLDIFS=$IFS
 IFS=
 echo $PHP_EXTRA_CONFIG | while read conf ; do
@@ -365,6 +370,7 @@ status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
+mv /app/vendor/libonig vendor/libonig
 [ -d "/app/vendor/libzip" ] && mv /app/vendor/libzip vendor/libzip
 [ -d "/app/vendor/coreutils" ] && mv /app/vendor/coreutils vendor/coreutils
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
@@ -373,7 +379,7 @@ mv /app/vendor/php vendor/php
 
 mkdir -p "bin" "vendor/bin"
 
-if [ "$STACK" = "scalingo" ] ; then
+if [ "$STACK" = "scalingo-14" ] ; then
     test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
 fi
 

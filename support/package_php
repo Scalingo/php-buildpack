@@ -15,7 +15,6 @@ if [ -z "$1" ]; then
 fi
 
 php_version="$1"
-mcrypt_version="2.5.8"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
     PHP_ZLIB_VERSION=1.2.11
@@ -30,7 +29,7 @@ echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
 curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
-# If we're using the stack scalingo
+# If we're using the stack scalingo-14
 # - it requires a custom libzip
 libzip_flag=""
 if [ "$STACK" = "scalingo-14" ] ; then
@@ -41,8 +40,14 @@ if [ "$STACK" = "scalingo-14" ] ; then
   libzip_flag="--with-libzip=/app/vendor/libzip"
 fi
 
+echo "-----> Downloading dependency libonig ${libonig_version}"
+mkdir /app/vendor/libonig -p
+curl -L -o - "${SWIFT_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
+export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libonig/include"
+export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
+
 echo "-----> Downloading PHP $php_version"
-curl -LO "http://php.net/distributions/php-${php_version}.tar.gz"
+curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
 tar -xzvf "php-${php_version}.tar.gz"
 
 install_zend_optimizer=":"
@@ -109,7 +114,6 @@ ${libzip_flag} \
 && make \
 && make install \
 && popd > /dev/null \
-&& /app/vendor/php/bin/pear config-set php_dir /app/vendor/php \
 && eval $install_zend_optimizer
 
 mkdir package
