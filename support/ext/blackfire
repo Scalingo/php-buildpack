@@ -7,7 +7,7 @@ set -eu
 
 php_version=${1:=7.4}
 php_series="$(echo $php_version | cut -d '.' -f1,2)"
-blackfire_probe_version=1.26.1
+blackfire_probe_version=1.29.1
 bin_dir=${PREFIX}/bin
 
 # Blackfire Probe
