@@ -378,7 +378,7 @@ mv /app/vendor/libonig vendor/libonig
 
 mkdir -p "bin" "vendor/bin"
 
-if [ "$STACK" = "scalingo" ] ; then
+if [ "$STACK" = "scalingo-14" ] ; then
     test ! -f "bin/tail" && ln -s "/app/vendor/coreutils/bin/tail" "bin/tail"
 fi
 

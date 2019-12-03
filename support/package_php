@@ -32,8 +32,7 @@ echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
 curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
-# TODO Isn't it scalingo-14 now?
-# If we're using the stack scalingo
+# If we're using the stack scalingo-14
 # - it requires a custom libzip
 libzip_flag=""
 if [ "$STACK" = "scalingo-14" ] ; then
