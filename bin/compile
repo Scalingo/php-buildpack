@@ -227,9 +227,6 @@ status "Bundling PHP ${PHP_VERSION}"
 fetch_package "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
 fetch_package "libzip-${zip_version}" /app/vendor/libzip > /dev/null
 
-fetch_package "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
-export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
-
 fetch_engine_package php "$PHP_VERSION" "${VENDORED_PHP}" | indent
 
 test ! -d ".profile.d" && mkdir -p .profile.d || true
@@ -245,6 +242,12 @@ if [ $STACK = "scalingo-14" ] ; then
 fi
 
 source ".profile.d/php.sh"
+
+# Lib Oniguruma is only mandatory starting with PHP 7.4
+if [[ "$(php_api_version)" -ge "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
+  fetch_package "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
+  export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
+fi
 
 # Fetch additional extensions
 status "Bundling extensions"
@@ -370,7 +373,7 @@ status "Vendoring binaries into slug"
 mv /app/vendor/libmcrypt vendor/libmcrypt
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
-mv /app/vendor/libonig vendor/libonig
+[ -d "/app/vendor/libonig" ] && mv /app/vendor/libonig vendor/libonig
 [ -d "/app/vendor/libzip" ] && mv /app/vendor/libzip vendor/libzip
 [ -d "/app/vendor/coreutils" ] && mv /app/vendor/coreutils vendor/coreutils
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
