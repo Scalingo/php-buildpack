@@ -268,6 +268,7 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
 fi
 
 if [ -n "$BLACKFIRE_SERVER_ID" -a -n "$BLACKFIRE_SERVER_TOKEN" ] ; then
+    echo "       blackfire"
     fetch_package "ext/$(php_api_version)/php-blackfire" "/app/vendor/php" | indent
     cp /app/vendor/php/bin/profile.blackfire.sh $BUILD_DIR/.profile.d
 fi
