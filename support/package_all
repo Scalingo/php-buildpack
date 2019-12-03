@@ -20,3 +20,12 @@ for e in $(ls ./ext-internal/*); do
     exit -1
   fi
 done
+
+for e in $(ls ./ext/*); do
+  ext_name=$(basename $e)
+  ./package_ext $ext_name $ext_name $php_version
+  if [[ $? -ne 0 ]]; then
+    echo "Error packaging extension ${ext_name}"
+    exit -1
+  fi
+done
