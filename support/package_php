@@ -87,6 +87,12 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS
   WITH_MCRYPT_CONFIGURE="--with-mcrypt=/app/vendor/libmcrypt"
 fi
 
+# As of PHP 7.4 --enable-zip flag has been renamed --with-zip
+WITH_ZIP_CONFIGURE="--with-zip"
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
+  WITH_ZIP_CONFIGURE="--enable-zip"
+fi
+
 mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
 && pushd php-${php_version} >/dev/null \
@@ -102,7 +108,7 @@ ${WITH_MYSQL_CONFIGURE} \
 --with-pdo-pgsql=/usr/bin/pg_config \
 --with-pgsql \
 --enable-shmop \
---enable-zip \
+${WITH_ZIP_CONFIGURE} \
 ${WITH_CURL_CONFIGURE} \
 ${libzip_flag} \
 --with-jpeg-dir=/usr \
