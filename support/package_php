@@ -15,6 +15,7 @@ if [ -z "$1" ]; then
 fi
 
 php_version="$1"
+php_series="$(echo $php_version | cut -d '.' -f1,2)"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
     PHP_ZLIB_VERSION=1.2.11
@@ -70,9 +71,18 @@ if [ -d '/app/.apt/usr' ] ; then
     WITH_CURL_CONFIGURE="--with-curl=/app/.apt/usr"
 fi
 
-mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
-&& curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
-&& mkdir -p "/app/vendor/php/etc/conf.d" \
+# mcrypt is deprecated in PHP 7.1 and removed in 7.2
+# https://www.php.net/manual/en/intro.mcrypt.php
+WITH_MCRYPT_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
+  mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
+  && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
+  WITH_MCRYPT_CONFIGURE="--with-mcrypt=/app/vendor/libmcrypt"
+fi
+
+exit -1
+
+mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
 && pushd php-${php_version} >/dev/null \
 && ./configure --prefix=/app/vendor/php \
@@ -108,7 +118,7 @@ ${libzip_flag} \
 --enable-sockets \
 --enable-bcmath \
 --with-readline \
---with-mcrypt=/app/vendor/libmcrypt \
+${WITH_MCRYPT_CONFIGURE} \
 --disable-debug \
 && echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
 && make \
