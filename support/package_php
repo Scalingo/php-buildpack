@@ -93,6 +93,12 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS
   WITH_ZIP_CONFIGURE="--enable-zip"
 fi
 
+# As of PHP 7.4 --with-gd flag has been renamed --enable-gd
+ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype"
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
+  ENABLE_GD_CONFIGURE="--with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr"
+fi
+
 mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
 && pushd php-${php_version} >/dev/null \
@@ -100,7 +106,8 @@ mkdir -p "/app/vendor/php/etc/conf.d" \
 --with-config-file-path=/app/vendor/php/etc \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
---with-gd \
+${ENABLE_GD_CONFIGURE} \
+--enable-exif \
 ${WITH_MYSQL_CONFIGURE} \
 --with-mysqli \
 --with-pdo-mysql \
@@ -111,10 +118,6 @@ ${WITH_MYSQL_CONFIGURE} \
 ${WITH_ZIP_CONFIGURE} \
 ${WITH_CURL_CONFIGURE} \
 ${libzip_flag} \
---with-jpeg-dir=/usr \
---with-png-dir=/usr \
---with-freetype-dir=/usr \
---enable-exif \
 --with-zlib=/app/vendor/php/zlib \
 --with-bz2 \
 --with-openssl \
