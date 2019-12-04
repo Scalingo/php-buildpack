@@ -71,16 +71,21 @@ if [ -d '/app/.apt/usr' ] ; then
     WITH_CURL_CONFIGURE="--with-curl=/app/.apt/usr"
 fi
 
+# mysql is deprecated in 5.5 and removed in 7.0
+# https://www.php.net/manual/en/intro.mysql.php
+WITH_MYSQL_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.0"]}" ]] ; then
+  WITH_MYSQL_CONFIGURE="--with-mysql"
+fi
+
 # mcrypt is deprecated in PHP 7.1 and removed in 7.2
 # https://www.php.net/manual/en/intro.mcrypt.php
 WITH_MCRYPT_CONFIGURE=""
 if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
   mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
-  && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
+  && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
   WITH_MCRYPT_CONFIGURE="--with-mcrypt=/app/vendor/libmcrypt"
 fi
-
-exit -1
 
 mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
@@ -90,7 +95,7 @@ mkdir -p "/app/vendor/php/etc/conf.d" \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
 --with-gd \
---with-mysql \
+${WITH_MYSQL_CONFIGURE} \
 --with-mysqli \
 --with-pdo-mysql \
 --with-pdo-sqlite \
