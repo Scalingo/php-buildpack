@@ -15,6 +15,7 @@ if [ -z "$1" ]; then
 fi
 
 php_version="$1"
+php_series="$(echo $php_version | cut -d '.' -f1,2)"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
     PHP_ZLIB_VERSION=1.2.11
@@ -70,30 +71,53 @@ if [ -d '/app/.apt/usr' ] ; then
     WITH_CURL_CONFIGURE="--with-curl=/app/.apt/usr"
 fi
 
-mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
-&& curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt \
-&& mkdir -p "/app/vendor/php/etc/conf.d" \
+# mysql is deprecated in 5.5 and removed in 7.0
+# https://www.php.net/manual/en/intro.mysql.php
+WITH_MYSQL_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.0"]}" ]] ; then
+  WITH_MYSQL_CONFIGURE="--with-mysql"
+fi
+
+# mcrypt is deprecated in PHP 7.1 and removed in 7.2
+# https://www.php.net/manual/en/intro.mcrypt.php
+WITH_MCRYPT_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
+  mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
+  && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
+  WITH_MCRYPT_CONFIGURE="--with-mcrypt=/app/vendor/libmcrypt"
+fi
+
+# As of PHP 7.4 --enable-zip flag has been renamed --with-zip
+WITH_ZIP_CONFIGURE="--with-zip"
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
+  WITH_ZIP_CONFIGURE="--enable-zip"
+fi
+
+# As of PHP 7.4 --with-gd flag has been renamed --enable-gd
+ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype"
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
+  ENABLE_GD_CONFIGURE="--with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr"
+fi
+
+mkdir -p "/app/vendor/php/etc/conf.d" \
 && pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
 && pushd php-${php_version} >/dev/null \
 && ./configure --prefix=/app/vendor/php \
 --with-config-file-path=/app/vendor/php/etc \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
---with-gd \
---with-mysql \
+${ENABLE_GD_CONFIGURE} \
+--enable-exif \
+${WITH_MYSQL_CONFIGURE} \
 --with-mysqli \
 --with-pdo-mysql \
 --with-pdo-sqlite \
 --with-pdo-pgsql=/usr/bin/pg_config \
 --with-pgsql \
 --enable-shmop \
---enable-zip \
+${WITH_ZIP_CONFIGURE} \
 ${WITH_CURL_CONFIGURE} \
 ${libzip_flag} \
---with-jpeg-dir=/usr \
---with-png-dir=/usr \
---with-freetype-dir=/usr \
---enable-exif \
 --with-zlib=/app/vendor/php/zlib \
 --with-bz2 \
 --with-openssl \
@@ -108,7 +132,7 @@ ${libzip_flag} \
 --enable-sockets \
 --enable-bcmath \
 --with-readline \
---with-mcrypt=/app/vendor/libmcrypt \
+${WITH_MCRYPT_CONFIGURE} \
 --disable-debug \
 && echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
 && make \
