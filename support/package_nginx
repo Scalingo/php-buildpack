@@ -23,7 +23,7 @@ if [ -z "$NGINX_ZLIB_VERSION" ]; then
 fi
 
 if [ -z "$NGINX_PCRE_VERSION" ]; then
-    NGINX_PCRE_VERSION=8.35
+    NGINX_PCRE_VERSION=8.43
 fi
 
 zlib_version="$NGINX_ZLIB_VERSION"
