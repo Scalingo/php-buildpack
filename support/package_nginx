@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# This script is used for the [Nginx
+# buildpack](github.com/Scalingo/nginx-buildpack/). Please refer to this page
+# (https://www.notion.so/scalingooriginal/New-Nginx-Version-936b92e173a74f5ab0cd59e5155a4880)
+# on how to use it.
+#
 
 set -e
 
@@ -70,4 +76,4 @@ swift_upload package/nginx-${nginx_version}.tgz
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
-echo "-----> Done building NGINX package!"
+echo "-----> Done building Nginx package!"
