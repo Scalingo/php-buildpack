@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# This script is used for the [Nginx
+# buildpack](github.com/Scalingo/nginx-buildpack/). Please refer to this page
+# (https://www.notion.so/scalingooriginal/New-Nginx-Version-936b92e173a74f5ab0cd59e5155a4880)
+# on how to use it.
+#
 
 set -e
 
@@ -14,16 +20,17 @@ validate_env
 export PATH=${basedir}/../vendor/bin:$PATH
 
 if [ -z "$nginx_version" ]; then
-    echo "Usage: $0 <version>" >&2
-    exit $E_ARG_MISSING
+  echo "Usage: $0 <version>" >&2
+  exit $E_ARG_MISSING
 fi
 
 if [ -z "$NGINX_ZLIB_VERSION" ]; then
-    NGINX_ZLIB_VERSION=1.2.11
+  NGINX_ZLIB_VERSION=1.2.11
 fi
 
 if [ -z "$NGINX_PCRE_VERSION" ]; then
-    NGINX_PCRE_VERSION=8.35
+  # From https://sourceforge.net/projects/pcre/files/pcre/
+  NGINX_PCRE_VERSION=8.43
 fi
 
 zlib_version="$NGINX_ZLIB_VERSION"
@@ -59,7 +66,7 @@ pushd nginx-${nginx_version} >/dev/null && \
   make && make install && \
   popd > /dev/null
 
-echo "-----> Uploading package to Swift https://${SWIFT_URL}/package/nginx-${nginx_version}.tgz"
+echo "-----> Uploading package to Swift https://${SWIFT_URL}/${STACK}/package/nginx-${nginx_version}.tgz"
 
 mkdir package
 pushd /app/vendor/nginx >/dev/null
@@ -70,4 +77,4 @@ swift_upload package/nginx-${nginx_version}.tgz
 "$basedir/manifest" nginx
 "$basedir/package-checksum" "nginx-${nginx_version}"
 
-echo "-----> Done building NGINX package!"
+echo "-----> Done building Nginx package!"
