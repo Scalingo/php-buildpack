@@ -41,11 +41,13 @@ if [ "$STACK" = "scalingo-14" ] ; then
   libzip_flag="--with-libzip=/app/vendor/libzip"
 fi
 
-echo "-----> Downloading dependency libonig ${libonig_version}"
-mkdir /app/vendor/libonig -p
-curl -L -o - "${SWIFT_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
-export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libonig/include"
-export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
+if [ "$STACK" != "scalingo-14" ] ; then
+  echo "-----> Downloading dependency libonig ${libonig_version}"
+  mkdir /app/vendor/libonig -p
+  curl -L -o - "${SWIFT_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
+  export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libonig/include"
+  export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
+fi
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
