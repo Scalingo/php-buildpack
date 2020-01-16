@@ -24,6 +24,8 @@ CACHE_DIR="$2"
 cd "$BUILD_DIR"
 mkdir -p "$CACHE_DIR/package"
 
+export APP_ENV=${APP_ENV:-prod}
+
 function fetch_engine_package() {
     local engine="$1"
     local version="$2"
@@ -404,7 +406,7 @@ env -0 | while IFS='=' read -r -d '' name value; do
     echo "env[\$name] = \\$\${name}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-# Set APP_ENV to prod by default for symfony based framework.
+# Set APP_ENV to prod by default for Symfony based framework.
 export APP_ENV="\${APP_ENV:-prod}"
 export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
 export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"

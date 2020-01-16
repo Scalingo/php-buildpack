@@ -16,6 +16,7 @@ location ~ ^/index\.php(/|$) {
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     fastcgi_param DOCUMENT_ROOT $realpath_root;
     fastcgi_param HTTPS off;
+    fastcgi_param APP_ENV <%= ENV['APP_ENV'] || 'prod' %>;
 
     fastcgi_buffer_size 128k;
     fastcgi_buffers 4 256k;

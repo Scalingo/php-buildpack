@@ -58,7 +58,7 @@ case "$1" in
         fi
 
         if requires_symfony || sets_framework_symfony || requires_symfony_flex; then
-            echo "-----> Detected symfony App"
+            echo "-----> Detected Symfony App"
             exit 0
         else
             exit 1
@@ -70,8 +70,8 @@ case "$1" in
         echo "$workdir/$logdir/prod.log" "$workdir/$logdir/dev.log"
         ;;
     compile)
-        echo "-----> Setting up symfony app"
-        if requires_symfony_flex; then
+        echo "-----> Setting up Symfony app"
+        if is_symfony4; then
           cp "$basedir/../conf/nginx/symfony4.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
         else
           cp "$basedir/../conf/nginx/symfony.conf.erb" "$BUILD_DIR/conf/site.conf.erb"
