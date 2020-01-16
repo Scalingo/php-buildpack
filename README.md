@@ -24,16 +24,21 @@ scalingo create my-php-app
 
 Install CLI tool → https://cli.scalingo.com
 
-### Node.JS for assets building
+### Node.js for assets building
 
-If you have `package.json` file in your repository, Node.JS will be installed automatically
-and dependencies will be installed according to the `package.json` file.
+If you have `package.json` file in your repository, Node.js will be installed
+automatically and dependencies will be installed according to the `package.json`
+file. The dependencies are installed, including those declared in
+`devDependencies`. This is the default behaviour as most of the time,
+dependencies to bundle the assets are declared as development dependencies.
 
 You can disable this feature by defining the environment variable `PHP_BUILDPACK_NO_NODE=true`.
 
 You might want to disable it when you want a fined grained management of the Node.js part by using
 the official [Node.js buildpack](https://github.com/Scalingo/nodejs-buildpack) in combination with this
 buildpack thanks to the [Multi buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/multi).
+
+More information on this [documentation page](https://doc.scalingo.com/languages/php/php-nodejs).
 
 ## Available versions
 
@@ -52,8 +57,8 @@ to the app root.
 When a `composer.json` is detected, then the buildpack does `composer
 install --no-dev`.
 
-This buildpack also detects when the app has a node `package.json` in the
-app's root. And will install node dependencies like less for example.
+This buildpack also detects when the app has a Node.js `package.json` in the
+app's root. And will install Node.js dependencies like less for example.
 
 ## Web concurrency
 
@@ -349,9 +354,10 @@ A tail on each unique log file will be run at application startup
 
 ## Node.js
 
-If your app contains a `package.json` node and its dependencies will be installed
+If your app contains a `package.json`, Node.js and its dependencies will be
+installed
 
-The nodejs buildpack is based on the [heroku diet node.js buildpack](https://github.com/heroku/heroku-buildpack-nodejs/tree/diet).
+The Node.js buildpack is based on the [heroku diet Node.js buildpack](https://github.com/heroku/heroku-buildpack-nodejs/tree/diet).
 This diet branch of the buildpack is intended to replace the official Node.js buildpack once it has been tested by some users.
 
 It :
@@ -376,7 +382,8 @@ A minimal `package.json` file with less will look like this :
 }
 ```
 
-Node and its modules will be available at compilation meaning you could process nodejs script at that time.
+Node and its modules will be available at compilation meaning you could process
+Node.js script at that time.
 
 ## Contributing
 
