@@ -1,6 +1,5 @@
 function swift_upload() {
   file="$1"
-  dest="$2"
 
   swift --verbose ${opts} upload ${SWIFT_BUCKET} --object-name "${STACK}/${file}" "${file}"
   swift --verbose post -r '.r:*' ${SWIFT_BUCKET} "${STACK}/${file}"
