@@ -75,7 +75,7 @@ function detect_framework() {
 function best_php_version() {
   local require_php=""
   if [ -f "$BUILD_DIR/composer.json" ] ; then
-    for key in ".require.php" ".config.platform.php" ".extra.${composer_extra_key}.engines.php" ; do
+    for key in ".config.platform.php" ".require.php" ".extra.${composer_extra_key}.engines.php" ; do
       require_php=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
       [ -n "${require_php}" ] && break
     done
