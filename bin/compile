@@ -237,6 +237,9 @@ cat > ".profile.d/php.sh" <<SH
 export PATH=/app/bin:${VENDORED_NGINX}/sbin:${VENDORED_PHP}/sbin:${VENDORED_PHP}/bin:/app/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 export LD_LIBRARY_PATH=/app/vendor/libonig:\$LD_LIBRARY_PATH
+
+# Set APP_ENV to prod by default for Symfony based framework.
+export APP_ENV="\${APP_ENV:-prod}"
 SH
 
 if [ $STACK = "scalingo-14" ] ; then
@@ -406,8 +409,6 @@ env -0 | while IFS='=' read -r -d '' name value; do
     echo "env[\$name] = \\$\${name}" >> /app/vendor/php/etc/php-fpm.conf
 done
 
-# Set APP_ENV to prod by default for Symfony based framework.
-export APP_ENV="\${APP_ENV:-prod}"
 export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
 export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"
 export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
