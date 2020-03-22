@@ -242,7 +242,7 @@ export LD_LIBRARY_PATH=/app/vendor/libonig:\$LD_LIBRARY_PATH
 export APP_ENV="\${APP_ENV:-prod}"
 
 # Configure every how many request PHP-FPM recycle its worker, disabled by default
-export PHP_FPM_MAX_REQUESTS=\${PHP_FPM_MAX_REQUESTS:-0}"
+export PHP_FPM_MAX_REQUESTS="\${PHP_FPM_MAX_REQUESTS:-0}"
 SH
 
 if [ $STACK = "scalingo-14" ] ; then
