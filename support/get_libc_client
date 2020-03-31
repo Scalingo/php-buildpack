@@ -27,8 +27,8 @@ if [[ "$STACK" == "scalingo-14" ]]; then
 	)
 elif [[ "$STACK" == "scalingo-18" ]]; then
 	dep_urls+=(
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-5build1.debian.tar.xz
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-5build1.dsc
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
 	)
 fi
 
