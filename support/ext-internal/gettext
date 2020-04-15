@@ -1,0 +1,19 @@
+#!/bin/bash
+
+php_version=$1
+zend_api_version=$2
+php_src_dir=$3
+
+pushd $php_src_dir/php-${php_version}/ext/gettext
+
+export PATH=$PATH:/app/vendor/php/bin
+
+phpize
+./configure --with-gettext
+make
+make install
+
+cp modules/gettext.so "$EXT_DIR"
+popd
+
+echo "extension=gettext.so" > "$PREFIX/etc/conf.d/gettext.ini"
