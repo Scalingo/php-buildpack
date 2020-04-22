@@ -28,19 +28,6 @@ indent() {
   esac
 }
 
-find_version() {
-  local list_of_versions=$1
-  local desired_version=$2
-  local package_name=$3
-
-  local version=$(echo "$list_of_versions" | grep "^$desired_version$" | sort -r | head -n1)
-  if [ -z "${version}" ] ; then
-    warn "${package_name} version ${desired_version} is not supported."
-    error "Supported versions are: $(humanize ${list_of_versions})"
-  fi
-  echo $version
-}
-
 humanize() {
   echo $* | perl -p -e "chomp if eof" | perl -p -e 's/\n/, /'
 }
