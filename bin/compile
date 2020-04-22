@@ -72,6 +72,15 @@ function detect_framework() {
   done
 }
 
+function best_nginx_version() {
+  local require_nginx=""
+  if [ -f "$BUILD_DIR/composer.json" ] ; then
+    require_nginx=$(jq --raw-output ".require.nginx // \"\"" < "$BUILD_DIR/composer.json")
+  fi
+  [ -z "${require_nginx}" ] && require_nginx="$DEFAULT_NGINX"
+  curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}/resolve/${require_nginx}"
+}
+
 function best_php_version() {
   local require_php=""
   if [ -f "$BUILD_DIR/composer.json" ] ; then
@@ -161,8 +170,6 @@ chmod +x "$BUILD_DIR/bin/jq"
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
 
-AVAILABLE_NGINX_VERSIONS=$(curl "${SWIFT_URL}/manifest.nginx" 2> /dev/null)
-
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
   composer_extra_key="paas"
@@ -173,7 +180,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
 fi
 
 PHP_VERSION=$(best_php_version)
-NGINX_VERSION="${NGINX_VERSION:-default}"
+NGINX_VERSION=$(best_nginx_version)
 DOCUMENT_ROOT="${DOCUMENT_ROOT:-}"
 INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK="${FRAMEWORK:-}"
@@ -192,7 +199,6 @@ check_composer_json_and_lock "$BUILD_DIR"
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
-  NGINX_VERSION=$(package_nginx_version)
   DOCUMENT_ROOT=$(package_document_root)
   INDEX_DOCUMENT=$(package_index_file)
   FRAMEWORK=$(package_framework)
@@ -205,14 +211,6 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   USER_LOG_FILES=$(package_log_files)
   ACCESS_LOG_FORMAT_COMPOSER_JSON=$(package_access_log_format)
 fi
-
-if [ "$NGINX_VERSION" = "default" ]; then
-    NGINX_VERSION="$DEFAULT_NGINX"
-fi
-
-# Look for ".*" versions, match them against all available versions
-# and select the latest version which was found.
-NGINX_VERSION=$(find_version "${AVAILABLE_NGINX_VERSIONS}" "${NGINX_VERSION}" "Nginx")
 
 VENDORED_NGINX=/app/vendor/nginx
 VENDORED_PHP=/app/vendor/php
