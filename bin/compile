@@ -77,6 +77,9 @@ function best_nginx_version() {
   if [ -f "$BUILD_DIR/composer.json" ] ; then
     require_nginx=$(jq --raw-output ".require.nginx // \"\"" < "$BUILD_DIR/composer.json")
   fi
+  if [ -n "NGINX_VERSION" ] ; then
+    require_nginx="$NGINX_VERSION"
+  fi
   [ -z "${require_nginx}" ] && require_nginx="$DEFAULT_NGINX"
   curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}/resolve/${require_nginx}"
 }
@@ -88,6 +91,9 @@ function best_php_version() {
       require_php=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
       [ -n "${require_php}" ] && break
     done
+  fi
+  if [ -n "$PHP_VERSION" ] ; then
+    require_php="$PHP_VERSION"
   fi
   [ -z "${require_php}" ] && require_php="$DEFAULT_PHP"
   curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}/resolve/${require_php}"
