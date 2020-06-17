@@ -278,7 +278,7 @@ if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; 
 fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
-    LOG_FILES+=( "/app/vendor/newrelic/daemon.log" )
+    LOG_FILES+=( "/app/vendor/newrelic/daemon.log" "/app/vendor/newrelic/agent.log" )
     install_newrelic "$NEWRELIC_VERSION"
 fi
 
@@ -423,7 +423,8 @@ export ACCESS_LOG_FORMAT_COMPOSER_JSON='$ACCESS_LOG_FORMAT_COMPOSER_JSON'
 export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-\$ACCESS_LOG_FORMAT_COMPOSER_JSON}"
 
 if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
-    export NEW_RELIC_LOG=\${NEW_RELIC_LOG:=/app/vendor/newrelic/daemon.log}
+    export NEW_RELIC_LOG_DAEMON=\${NEW_RELIC_LOG_DAEMON:=/app/vendor/newrelic/daemon.log}
+    export NEW_RELIC_LOG_AGENT=\${NEW_RELIC_LOG_AGENT:=/app/vendor/newrelic/agent.log}
     echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
 fi
 
