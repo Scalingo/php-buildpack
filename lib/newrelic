@@ -1,5 +1,5 @@
 function install_newrelic() {
-    status "Enabling Newrelic support"
+    status "Enabling New Relic support"
 
     local version="$1"
     local cwd=$(pwd)
