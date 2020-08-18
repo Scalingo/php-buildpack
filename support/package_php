@@ -95,6 +95,11 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS
   WITH_ZIP_CONFIGURE="--enable-zip"
 fi
 
+WITH_ARGON_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -ge "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
+  WITH_ARGON_CONFIGURE="--with-password-argon2"
+fi
+
 # As of PHP 7.4 --with-gd flag has been renamed --enable-gd
 ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype"
 if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
@@ -135,6 +140,7 @@ ${libzip_flag} \
 --enable-bcmath \
 --with-readline \
 ${WITH_MCRYPT_CONFIGURE} \
+${WITH_ARGON_CONFIGURE} \
 --disable-debug \
 && echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
 && make \
