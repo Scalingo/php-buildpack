@@ -45,7 +45,8 @@ init_stdout() {
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
-    echo "ln -s /proc/1/fd/1 ${log_file}"
+    echo "mkfifo ${log_file}"
+    echo "while true ; do cat ${log_file}; done &"
   done
 }
 
