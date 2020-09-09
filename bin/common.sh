@@ -40,18 +40,12 @@ unique_array() {
   echo "$*" | tr ' ' '\n' | sort -u | tr '\n' ' '
 }
 
-init_log_plex() {
+init_stdout() {
   for log_file in $*; do
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
-    echo "touch ${log_file}"
-  done
-}
-
-tail_log_plex() {
-  for log_file in $*; do
-    echo "tail -n 0 -qF --pid=\$\$ ${log_file} 2>&1 &"
+    echo "ln -s /dev/stdout ${log_file}"
   done
 }
 
