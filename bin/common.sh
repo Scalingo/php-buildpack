@@ -45,7 +45,7 @@ init_stdout() {
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
-    echo "ln -s /dev/stdout ${log_file}"
+    echo "ln -s /proc/1/fd/1 ${log_file}"
   done
 }
 
