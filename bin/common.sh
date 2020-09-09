@@ -46,7 +46,7 @@ init_stdout() {
   done
   for log_file in $*; do
     echo "mkfifo ${log_file}"
-    echo "tail -n 0 -qF --pid=\$\$ ${log_file} 2>&1 &"
+    echo "while true ; do cat ${log_file}; done &"
   done
 }
 
