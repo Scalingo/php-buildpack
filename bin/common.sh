@@ -40,13 +40,26 @@ unique_array() {
   echo "$*" | tr ' ' '\n' | sort -u | tr '\n' ' '
 }
 
-init_stdout() {
+init_pipes() {
   for log_file in $*; do
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
     echo "mkfifo ${log_file}"
-    echo "while true ; do cat ${log_file}; done &"
+  done
+}
+
+tail_stdout() {
+  init_pipes $*
+  for log_file in $*; do
+    echo "/app/bin/reader $log_file stdout &"
+  done
+}
+
+tail_stderr() {
+  init_pipes $*
+  for log_file in $*; do
+    echo "/app/bin/reader $log_file stderr &"
   done
 }
 
