@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+pushd $basedir
 
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
@@ -13,3 +14,5 @@ popd
 
 swift_upload reader/reader
 rm reader/reader
+
+popd
