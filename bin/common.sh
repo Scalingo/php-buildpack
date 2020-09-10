@@ -40,18 +40,26 @@ unique_array() {
   echo "$*" | tr ' ' '\n' | sort -u | tr '\n' ' '
 }
 
-init_log_plex() {
+init_pipes() {
   for log_file in $*; do
     echo "mkdir -p `dirname ${log_file}`"
   done
   for log_file in $*; do
-    echo "touch ${log_file}"
+    echo "mkfifo ${log_file}"
   done
 }
 
-tail_log_plex() {
+tail_stdout() {
+  init_pipes $*
   for log_file in $*; do
-    echo "tail -n 0 -qF --pid=\$\$ ${log_file} 2>&1 &"
+    echo "/app/bin/reader $log_file stdout &"
+  done
+}
+
+tail_stderr() {
+  init_pipes $*
+  for log_file in $*; do
+    echo "/app/bin/reader $log_file stderr &"
   done
 }
 
