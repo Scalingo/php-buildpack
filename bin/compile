@@ -369,6 +369,7 @@ if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     FRAMEWORK_LOG_FILES=$("$FRAMEWORK" get-log-files "$BUILD_DIR")
     LOG_FILES=$(unique_array ${LOG_FILES[@]} ${FRAMEWORK_LOG_FILES[@]})
 fi
+ERR_FILES=$(unique_array ${ERR_FILES[@]})
 
 if [ -n "$COMPILE_CMD" ]; then
     status "Running compile commands"
