@@ -172,8 +172,6 @@ mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
 curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
-curl --fail "${SWIFT_URL}/reader/reader" -L -s -o - > "$BUILD_DIR/bin/reader"
-chmod +x "$BUILD_DIR/bin/reader"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
@@ -200,8 +198,7 @@ COMPILE_CMD="${COMPILE_CMD:-}"
 NGINX_INCLUDES="${NGINX_INCLUDES:-}"
 ACCESS_LOG_FORMAT_COMPOSER_JSON="${ACCESS_LOG_FORMAT_COMPOSER_JSON:-}"
 NEWRELIC_VERSION="${NEWRELIC_VERSION:=9.9.0.260}"
-LOG_FILES=( "/app/vendor/nginx/logs/access.log"  )
-ERR_FILES=( "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
+LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 check_composer_syntax "$BUILD_DIR"
 check_composer_json_and_lock "$BUILD_DIR"
@@ -369,7 +366,6 @@ if [ -n "$FRAMEWORK" ] && [ -f "$FRAMEWORK" ]; then
     FRAMEWORK_LOG_FILES=$("$FRAMEWORK" get-log-files "$BUILD_DIR")
     LOG_FILES=$(unique_array ${LOG_FILES[@]} ${FRAMEWORK_LOG_FILES[@]})
 fi
-ERR_FILES=$(unique_array ${ERR_FILES[@]})
 
 if [ -n "$COMPILE_CMD" ]; then
     status "Running compile commands"
@@ -461,8 +457,8 @@ else
     echo "Using WEB_CONCURRENCY=\${WEB_CONCURRENCY} processes." >&2
 fi
 
-`tail_stdout ${LOG_FILES}`
-`tail_stderr ${ERR_FILES}`
+`init_log_plex ${LOG_FILES}`
+`tail_log_plex ${LOG_FILES} ${SYS_LOG_FILES}`
 
 (
     php-fpm -p "/app/vendor/php"
