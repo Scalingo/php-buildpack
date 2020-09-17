@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 
+
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 pushd $basedir
+
+cd /opt
+wget 'https://golang.org/dl/go1.15.2.linux-amd64.tar.gz'
+tar xvf go1.15.2.linux-amd64.tar.gz
+cd -
 
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
-
 pushd $basedir/reader
+export PATH=$PATH:/opt/go/bin
 go build .
 popd
 
