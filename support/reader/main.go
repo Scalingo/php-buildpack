@@ -54,9 +54,6 @@ func tailFile(file *os.File, outWriter io.Writer) {
 				fmt.Printf("Error while reading on : %s\n", err.Error())
 				return
 			}
-		} else {
-			// https://stackoverflow.com/questions/45443414/read-continuously-from-a-named-pipe
-			time.Sleep(50 * time.Millisecond)
 		}
 	}
 }
