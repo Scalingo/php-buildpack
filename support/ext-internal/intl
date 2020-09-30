@@ -1,0 +1,19 @@
+#!/bin/bash
+
+php_version=$1
+zend_api_version=$2
+php_src_dir=$3
+
+pushd $php_src_dir/php-${php_version}/ext/intl
+
+export PATH=$PATH:/app/vendor/php/bin
+
+phpize
+./configure --with-intl
+make
+make install
+
+cp modules/intl.so "$EXT_DIR"
+popd
+
+echo "extension=intl.so" > "$PREFIX/etc/conf.d/intl.ini"
