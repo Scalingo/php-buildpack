@@ -2,7 +2,7 @@
 
 set -e
 
-mongo_version="1.7.1"
+mongo_version="1.8.1"
 
 curl -L "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
     | tar xzv
