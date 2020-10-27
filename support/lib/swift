@@ -1,3 +1,5 @@
+# vim:set ft=sh:
+
 function swift_upload() {
   file="$1"
 

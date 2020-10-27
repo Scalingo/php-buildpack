@@ -1,3 +1,5 @@
+# vim:set ft=sh:
+
 function check_composer_syntax() {
   local target="$1"
 
