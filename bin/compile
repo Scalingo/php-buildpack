@@ -90,6 +90,10 @@ function best_nginx_version() {
   local require_nginx=""
   if [ -f "$BUILD_DIR/composer.json" ] ; then
     require_nginx=$(jq --raw-output ".require.nginx // \"\"" < "$BUILD_DIR/composer.json")
+    for key in ".require.nginx" ".extra.${composer_extra_key}.engines.nginx" ; do
+      require_nginx=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
+      [ -n "${require_nginx}" ] && break
+    done
   fi
   if [ -n "NGINX_VERSION" ] ; then
     require_nginx="$NGINX_VERSION"
