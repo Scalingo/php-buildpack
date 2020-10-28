@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
