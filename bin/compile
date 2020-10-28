@@ -81,9 +81,7 @@ function best_composer_version() {
     require_composer="$COMPOSER_VERSION"
   fi
   [ -z "${require_composer}" ] && require_composer="$DEFAULT_COMPOSER"
-  # TODO when semver is updated:
-  # curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}/resolve/${require_nginx}"
-  echo $require_composer
+  curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}/resolve/${require_composer}"
 }
 
 function best_nginx_version() {
@@ -193,8 +191,7 @@ chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
-# TODO: Update semver to add support for Composer
-DEFAULT_COMPOSER=2.0.2
+DEFAULT_COMPOSER=$(curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}")
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
