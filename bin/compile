@@ -77,7 +77,7 @@ function best_composer_version() {
   if [ -f "$BUILD_DIR/composer.json" ] ; then
     require_composer=$(jq --raw-output ".extra.${composer_extra_key}.engines.composer // \"\"" < "$BUILD_DIR/composer.json")
   fi
-  if [ -n "COMPOSER_VERSION" ] ; then
+  if [ -n "$COMPOSER_VERSION" ] ; then
     require_composer="$COMPOSER_VERSION"
   fi
   [ -z "${require_composer}" ] && require_composer="$DEFAULT_COMPOSER"
@@ -95,7 +95,7 @@ function best_nginx_version() {
       [ -n "${require_nginx}" ] && break
     done
   fi
-  if [ -n "NGINX_VERSION" ] ; then
+  if [ -n "$NGINX_VERSION" ] ; then
     require_nginx="$NGINX_VERSION"
   fi
   [ -z "${require_nginx}" ] && require_nginx="$DEFAULT_NGINX"

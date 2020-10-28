@@ -49,6 +49,8 @@ function install_composer_deps() {
         curl --silent "${SWIFT_URL}/composer/composer-${COMPOSER_VERSION}.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
+    else
+        echo "Checksums match. Fetching from cache."
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
