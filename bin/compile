@@ -207,7 +207,7 @@ fi
 
 PHP_VERSION=$(best_php_version)
 NGINX_VERSION=$(best_nginx_version)
-export COMPOSER_VERSION=$(best_composer_version)
+COMPOSER_VERSION=$(best_composer_version)
 DOCUMENT_ROOT="${DOCUMENT_ROOT:-}"
 INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK="${FRAMEWORK:-}"
