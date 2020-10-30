@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-which jq 2>/dev/null || (apt-get update && apt-get install -y jq) 
+set -e
+
+composer_version="$1"
+
+which jq 2>/dev/null || (apt-get update && apt-get install -y jq)
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
@@ -10,16 +14,41 @@ source "$basedir/lib/swift"
 tempdir=$(mktmpdir composer)
 cd $tempdir
 
-BASE_COMPOSER_URL="https://getcomposer.org/"
+BASE_COMPOSER_URL="https://getcomposer.org"
 
-current_composer_version_path=$(curl --silent "$BASE_COMPOSER_URL/versions" | jq -r '.stable[0].path')
+if [ -z "$composer_version" ]; then
+  composer_version=$(curl --silent "$BASE_COMPOSER_URL/versions" | jq -r '.stable[0].version')
+  current_composer_version_path=$(curl --silent "$BASE_COMPOSER_URL/versions" | jq -r '.stable[0].path')
+  echo "Composer version not specified, packaging the last stable version ($composer_version)"
+else
+  echo "Packaging Composer version $composer_version"
+  current_composer_version_path="/download/${composer_version}/composer.phar"
+fi
 
-curl -L "$BASE_COMPOSER_URL/$current_composer_version_path" > composer.phar
-md5 composer.phar > composer.phar.md5
+curl -L "$BASE_COMPOSER_URL/$current_composer_version_path" > composer-${composer_version}.phar
+md5 composer-${composer_version}.phar > composer-${composer_version}.phar.md5
+
+echo "-----> Uploading Composer package to Swift ${SWIFT_URL}/composer/composer-${composer_version}.phar"
 
 mkdir composer
-mv composer.phar composer
-mv composer.phar.md5 composer
+mv composer-${composer_version}.phar composer
+mv composer-${composer_version}.phar.md5 composer
 
-swift_upload "composer/composer.phar"
-swift_upload "composer/composer.phar.md5"
+swift_upload "composer/composer-${composer_version}.phar"
+swift_upload "composer/composer-${composer_version}.phar.md5"
+
+# This manifest file is important for Semver to know which Composer versions are available
+echo "-----> Manifest for composer"
+swift list scalingo-php-buildpack | grep $STACK \
+  | cut -d "/" -f 3 \
+  | grep "^composer-" | grep "\.phar$" \
+  | sed -e "s/composer-\([0-9.]*\)\\.phar/\\1/" \
+  | awk 'BEGIN {FS="."} {printf("%03d.%03d.%03d %s\n",$1,$2,$3,$0)}' \
+  | sort -r | cut -d" " -f2 \
+  > manifest.composer
+
+echo
+echo "-----> Uploading manifest for composer to Swift"
+swift_upload manifest.composer
+
+echo "-----> Done building Composer package!"

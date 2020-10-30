@@ -66,7 +66,7 @@ pushd nginx-${nginx_version} >/dev/null && \
   make && make install && \
   popd > /dev/null
 
-echo "-----> Uploading package to Swift https://${SWIFT_URL}/${STACK}/package/nginx-${nginx_version}.tgz"
+echo "-----> Uploading package to Swift ${SWIFT_URL}/package/nginx-${nginx_version}.tgz"
 
 mkdir package
 pushd /app/vendor/nginx >/dev/null

@@ -72,12 +72,27 @@ function detect_framework() {
   done
 }
 
+function best_composer_version() {
+  local require_composer=""
+  if [ -f "$BUILD_DIR/composer.json" ] ; then
+    require_composer=$(jq --raw-output ".extra.${composer_extra_key}.engines.composer // \"\"" < "$BUILD_DIR/composer.json")
+  fi
+  if [ -n "$COMPOSER_VERSION" ] ; then
+    require_composer="$COMPOSER_VERSION"
+  fi
+  [ -z "${require_composer}" ] && require_composer="$DEFAULT_COMPOSER"
+  curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}/resolve/${require_composer}"
+}
+
 function best_nginx_version() {
   local require_nginx=""
   if [ -f "$BUILD_DIR/composer.json" ] ; then
-    require_nginx=$(jq --raw-output ".require.nginx // \"\"" < "$BUILD_DIR/composer.json")
+    for key in ".require.nginx" ".extra.${composer_extra_key}.engines.nginx" ; do
+      require_nginx=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
+      [ -n "${require_nginx}" ] && break
+    done
   fi
-  if [ -n "NGINX_VERSION" ] ; then
+  if [ -n "$NGINX_VERSION" ] ; then
     require_nginx="$NGINX_VERSION"
   fi
   [ -z "${require_nginx}" ] && require_nginx="$DEFAULT_NGINX"
@@ -175,6 +190,7 @@ chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
+DEFAULT_COMPOSER=$(curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}")
 
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
@@ -187,6 +203,7 @@ fi
 
 PHP_VERSION=$(best_php_version)
 NGINX_VERSION=$(best_nginx_version)
+COMPOSER_VERSION=$(best_composer_version)
 DOCUMENT_ROOT="${DOCUMENT_ROOT:-}"
 INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK="${FRAMEWORK:-}"
@@ -199,6 +216,16 @@ NGINX_INCLUDES="${NGINX_INCLUDES:-}"
 ACCESS_LOG_FORMAT_COMPOSER_JSON="${ACCESS_LOG_FORMAT_COMPOSER_JSON:-}"
 NEWRELIC_VERSION="${NEWRELIC_VERSION:=9.9.0.260}"
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
+
+# Display a warning that Composer version 1.x is End of Life
+if [[ "$COMPOSER_VERSION" = 1.* ]]; then
+  echo >&2 ""
+  echo >&2 "######################################"
+  echo >&2 "WARNING: You are using Composer ${COMPOSER_VERSION}. Composer 1 is End of Life since the 24th of October 2020 and will soon be deprecated."
+  echo >&2 "https://doc.scalingo.com/languages/php/start#select-a-composer-version"
+  echo >&2 "######################################"
+  echo >&2 ""
+fi
 
 check_composer_syntax "$BUILD_DIR"
 check_composer_json_and_lock "$BUILD_DIR"
@@ -223,7 +250,7 @@ VENDORED_PHP=/app/vendor/php
 
 [ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
-status "Bundling NGINX ${NGINX_VERSION}"
+status "Bundling Nginx ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
 
 status "Bundling PHP ${PHP_VERSION}"

@@ -4,7 +4,7 @@ BUILD_DIR="$2"
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 function requires_phalcon() {
-    jq --raw-output '.platform["ext-phalcon"]' < "$BUILD_DIR/composer.lock" | grep -q '^*$'
+    jq --raw-output '.platform' < "$BUILD_DIR/composer.lock" | grep -q 'ext-phalcon'
 }
 
 function sets_framework_phalcon() {

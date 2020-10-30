@@ -1,3 +1,5 @@
+# vim:set ft=sh:
+
 function check_composer_syntax() {
   local target="$1"
 
@@ -39,14 +41,16 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
-    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer.phar.md5")
+    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer-${COMPOSER_VERSION}.phar.md5")
 
-    status "Vendoring Composer"
+    status "Vendoring Composer ${COMPOSER_VERSION}"
     if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
         echo "Updating Composer" | indent
-        curl --silent "${SWIFT_URL}/composer/composer.phar" > "$CACHE_DIR/composer.phar" | indent
+        curl --silent "${SWIFT_URL}/composer/composer-${COMPOSER_VERSION}.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
+    else
+        echo "Checksums match. Fetching from cache."
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
@@ -72,8 +76,6 @@ function install_composer_deps() {
         done
     fi
 
-    php "vendor/composer/bin/composer.phar" self-update
-
     if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
         status "Configuring the github authentication for Composer"
         php "vendor/composer/bin/composer.phar" config -g github-oauth.github.com "$COMPOSER_GITHUB_TOKEN" --no-interaction
@@ -81,9 +83,9 @@ function install_composer_deps() {
 
     status "Installing application dependencies with Composer"
     {
-	local devopt="--no-dev"
-	local dev=${COMPOSER_DEV:=false}
-	[ "x$dev" = "xtrue" ] && devopt="--dev"
+        local devopt="--no-dev"
+        local dev=${COMPOSER_DEV:=false}
+        [ "x$dev" = "xtrue" ] && devopt="--dev"
 
         cd "$target"
         php "vendor/composer/bin/composer.phar" install \
