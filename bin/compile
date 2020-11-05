@@ -422,10 +422,19 @@ export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
 export ACCESS_LOG_FORMAT_COMPOSER_JSON='$ACCESS_LOG_FORMAT_COMPOSER_JSON'
 export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-\$ACCESS_LOG_FORMAT_COMPOSER_JSON}"
 
-if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+if [ -f "\$/app/vendor/php/etc/conf.d/newrelic.ini" ] ; then
     export NEW_RELIC_LOG_DAEMON=\${NEW_RELIC_LOG_DAEMON:=/app/vendor/newrelic/daemon.log}
     export NEW_RELIC_LOG_AGENT=\${NEW_RELIC_LOG_AGENT:=/app/vendor/newrelic/agent.log}
-    echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
+    if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
+        echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
+    else
+        echo " !"
+        echo " ! New Relic agent has been installed but is misconfigured"
+        echo " ! NEW_RELIC_LICENSE_KEY should be define in the application environment"
+        echo " !"
+        echo " ! Documentation: https://doc.scalingo.com/languages/php/start"
+        echo " !"
+    fi
 fi
 
 erb conf/nginx.conf.erb > /app/vendor/nginx/conf/nginx.conf
