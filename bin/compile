@@ -280,6 +280,9 @@ fi
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" "/app/vendor/newrelic/agent.log" )
     install_newrelic "$NEWRELIC_VERSION"
+
+    echo 'export NEW_RELIC_LOG_DAEMON=${NEW_RELIC_LOG_DAEMON:=/app/vendor/newrelic/daemon.log}' >> ".profile.d/php.sh"
+    echo 'export NEW_RELIC_LOG_AGENT=${NEW_RELIC_LOG_AGENT:=/app/vendor/newrelic/agent.log}' >> ".profile.d/php.sh"
 fi
 
 if [ -n "$BLACKFIRE_SERVER_ID" -a -n "$BLACKFIRE_SERVER_TOKEN" ] ; then
@@ -423,8 +426,6 @@ export ACCESS_LOG_FORMAT_COMPOSER_JSON='$ACCESS_LOG_FORMAT_COMPOSER_JSON'
 export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-\$ACCESS_LOG_FORMAT_COMPOSER_JSON}"
 
 if [ -f "\$/app/vendor/php/etc/conf.d/newrelic.ini" ] ; then
-    export NEW_RELIC_LOG_DAEMON=\${NEW_RELIC_LOG_DAEMON:=/app/vendor/newrelic/daemon.log}
-    export NEW_RELIC_LOG_AGENT=\${NEW_RELIC_LOG_AGENT:=/app/vendor/newrelic/agent.log}
     if [ -n "\$NEW_RELIC_LICENSE_KEY" ]; then
         echo "newrelic.license=\"\$NEW_RELIC_LICENSE_KEY\"" > /app/vendor/php/etc/conf.d/newrelic_license.ini
     else
