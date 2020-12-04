@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -e
+
+php_version=${1:=7.4}
+
+event_version="2.5.7"
+
+curl --location \
+  "https://pecl.php.net/get/event-${event_version}.tgz" \
+  | tar -xzv
+
+pushd event-${event_version}
+
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/event.so "$EXT_DIR/event.so"
+
+popd
+
+echo "extension=event.so" > "$PREFIX/etc/conf.d/event.ini"
