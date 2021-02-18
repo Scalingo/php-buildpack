@@ -154,6 +154,10 @@ function package_php_fpm_includes() {
   jq --raw-output ".extra.${composer_extra_key}[\"php-fpm-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
 
+function package_nginx_http_includes() {
+  jq --raw-output ".extra.${composer_extra_key}[\"nginx-http-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
+}
+
 function package_nginx_includes() {
   jq --raw-output ".extra.${composer_extra_key}[\"nginx-includes\"] // [] | .[]" < "$BUILD_DIR/composer.json"
 }
@@ -212,6 +216,7 @@ PHP_INCLUDES="${PHP_INCLUDES:-}"
 PHP_FPM_INCLUDES="${PHP_FPM_INCLUDES:-}"
 PHP_FPM_EXTRA_CONFIG="${PHP_FPM_EXTRA_CONFIG:-}"
 COMPILE_CMD="${COMPILE_CMD:-}"
+NGINX_HTTP_INCLUDES="${NGINX_HTTP_INCLUDES:-}"
 NGINX_INCLUDES="${NGINX_INCLUDES:-}"
 ACCESS_LOG_FORMAT_COMPOSER_JSON="${ACCESS_LOG_FORMAT_COMPOSER_JSON:-}"
 NEWRELIC_VERSION="${NEWRELIC_VERSION:=9.9.0.260}"
@@ -240,6 +245,7 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   PHP_INCLUDES=$(package_php_includes)
   PHP_FPM_INCLUDES=$(package_php_fpm_includes)
   COMPILE_CMD=$(package_compile_cmd)
+  NGINX_HTTP_INCLUDES=$(package_nginx_http_includes)
   NGINX_INCLUDES=$(package_nginx_includes)
   USER_LOG_FILES=$(package_log_files)
   ACCESS_LOG_FORMAT_COMPOSER_JSON=$(package_access_log_format)
@@ -448,6 +454,7 @@ done
 
 export DOCUMENT_ROOT="\${DOCUMENT_ROOT:-$DOCUMENT_ROOT}"
 export INDEX_DOCUMENT="\${INDEX_DOCUMENT:-$INDEX_DOCUMENT}"
+export NGINX_HTTP_INCLUDES="\${NGINX_HTTP_INCLUDES:-$NGINX_HTTP_INCLUDES}"
 export NGINX_INCLUDES="\${NGINX_INCLUDES:-$NGINX_INCLUDES}"
 export ACCESS_LOG_FORMAT_COMPOSER_JSON='$ACCESS_LOG_FORMAT_COMPOSER_JSON'
 export ACCESS_LOG_FORMAT="\${ACCESS_LOG_FORMAT:-\$ACCESS_LOG_FORMAT_COMPOSER_JSON}"
