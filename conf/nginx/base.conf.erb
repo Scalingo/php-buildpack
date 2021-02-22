@@ -75,6 +75,10 @@ http {
       text/x-component;
     # text/html is always compressed by HttpGzipModule
 
+    <% Shellwords.split(ENV['NGINX_HTTP_INCLUDES'].to_s).each do |f| %>
+    include /app/<%= f %>;
+    <% end %>
+
     server {
         server_name localhost;
         listen <%= ENV['PORT'] %>;
