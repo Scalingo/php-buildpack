@@ -7,7 +7,13 @@ set -eu
 
 php_version=${1:=7.4}
 php_series="$(echo $php_version | cut -d '.' -f1,2)"
+# https://blackfire.io/docs/up-and-running/installation?action=install&mode=full&location=local&os=manual&language=php#install-the-php-probe
+#
+# → Select "Linux Binary", 64 bits, the right PHP version and you'll se the last version of the probe
 blackfire_probe_version=1.50.0
+# https://blackfire.io/docs/up-and-running/installation?action=install&mode=full&location=local&os=manual&language=php#install-the-packages
+#
+# → Select "Linux Binary", 64 bits and you'll see the last version
 blackfire_agent_version=1.46.0
 bin_dir=${PREFIX}/bin
 
