@@ -2,7 +2,7 @@
 
 set -e
 
-igbinary_version="3.0.1"
+igbinary_version="3.2.1"
 
 curl -L "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \
     | tar xzv

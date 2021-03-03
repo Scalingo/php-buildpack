@@ -3,7 +3,7 @@
 set -e
 
 # https://github.com/php-memcached-dev/php-memcached/releases
-php_memcached_version=3.1.4
+php_memcached_version=3.1.5
 
 curl -L "https://github.com/php-memcached-dev/php-memcached/archive/v${php_memcached_version}.tar.gz" \
     | tar xzv

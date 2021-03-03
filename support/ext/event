@@ -4,7 +4,7 @@ set -e
 
 php_version=${1:=7.4}
 
-event_version="2.5.7"
+event_version="3.0.2"
 
 curl --location \
   "https://pecl.php.net/get/event-${event_version}.tgz" \
