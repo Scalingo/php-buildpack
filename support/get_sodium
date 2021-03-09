@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+function build_libsodium() {
+  version=$1
+  url_prefix=$2
+
+  tempdir=$(mktmpdir libsodium)
+  pushd $tempdir
+
+  echo "-----> Downloading Sodium v${version}"
+  curl -LO "https://download.libsodium.org/libsodium/$url_prefix/libsodium-${version}.tar.gz"
+
+  tar xvf "libsodium-${version}.tar.gz"
+  cd "libsodium-${version}"
+  rm -r /app/vendor/libsodium
+  mkdir -p /app/vendor/libsodium
+
+  ./configure --prefix=/app/vendor/libsodium 
+  make
+  make install
+
+  cd $tempdir
+  mkdir package
+  cd package
+  tar -C /app/vendor/libsodium -czvf "libsodium-${version}.tgz" .
+  cd ..
+
+  swift_upload package/libsodium-${version}.tgz
+
+  "$basedir/package-checksum" "libsodium-${version}" 
+
+  popd
+}
+
+build_libsodium $sodium_version "releases"
+build_libsodium $sodium_php72_php73_version "releases/old/unsupported"

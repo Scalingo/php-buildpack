@@ -274,6 +274,7 @@ cat > ".profile.d/php.sh" <<SH
 export PATH=/app/bin:${VENDORED_NGINX}/sbin:${VENDORED_PHP}/sbin:${VENDORED_PHP}/bin:/app/vendor/bin:\$PATH
 export APP_BUILD_TIME=$(date +%Y%m%d%H%M%S)
 export LD_LIBRARY_PATH=/app/vendor/libonig:\$LD_LIBRARY_PATH
+[ -d "/app/vendor/libsodium" ] && export LD_LIBRARY_PATH=/app/vendor/libsodium:\$LD_LIBRARY_PATH
 
 # Set APP_ENV to prod by default for Symfony based framework.
 export APP_ENV="\${APP_ENV:-prod}"
@@ -427,6 +428,7 @@ mv /app/vendor/php vendor/php
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
 [ -d "/app/vendor/gmp" ] && mv /app/vendor/gmp vendor/gmp
 [ -d "/app/vendor/libtidy" ] && mv /app/vendor/libtidy vendor/libtidy
+[ -d "/app/vendor/libsodium" ] && mv /app/vendor/libsodium vendor/libsodium
 
 mkdir -p "bin" "vendor/bin"
 
