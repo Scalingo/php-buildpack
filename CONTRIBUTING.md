@@ -38,7 +38,7 @@ configure the file `conf/buildpack.conf`:
 
 ```
 export SWIFT_BUCKET=scalingo-php-buildpack
-export SWIFT_URL=https://storage.sbg.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/${SWIFT_BUCKET}
+export SWIFT_URL=https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/${SWIFT_BUCKET}
 ```
 
 To test your version of the buildpack, you will need jq in the swift bucket:
