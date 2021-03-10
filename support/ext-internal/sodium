@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+php_version=$1
+zend_api_version=$2
+php_src_dir=$3
+
+sodium_version="1.0.18"
+if echo "$php_version" | grep -qE "^7.[23]" ; then
+  sodium_version="1.0.7"
+fi
+
+sodium_package="${SWIFT_URL}/package/libsodium-${sodium_version}.tgz"
+
+curl -L "$sodium_package" > /tmp/sodium-${sodium_version}.tgz
+
+libsodium_path=/app/vendor/libsodium
+
+rm -r "${libsodium_path}"
+mkdir -p "${libsodium_path}"
+tar -xzv -C "${libsodium_path}" -f /tmp/sodium-${sodium_version}.tgz
+
+pushd $php_src_dir/php-${php_version}/ext/sodium
+export PATH="$PATH:/app/vendor/php/bin"
+
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libsodium_path}/lib"
+export PKG_CONFIG_PATH="${libsodium_path}/lib/pkgconfig"
+export LDFLAGS="-L${libsodium_path}/lib"
+
+phpize
+./configure --with-sodium="${libsodium_path}"
+make
+make install
+
+cp modules/sodium.so "$EXT_DIR"
+popd
+
+echo "extension=sodium.so" > "$PREFIX/etc/conf.d/sodium.ini"
+
