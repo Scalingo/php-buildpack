@@ -22,7 +22,7 @@ tar -xzvf "libmemcached-${libmemcached_version}.tar.gz"
 pushd libmemcached-${libmemcached_version} >/dev/null && \
     mkdir -p /app/vendor/libmemcached && \
     ./configure --with-memcached=no --prefix=/app/vendor/libmemcached && \
-    make && make install && popd > /dev/null
+    make CXXFLAGS="-fpermissive" && make install && popd > /dev/null
 
 rm -r /app/vendor/libmemcached/share/man
 
