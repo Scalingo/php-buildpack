@@ -8,7 +8,7 @@ function requires_silex() {
 }
 
 function sets_framework_silex() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "silex" ]
+    [ "$(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json")" == "silex" ]
 }
 
 case "$1" in

@@ -8,7 +8,7 @@ function requires_slim() {
 }
 
 function sets_framework_slim() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "slim" ]
+    [ "$(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json")" == "slim" ]
 }
 
 case "$1" in
