@@ -8,7 +8,7 @@ function requires_zf2() {
 }
 
 function sets_framework_zf2() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "zf2" ]
+    [ "$(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json")" == "zf2" ]
 }
 
 case "$1" in

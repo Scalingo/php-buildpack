@@ -5,7 +5,7 @@ basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source $basedir/../bin/common.sh
 
 function requires_change4() {
-  require_change=$(jq --raw-output ".require[\"rbschange/core\"] // \"\"" < "$BUILD_DIR/composer.json")
+  require_change="$(jq --raw-output ".require[\"rbschange/core\"] // \"\"" < "$BUILD_DIR/composer.json")"
   [ -n  "$require_change" ]
 }
 

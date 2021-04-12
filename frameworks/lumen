@@ -8,7 +8,7 @@ function requires_lumen() {
 }
 
 function sets_framework_lumen() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "lumen" ]
+    [ "$(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json")" == "lumen" ]
 }
 
 case "$1" in

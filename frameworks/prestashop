@@ -9,7 +9,7 @@ function requires_prestashop() {
 }
 
 function sets_framework_prestashop() {
-    [ $(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json") == "prestashop" ]
+    [ "$(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json")" == "prestashop" ]
 }
 
 # PrestaShop is based on Symfony, so it's really closed to symfony logics

@@ -18,7 +18,7 @@ function requires_symfony_flex() {
 }
 
 function sets_framework_symfony() {
-    [ $(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json") == "symfony" ]
+    [ "$(jq --raw-output '.extra.heroku.framework' < "$BUILD_DIR/composer.json")" == "symfony" ]
 }
 
 function is_symfony2() {

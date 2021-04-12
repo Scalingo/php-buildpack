@@ -8,7 +8,7 @@ function requires_phalcon() {
 }
 
 function sets_framework_phalcon() {
-    [ $(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json") == "phalcon" ]
+    [ "$(jq --raw-output '.extra.paas.framework' < "$BUILD_DIR/composer.json")" == "phalcon" ]
 }
 
 case "$1" in
