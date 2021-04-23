@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+webp_version="$1"
+
+if [ -z "$webp_version" ]; then
+    echo "Usage: $(basename "$0") VERSION" >&2
+    exit 1
+fi
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+source "$basedir/../conf/buildpack.conf"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir webp)
+cd $tempdir
+
+echo "-----> Downloading WEBP v${webp_version}"
+curl -L -o - "http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${webp_version}.tar.gz"| tar xzv
+
+mkdir -p /app/vendor/libwebp \
+  && pushd libwebp-${webp_version} > /dev/null \
+  && ./configure --prefix=/app/vendor/libwebp \
+  && make && make install \
+  && popd > /dev/null
+
+mkdir package
+pushd /app/vendor/libwebp > /dev/null
+tar zcvf "${tempdir}/package/libwebp-${webp_version}.tgz" .
+popd > /dev/null
+
+swift_upload package/libwebp-${webp_version}.tgz
+
+"$basedir/package-checksum" "libwebp-${webp_version}"
+
