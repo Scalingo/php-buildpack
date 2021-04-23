@@ -265,6 +265,7 @@ status "Bundling PHP ${PHP_VERSION}"
 # dynamic libraries when running it during the slug compilation.
 fetch_package "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
 fetch_package "libzip-${zip_version}" /app/vendor/libzip > /dev/null
+fetch_package "libwebp-${webp_version}" /app/vendor/libwebp> /dev/null
 
 fetch_engine_package php "$PHP_VERSION" "${VENDORED_PHP}" | indent
 

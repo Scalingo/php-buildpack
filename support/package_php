@@ -101,9 +101,11 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -ge "${PHP_MODULE_API_VERSIONS
 fi
 
 # As of PHP 7.4 --with-gd flag has been renamed --enable-gd
-ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype"
+mkdir -p "/app/vendor/libwebp" \
+  && curl "${SWIFT_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
+ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype --with-webp-dir=/app/vendor/libwebp"
 if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
-  ENABLE_GD_CONFIGURE="--with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr"
+  ENABLE_GD_CONFIGURE="--with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr --with-webp-dir=/app/vendor/libwebp"
 fi
 
 mkdir -p "/app/vendor/php/etc/conf.d" \
@@ -143,7 +145,7 @@ ${WITH_MCRYPT_CONFIGURE} \
 ${WITH_ARGON_CONFIGURE} \
 --disable-debug \
 && echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
-&& make \
+&& make -j 8 \
 && make install \
 && popd > /dev/null \
 && eval $install_zend_optimizer
