@@ -102,7 +102,7 @@ fi
 
 # As of PHP 7.4 --with-gd flag has been renamed --enable-gd
 mkdir -p "/app/vendor/libwebp" \
-  && curl -v "${SWIFT_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
+  && curl "${SWIFT_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
 ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype --with-webp-dir=/app/vendor/libwebp"
 if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
   ENABLE_GD_CONFIGURE="--with-gd --with-jpeg-dir=/usr --with-png-dir=/usr --with-freetype-dir=/usr --with-webp-dir=/app/vendor/libwebp"
