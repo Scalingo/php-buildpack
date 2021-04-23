@@ -145,7 +145,7 @@ ${WITH_MCRYPT_CONFIGURE} \
 ${WITH_ARGON_CONFIGURE} \
 --disable-debug \
 && echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
-&& make \
+&& make -j 8 \
 && make install \
 && popd > /dev/null \
 && eval $install_zend_optimizer
