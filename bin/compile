@@ -189,7 +189,7 @@ export_env_dir "$3"
 # Download jq binary for JSON processing
 mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
-curl --fail "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
+curl --fail  --retry 3 --retry-delay 2 "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
