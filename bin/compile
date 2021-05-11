@@ -219,7 +219,8 @@ COMPILE_CMD="${COMPILE_CMD:-}"
 NGINX_HTTP_INCLUDES="${NGINX_HTTP_INCLUDES:-}"
 NGINX_INCLUDES="${NGINX_INCLUDES:-}"
 ACCESS_LOG_FORMAT_COMPOSER_JSON="${ACCESS_LOG_FORMAT_COMPOSER_JSON:-}"
-NEWRELIC_VERSION="${NEWRELIC_VERSION:=9.16.0.295}"
+# Version number comes from https://download.newrelic.com/php_agent/archive/
+NEWRELIC_VERSION="${NEWRELIC_VERSION:=9.17.1.301}"
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 # Display a warning that Composer version 1.x is End of Life
