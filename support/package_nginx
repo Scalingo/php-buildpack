@@ -25,6 +25,7 @@ if [ -z "$nginx_version" ]; then
 fi
 
 if [ -z "$NGINX_ZLIB_VERSION" ]; then
+  # From https://zlib.net/
   NGINX_ZLIB_VERSION=1.2.11
 fi
 
