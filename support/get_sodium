@@ -21,7 +21,7 @@ function build_libsodium() {
   rm -r /app/vendor/libsodium
   mkdir -p /app/vendor/libsodium
 
-  ./configure --prefix=/app/vendor/libsodium 
+  ./configure --prefix=/app/vendor/libsodium
   make
   make install
 
@@ -33,7 +33,7 @@ function build_libsodium() {
 
   swift_upload package/libsodium-${version}.tgz
 
-  "$basedir/package-checksum" "libsodium-${version}" 
+  "$basedir/package-checksum" "libsodium-${version}"
 
   popd
 }
