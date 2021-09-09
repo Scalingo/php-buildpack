@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-webp_version="$1"
-
-if [ -z "$webp_version" ]; then
-    echo "Usage: $(basename "$0") VERSION" >&2
-    exit 1
-fi
-
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 source "$basedir/../conf/buildpack.conf"
