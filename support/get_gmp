@@ -2,13 +2,6 @@
 
 set -e
 
-gmp_version="$1"
-
-if [ -z "$gmp_version" ]; then
-    echo "Usage: $(basename "$0") VERSION" >&2
-    exit 1
-fi
-
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
@@ -36,4 +29,4 @@ popd > /dev/null
 
 swift_upload package/gmp-${gmp_version}.tgz
 
-"$basedir/package-checksum" "gmp-${gmp_version}" 
+"$basedir/package-checksum" "gmp-${gmp_version}"
