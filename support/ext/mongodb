@@ -3,7 +3,7 @@
 set -e
 
 # https://github.com/mongodb/mongo-php-driver/releases
-mongo_version="1.9.0"
+mongo_version="1.10.0"
 
 curl -L "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
     | tar xzv
