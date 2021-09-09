@@ -2,10 +2,10 @@
 
 set -e
 
-php_version=${1:=7.4}
+php_version=${1:=8.0}
 
 # https://github.com/phpredis/phpredis/releases
-phpredis_version="5.3.3"
+phpredis_version="5.3.4"
 
 curl -L "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \
     | tar -xzv
