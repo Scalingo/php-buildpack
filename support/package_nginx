@@ -24,17 +24,11 @@ if [ -z "$nginx_version" ]; then
   exit $E_ARG_MISSING
 fi
 
-if [ -z "$NGINX_ZLIB_VERSION" ]; then
-  # From https://zlib.net/
-  NGINX_ZLIB_VERSION=1.2.11
-fi
-
 if [ -z "$NGINX_PCRE_VERSION" ]; then
   # From https://sourceforge.net/projects/pcre/files/pcre/
   NGINX_PCRE_VERSION=8.45
 fi
 
-zlib_version="$NGINX_ZLIB_VERSION"
 pcre_version="$NGINX_PCRE_VERSION"
 
 tempdir=$(mktmpdir nginx)
