@@ -6,7 +6,7 @@ php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-sodium_version="1.0.18"
+source "/buildpack/conf/buildpack.conf"
 if echo "$php_version" | grep -qE "^7.[23]" ; then
   sodium_version="1.0.7"
 fi
