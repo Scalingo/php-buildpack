@@ -1,6 +1,8 @@
 function install_php() {
   php_version=$1
 
+  echo "-----> Installing PHP $php_version from Scalingo object storage"
+
   local php_package="${SWIFT_URL}/package/php-${php_version}.tgz"
   local php_md5="${SWIFT_URL}/package/php-${php_version}.md5"
 
@@ -27,7 +29,7 @@ function install_php_src() {
   dst=$2
 
   pushd $dst
-  echo "-----> Downloading PHP $php_version"
+  echo "-----> Downloading PHP $php_version source"
   curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
   tar -xzf "php-${php_version}.tar.gz"
   popd

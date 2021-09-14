@@ -26,4 +26,3 @@ popd > /dev/null
 swift_upload package/libwebp-${webp_version}.tgz
 
 "$basedir/package-checksum" "libwebp-${webp_version}"
-

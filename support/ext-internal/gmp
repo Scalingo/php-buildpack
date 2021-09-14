@@ -1,11 +1,10 @@
 #!/bin/bash
 
-gmp_version="6.2.1"
-
 php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
+source "/buildpack/conf/buildpack.conf"
 gmp_package="${SWIFT_URL}/package/gmp-${gmp_version}.tgz"
 
 curl -L "$gmp_package" > /tmp/gmp-${gmp_version}.tgz

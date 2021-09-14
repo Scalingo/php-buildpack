@@ -7,6 +7,8 @@ function build_ext() {
   # Only used for internal extensions
   local php_src_dir=$5
 
+  echo "-----> Building extension $ext_name"
+
   local ext_dir="lib/php/extensions/no-debug-non-zts-${zend_api_version}"
   mkdir -p "$tempbuilddir/$ext_dir" \
     && mkdir -p "$tempbuilddir/etc/conf.d" \
@@ -22,6 +24,8 @@ function upload_ext() {
   local tempdir=$2
   local package_name=$3
   local zend_api_version=$4
+
+  echo "-----> Uploading extension $ext_name"
 
   mkdir -p package/ext/${zend_api_version}
   pushd $tempbuilddir > /dev/null
