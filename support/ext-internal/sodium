@@ -8,7 +8,7 @@ php_src_dir=$3
 
 source "/buildpack/conf/buildpack.conf"
 if echo "$php_version" | grep -qE "^7.[23]" ; then
-  sodium_version="1.0.7"
+  sodium_version="$sodium_php72_php73_version"
 fi
 
 sodium_package="${SWIFT_URL}/package/libsodium-${sodium_version}.tgz"
