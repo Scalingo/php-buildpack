@@ -17,7 +17,7 @@ curl -L "$sodium_package" > /tmp/sodium-${sodium_version}.tgz
 
 libsodium_path=/app/vendor/libsodium
 
-rm -r "${libsodium_path}"
+rm -rf "${libsodium_path}"
 mkdir -p "${libsodium_path}"
 tar -xzv -C "${libsodium_path}" -f /tmp/sodium-${sodium_version}.tgz
 
