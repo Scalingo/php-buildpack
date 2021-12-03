@@ -100,6 +100,13 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -ge "${PHP_MODULE_API_VERSIONS
   WITH_ARGON_CONFIGURE="--with-password-argon2"
 fi
 
+# As of PHP 8.0 the XML-RPC module has been moved to PECL
+# https://php.watch/versions/8.0/xmlrpc
+WITH_XMLRPC_CONFIGURE=""
+if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["8.0"]}" ]] ; then
+  WITH_XMLRPC_CONFIGURE="--with-xmlrpc"
+fi
+
 mkdir -p "/app/vendor/libwebp" \
   && curl "${SWIFT_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
 
@@ -136,7 +143,7 @@ ${libzip_flag} \
 --with-openssl \
 --enable-soap \
 --enable-xmlreader \
---with-xmlrpc \
+${WITH_XMLRPC_CONFIGURE} \
 --with-curl=/usr \
 --with-xsl \
 --enable-fpm \
