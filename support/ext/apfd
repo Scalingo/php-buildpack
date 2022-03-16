@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+php_version=${1:=8.0}
+apfd_version=1.0.3
+
+curl -L "https://pecl.php.net/get/apfd-${apfd_version}.tgz" | tar xzv
+
+cd apfd-${apfd_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/apfd.so "$EXT_DIR/apfd.so"
+echo "extension=apfd.so" > "$PREFIX/etc/conf.d/apfd.ini"
