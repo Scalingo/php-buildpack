@@ -42,9 +42,15 @@ More information on this [documentation page](https://doc.scalingo.com/languages
 
 ## Available versions
 
-[Available PHP Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.php)
+### Stack `scalingo-18`
 
-[Available NGINX Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/manifest.nginx)
+* [Available PHP Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/scalingo-18/manifest.php)
+* [Available NGINX Versions](https://nginx-buildpack.s3.amazonaws.com/scalingo-18/manifest.nginx)
+
+### Stack `scalingo-20`
+
+* [Available PHP Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/scalingo-20/manifest.php)
+* [Available NGINX Versions](https://nginx-buildpack.s3.amazonaws.com/scalingo-20/manifest.nginx)
 
 ## Detection
 

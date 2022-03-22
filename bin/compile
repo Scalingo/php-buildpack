@@ -31,17 +31,23 @@ function fetch_engine_package() {
     local version="$2"
     local location="$3"
 
-    fetch_package "${engine}-${version}" "$location"
+    local base_url="$PHP_BASE_URL"
+    if [ "$engine" = "nginx" ] ; then
+      base_url="$NGINX_BASE_URL"
+    fi
+
+    fetch_package "$base_url" "${engine}-${version}" "$location"
 }
 
 function fetch_package() {
-    local package="$1"
-    local location="$2"
+    local base_url="$1"
+    local package="$2"
+    local location="$3"
 
     mkdir -p "$location"
 
-    local checksum_url="${SWIFT_URL}/package/${package}.md5"
-    local package_url="${SWIFT_URL}/package/${package}.tgz"
+    local checksum_url="${base_url}/package/${package}.md5"
+    local package_url="${base_url}/package/${package}.tgz"
     local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
     local cache_checksum=""
 
@@ -189,7 +195,7 @@ export_env_dir "$3"
 # Download jq binary for JSON processing
 mkdir -p $BUILD_DIR/bin
 export PATH="$BUILD_DIR/bin:$PATH"
-curl --fail  --retry 3 --retry-delay 2 "${SWIFT_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
+curl --fail  --retry 3 --retry-delay 2 "${PHP_BASE_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
 chmod +x "$BUILD_DIR/bin/jq"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
@@ -264,9 +270,9 @@ status "Bundling PHP ${PHP_VERSION}"
 
 # Install libraries also on build container, so PHP doesn't complain about missing
 # dynamic libraries when running it during the slug compilation.
-fetch_package "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
-fetch_package "libzip-${zip_version}" /app/vendor/libzip > /dev/null
-fetch_package "libwebp-${webp_version}" /app/vendor/libwebp > /dev/null
+fetch_package "$PHP_BASE_URL" "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
+fetch_package "$PHP_BASE_URL" "libzip-${zip_version}" /app/vendor/libzip > /dev/null
+fetch_package "$PHP_BASE_URL" "libwebp-${webp_version}" /app/vendor/libwebp > /dev/null
 
 fetch_engine_package php "$PHP_VERSION" "${VENDORED_PHP}" | indent
 
@@ -286,31 +292,31 @@ export PHP_FPM_MAX_REQUESTS="\${PHP_FPM_MAX_REQUESTS:-0}"
 SH
 
 if [ $STACK = "scalingo-14" ] ; then
-    fetch_package "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
+    fetch_package "$PHP_BASE_URL" "tail-${coreutils_version}" /app/vendor/coreutils > /dev/null
 fi
 
 source ".profile.d/php.sh"
 
 # Lib Oniguruma is only mandatory starting with PHP 7.4
 if [[ "$(php_api_version)" -ge "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
-  fetch_package "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
+  fetch_package "$PHP_BASE_URL" "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
   export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
 fi
 
 # Fetch additional extensions
 status "Bundling platform default extensions"
 echo "       apcu"
-fetch_package "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
+fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
 
 echo "       phpredis"
-fetch_package "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 
 echo "       mongodb"
-fetch_package "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
+fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
 
 if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
     echo "       mcrypt"
-    fetch_package "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
+    fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
 fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
@@ -324,7 +330,7 @@ fi
 
 if [ -n "$BLACKFIRE_SERVER_ID" -a -n "$BLACKFIRE_SERVER_TOKEN" ] ; then
     status "Blackfire usage detected, installing PHP extension"
-    fetch_package "ext/$(php_api_version)/php-blackfire" "/app/vendor/php" | indent
+    fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-blackfire" "/app/vendor/php" | indent
     cp /app/vendor/php/bin/profile.blackfire.sh $BUILD_DIR/.profile.d
 fi
 

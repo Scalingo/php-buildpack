@@ -3,8 +3,8 @@ function install_php() {
 
   echo "-----> Installing PHP $php_version from Scalingo object storage"
 
-  local php_package="${SWIFT_URL}/package/php-${php_version}.tgz"
-  local php_md5="${SWIFT_URL}/package/php-${php_version}.md5"
+  local php_package="${PHP_BASE_URL}/package/php-${php_version}.tgz"
+  local php_md5="${PHP_BASE_URL}/package/php-${php_version}.md5"
 
   mkdir -p /app/vendor/php
   curl -L "$php_md5" > /tmp/php-${php_version}.md5

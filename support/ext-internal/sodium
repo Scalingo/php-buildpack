@@ -11,7 +11,7 @@ if echo "$php_version" | grep -qE "^7.[23]" ; then
   sodium_version="$sodium_php72_php73_version"
 fi
 
-sodium_package="${SWIFT_URL}/package/libsodium-${sodium_version}.tgz"
+sodium_package="${PHP_BASE_URL}/package/libsodium-${sodium_version}.tgz"
 
 curl -L "$sodium_package" > /tmp/sodium-${sodium_version}.tgz
 

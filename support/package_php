@@ -27,7 +27,7 @@ tempdir=$(mktmpdir php)
 cd $tempdir
 
 echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
-curl -LO "${SWIFT_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
+curl -LO "${PHP_BASE_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
 tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
 
 # If we're using the stack scalingo-14
@@ -36,7 +36,7 @@ libzip_flag=""
 if [ "$STACK" = "scalingo-14" ] ; then
   echo "-----> Downloading dependency libzip ${zip_version}"
   mkdir /app/vendor/libzip -p
-  curl -L -o - "${SWIFT_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
+  curl -L -o - "${PHP_BASE_URL}/package/libzip-${zip_version}.tgz" | tar -C /app/vendor/libzip -xvz
   export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libzip/include"
   libzip_flag="--with-libzip=/app/vendor/libzip"
 fi
@@ -44,7 +44,7 @@ fi
 if [ "$STACK" != "scalingo-14" ] ; then
   echo "-----> Downloading dependency libonig ${libonig_version}"
   mkdir /app/vendor/libonig -p
-  curl -L -o - "${SWIFT_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
+  curl -L -o - "${PHP_BASE_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
   export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libonig/include"
   export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
 fi
@@ -85,7 +85,7 @@ fi
 WITH_MCRYPT_CONFIGURE=""
 if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] ; then
   mkdir -p "/app/vendor/php/zlib" "/app/vendor/libmcrypt" \
-  && curl "${SWIFT_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
+  && curl "${PHP_BASE_URL}/package/libmcrypt-${mcrypt_version}.tgz" | tar xzv -C /app/vendor/libmcrypt
   WITH_MCRYPT_CONFIGURE="--with-mcrypt=/app/vendor/libmcrypt"
 fi
 
@@ -108,7 +108,7 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS
 fi
 
 mkdir -p "/app/vendor/libwebp" \
-  && curl "${SWIFT_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
+  && curl "${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
 
 export WEBP_LIBS="-L/app/vendor/libwebp/lib -lwebp"
 export WEBP_CFLAGS="-I/app/vendor/libwebp/include"

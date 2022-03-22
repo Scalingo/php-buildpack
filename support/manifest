@@ -3,7 +3,7 @@
 manifest_type="$1"
 
 if [ -z "$manifest_type" ]; then
-    echo "Usage: $0 <nginx|php>" >&2
+    echo "Usage: $0 <php>" >&2
     exit 1
 fi
 

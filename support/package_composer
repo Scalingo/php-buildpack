@@ -28,7 +28,7 @@ fi
 curl -L "$BASE_COMPOSER_URL/$current_composer_version_path" > composer-${composer_version}.phar
 md5 composer-${composer_version}.phar > composer-${composer_version}.phar.md5
 
-echo "-----> Uploading Composer package to Swift ${SWIFT_URL}/composer/composer-${composer_version}.phar"
+echo "-----> Uploading Composer package to Swift ${PHP_BASE_URL}/composer/composer-${composer_version}.phar"
 
 mkdir composer
 mv composer-${composer_version}.phar composer
