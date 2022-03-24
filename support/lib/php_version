@@ -8,7 +8,7 @@ function zend_api_from_php_series() {
 }
 
 function php_series_last_version() {
-  local php_versions=$(curl --silent "${SWIFT_URL}/manifest.php")
+  local php_versions=$(curl --silent "${PHP_BASE_URL}/manifest.php")
   echo ${php_series}.$(\
       echo "$php_versions" \
       | grep "^${php_series}.*$" | cut -d'.' -f3 | sort -r -n | head -n1)

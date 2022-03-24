@@ -42,7 +42,7 @@ case "$1" in
     end)
         status "Apply patch for redis session storage"
         pushd $BUILD_DIR/vendor/zendframework/zendframework >/dev/null
-        curl -LO $SWIFT_URL/change4-patch1.patch
+        curl -LO $PHP_BASE_URL/change4-patch1.patch
         patch -p1 < change4-patch1.patch
         popd >/dev/null
 

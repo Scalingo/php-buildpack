@@ -41,12 +41,12 @@ function install_composer_deps() {
     mkdir -p $COMPOSER_CACHE_DIR
     mkdir -p "$target/vendor/composer/bin"
 
-    local checksum=$(curl --silent "${SWIFT_URL}/composer/composer-${COMPOSER_VERSION}.phar.md5")
+    local checksum=$(curl --silent "${PHP_BASE_URL}/composer/composer-${COMPOSER_VERSION}.phar.md5")
 
     status "Vendoring Composer ${COMPOSER_VERSION}"
     if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
         echo "Updating Composer" | indent
-        curl --silent "${SWIFT_URL}/composer/composer-${COMPOSER_VERSION}.phar" > "$CACHE_DIR/composer.phar" | indent
+        curl --silent "${PHP_BASE_URL}/composer/composer-${COMPOSER_VERSION}.phar" > "$CACHE_DIR/composer.phar" | indent
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
     else
@@ -66,18 +66,18 @@ function install_composer_deps() {
             echo "$ext" | indent
             # TODO: Find a better way to ignore extensions which were not found in S3
             if [ "$ext" = "memcached" ] ; then
-              fetch_package "libmemcached-${libmemcached_version}" "/app/vendor/libmemcached" | indent
+              fetch_package "$PHP_BASE_URL" "libmemcached-${libmemcached_version}" "/app/vendor/libmemcached" | indent
             elif [ "$ext" = "gmp" ] ; then
-              fetch_package "gmp-${gmp_version}" "/app/vendor/gmp" | indent
+              fetch_package "$PHP_BASE_URL" "gmp-${gmp_version}" "/app/vendor/gmp" | indent
             elif [ "$ext" = "tidy" ] ; then
-              fetch_package "libtidy-${tidy_version}" "/app/vendor/libtidy" | indent
+              fetch_package "$PHP_BASE_URL" "libtidy-${tidy_version}" "/app/vendor/libtidy" | indent
             elif [ "$ext" = "sodium" ] ; then
               if [[ "$(php_api_version)" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
                 sodium_version=$sodium_php72_php73_version
               fi
-              fetch_package "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
+              fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             fi
-            fetch_package "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+            fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
     fi
 

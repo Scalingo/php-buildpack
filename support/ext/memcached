@@ -10,7 +10,7 @@ curl -L "https://github.com/php-memcached-dev/php-memcached/archive/v${php_memca
 
 source "/buildpack/conf/buildpack.conf"
 mkdir -p /app/vendor/libmemcached
-curl "${SWIFT_URL}/package/libmemcached-${libmemcached_version}.tgz" \
+curl "${PHP_BASE_URL}/package/libmemcached-${libmemcached_version}.tgz" \
     | tar xzv -C /app/vendor/libmemcached
 
 cd php-memcached-${php_memcached_version}
