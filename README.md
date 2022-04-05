@@ -381,6 +381,26 @@ Example:
 DATADOG_APPSEC_VERSION=latest
 ```
 
+#### scout
+
+_Default: false_
+
+Enable support for [Scout APM](https://scoutapm.com/).
+
+To enable Scout support, set the `extra.paas.scout` property to `true`:
+
+```
+    "scout": true
+```
+
+To install a specific version of the extension, use the `SCOUT_APM_VERSION` environment variable (`1.7.0` by default).
+
+Example:
+
+```
+SCOUT_APM_VERSION=1.7.0
+```
+
 #### log-files
 
 _Default: []_
