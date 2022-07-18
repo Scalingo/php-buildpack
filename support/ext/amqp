@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+# https://pecl.php.net/package/amqp
+latest_version="1.11.0"
+url="https://pecl.php.net/get/amqp-%s.tgz"
+
+printf -v archive_url "${url}" "${latest_version}"
+
+curl -L "${archive_url}" \
+    | tar xvz
+
+cd "amqp-${latest_version}"
+
+/app/vendor/php/bin/phpize \
+    || ( echo "Failed to PHPize AMQP extension." \
+            && exit 1 )
+
+./configure \
+    --with-php-config=/app/vendor/php/bin/php-config \
+    || ( echo "Failed to configure AMQP extension." \
+            && exit 1 )
+
+make \
+    || ( echo "Failed to build AMQP extension." \
+            && exit 1 )
+
+cp modules/amqp.so "${EXT_DIR}/amqp.so"
+echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
