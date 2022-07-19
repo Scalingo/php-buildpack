@@ -16,16 +16,14 @@ build_librabbitmq() {
     local pkgname
     local pkgver
     local url
-    local prefix
 
     pkgname="${1}"
     pkgver="${2}"
     url="${3}"
-    prefix="${4}"
 
     printf -v archive_url "${url}" "${pkgver}"
 
-    mkdir -p "${pkgname}-${pkgver}/build"
+    mkdir -p "${pkgname}-${pkgver}"
     pushd "${pkgname}-${pkgver}"
 
     download_archive "${archive_url}" \
@@ -57,12 +55,10 @@ build_amqp() {
     local pkgname
     local pkgver
     local url
-    local librabbitmq_dir
 
     pkgname="${1}"
     pkgver="${2}"
     url="${3}"
-    librabbitmq_dir="${4}"
 
     printf -v archive_url "${url}" "${pkgver}"
 
@@ -110,9 +106,8 @@ pkgname="amqp"
 version="1.11.0"
 source_url="https://pecl.php.net/get/amqp-%s.tgz"
 
-build_amqp "${pkgname}" "${version}" "${source_url}" "/app/vendor/librabbitmq"
+build_amqp "${pkgname}" "${version}" "${source_url}"
 
 cp "${pkgname}-${version}/modules/amqp.so" "${EXT_DIR}/amqp.so"
 echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
-
 
