@@ -1,30 +1,118 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
+
+download_archive() {
+    local archive_url
+
+    archive_url="${1}"
+
+    curl -L "${archive_url}"
+}
+
+
+build_librabbitmq() {
+    local pkgname
+    local pkgver
+    local url
+    local prefix
+
+    pkgname="${1}"
+    pkgver="${2}"
+    url="${3}"
+    prefix="${4}"
+
+    printf -v archive_url "${url}" "${pkgver}"
+
+    mkdir -p "${pkgname}-${pkgver}/build"
+    pushd "${pkgname}-${pkgver}"
+
+    download_archive "${archive_url}" \
+        | tar xvz --strip-components=1
+
+    cmake \
+        -DBUILD_TESTING=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_TOOLS=OFF \
+        -DBUILD_TOOLS_DOCS=OFF \
+        -DBUILD_API_DOCS=OFF \
+        -DRUN_SYSTEM_TESTS=OFF \
+        -Wno-dev \
+        || ( echo "Failed to build librabbitmq." \
+            && exit 1 )
+
+    cmake \
+        --build . \
+        --config Release \
+        --target install \
+        || ( echo "Failed to build librabbitmq." \
+            && exit 1 )
+
+    popd
+}
+
+
+build_amqp() {
+    local pkgname
+    local pkgver
+    local url
+    local librabbitmq_dir
+
+    pkgname="${1}"
+    pkgver="${2}"
+    url="${3}"
+    librabbitmq_dir="${4}"
+
+    printf -v archive_url "${url}" "${pkgver}"
+
+    mkdir -p "${pkgname}-${pkgver}"
+    pushd "${pkgname}-${pkgver}"
+
+    download_archive "${archive_url}" \
+        | tar xvz --strip-components=1
+
+    /app/vendor/php/bin/phpize \
+        || ( echo "Failed to PHPize AMQP extension." \
+            && exit 1 )
+
+    ./configure \
+        --with-php-config="/app/vendor/php/bin/php-config" \
+        || ( echo "Failed to configure AMQP extension." \
+            && exit 1 )
+
+    make \
+        || ( echo "Failed to build AMQP extension." \
+            && exit 1 )
+
+    popd
+}
+
+
+
+which cmake 2>/dev/null || (apt update && apt install -y cmake)
+
+# librabbitmq
+# https://github.com/alanxz/rabbitmq-c/releases
+
+pkgname="librabbitmq-c"
+version="0.11.0"
+source_url="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v%s.tar.gz"
+
+build_librabbitmq "${pkgname}" "${version}" "${source_url}" "/app/vendor/librabbitmq"
+
+
+
+# amqp
 # https://pecl.php.net/package/amqp
-latest_version="1.11.0"
-url="https://pecl.php.net/get/amqp-%s.tgz"
 
-printf -v archive_url "${url}" "${latest_version}"
+pkgname="amqp"
+version="1.11.0"
+source_url="https://pecl.php.net/get/amqp-%s.tgz"
 
-curl -L "${archive_url}" \
-    | tar xvz
+build_amqp "${pkgname}" "${version}" "${source_url}" "/app/vendor/librabbitmq"
 
-cd "amqp-${latest_version}"
-
-/app/vendor/php/bin/phpize \
-    || ( echo "Failed to PHPize AMQP extension." \
-            && exit 1 )
-
-./configure \
-    --with-php-config=/app/vendor/php/bin/php-config \
-    || ( echo "Failed to configure AMQP extension." \
-            && exit 1 )
-
-make \
-    || ( echo "Failed to build AMQP extension." \
-            && exit 1 )
-
-cp modules/amqp.so "${EXT_DIR}/amqp.so"
+cp "${pkgname}-${version}/modules/amqp.so" "${EXT_DIR}/amqp.so"
 echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
+
+
