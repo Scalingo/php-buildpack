@@ -76,9 +76,6 @@ function install_composer_deps() {
                 sodium_version=$sodium_php72_php73_version
               fi
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
-            elif [ "$ext" = "amqp" ] ; then
-                fetch_package "$PHP_BASE_URL" "amqp-${amqp_version}" "/app/vendor/amqp" | indent
-
             fi
             fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
