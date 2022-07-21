@@ -2,16 +2,21 @@
 
 set -e
 
-igbinary_version="3.2.6"
+# $igbinary_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
+source "/buildpack/conf/buildpack.conf"
 
-curl -L "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \
+curl --location "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \
     | tar xzv
 
-cd "igbinary-${igbinary_version}"
+pushd "igbinary-${igbinary_version}"
+
 /app/vendor/php/bin/phpize
 ./configure --with-php-config=/app/vendor/php/bin/php-config \
             --enable-igbinary
 
 make
-cp modules/igbinary.so "$EXT_DIR/igbinary.so"
-echo "extension=igbinary.so" > "$PREFIX/etc/conf.d/igbinary.ini"
+cp modules/igbinary.so "${EXT_DIR}/igbinary.so"
+
+popd
+
+echo "extension=igbinary.so" > "${PREFIX}/etc/conf.d/igbinary.ini"
