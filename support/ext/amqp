@@ -16,12 +16,12 @@ build_librabbitmq() {
     local pkgname
     local pkgver
     local url
-    local prefix
+    local librabbitmq_dir
 
     pkgname="${1}"
     pkgver="${2}"
     url="${3}"
-    prefix="${4}"
+    librabbitmq_dir="${4}"
 
     printf -v archive_url "${url}" "${pkgver}"
 
@@ -31,9 +31,8 @@ build_librabbitmq() {
     download_archive "${archive_url}" \
         | tar xvz --strip-components=1
 
-#    cmake \
-#        -DCMAKE_INSTALL_PREFIX="${prefix}" \
     cmake \
+        -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
         -DBUILD_TESTS=OFF \
         -DBUILD_EXAMPLES=OFF \
         -DBUILD_TOOLS=OFF \
@@ -57,18 +56,17 @@ build_librabbitmq() {
 
     mkdir -p "${PREFIX}/lib"
 
-    # Copy library to `$PREFIX` so it's included in the future package
-    cp -ar "/usr/local/lib/x86_64-linux-gnu" "${PREFIX}/lib/"
-    cp -ar "/usr/local/include" "${PREFIX}/"
-
     # Move things that have been stored in `${prefix}/lib/x86_64-linux-gnu`
     # to `${prefix}/lib` so that AMQP's `configure` finds them.
-#    find "${prefix}/lib/x86_64-linux-gnu" \
-#        -mindepth 1 \
-#        -maxdepth 1 \
-#        -exec mv --target-directory "${prefix}/lib/" -- {} \+
+    find "${librabbitmq_dir}/lib/x86_64-linux-gnu" \
+        -mindepth 1 \
+        -maxdepth 1 \
+        -exec mv --target-directory "${librabbitmq_dir}/lib/" -- {} \+
 
-#    rmdir "${prefix}/lib/x86_64-linux-gnu"
+    rmdir "${librabbitmq_dir}/lib/x86_64-linux-gnu"
+
+    # Copy library to `$PREFIX/lib` so it's included in the future package
+    cp -ar "${librabbitmq_dir}" "${PREFIX}/lib/"
 }
 
 
@@ -97,7 +95,7 @@ build_amqp() {
 
     ./configure \
         --with-php-config="/app/vendor/php/bin/php-config" \
-        --with-amqp \
+        --with-librabbitmq-dir="${librabbitmq_dir}" \
         || ( echo "Failed to configure AMQP extension." \
             && exit 1 )
 
@@ -115,8 +113,8 @@ which cmake 2>/dev/null || (apt update && apt install -y cmake)
 
 source "/buildpack/conf/buildpack.conf"
 
-#librabbitmq_prefix=/app/vendor/librabbitmq
-librabbitmq_prefix="/usr/local"
+librabbitmq_prefix="/app/vendor/php/lib/rabbitmq"
+
 
 # librabbitmq
 # https://github.com/alanxz/rabbitmq-c/releases
@@ -146,3 +144,4 @@ echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
 # Remove $librabbitmq_prefix
 # Remove $prefix and $librabbitmq_dir from functions + function calls
 # Cleanup
+
