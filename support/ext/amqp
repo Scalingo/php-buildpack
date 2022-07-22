@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
+#
+# amqp requires librabbitmq to work.
+# Since our package deploys the PHP extension `amqp.so` in /app/vendor/php/...
+# librabbitmq must be deployed somewhere in there too.
+#
+# To do this, we use the CMAKE_INSTALL_PREFIX when compiling librabbitmq and
+# set it to /app/vendor/php/lib/rabbitmq.
+# This means `amqp.so` will look for the `librabbitmq.so` file in
+# /app/vendor/php/lib/rabbitmq/lib/
+#
+# We specify the same path when compiling amqp (`--with-librabbitmq-dir`).
+#
+# Since librabbitmq must be deployed along with the amqp extension, it must be
+# added to the future package. That's why we are moving the librabbitmq files
+# to $PREFIX once they are ready.
+#
 
 download_archive() {
     local archive_url
@@ -128,7 +144,7 @@ build_librabbitmq "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefi
 
 # amqp
 # https://pecl.php.net/package/amqp
-# `$version` is loaded from ../conf/buildpack.conf
+# `$version` is loaded from the buildpack.conf file.
 
 pkgname="amqp"
 version="${amqp_version}"
@@ -138,10 +154,4 @@ build_amqp "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefix}"
 
 cp "${pkgname}-${version}/modules/amqp.so" "${EXT_DIR}/amqp.so"
 echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
-
-
-# Explain $PREFIX
-# Remove $librabbitmq_prefix
-# Remove $prefix and $librabbitmq_dir from functions + function calls
-# Cleanup
 
