@@ -3,6 +3,20 @@
 set -e
 
 #
+# This script is called by the `build_ext` function
+# which is defined in `php-buildpack/support/lib/php_ext`.
+#
+# The `build_ext` function is itself called by the `package_{internal_}ext` function,
+# which is defined in `php-buildpack/support/package_{internal_}ext`.
+#
+# The following parameters are passed when the script is called (yet, unused):
+# - $1: PHP version
+# - $2: Zend API version
+# - $3: Path to a temporary directory where PHP source code resides
+#       (only for internal extension)
+
+
+#
 # amqp requires librabbitmq to work.
 # Since our package deploys the PHP extension `amqp.so` in /app/vendor/php/...
 # librabbitmq must be deployed somewhere in there too.
@@ -123,6 +137,13 @@ build_amqp() {
 }
 
 
+# Remove everything in /app to avoid conflicts while building other versions
+# of the extension.
+cleanup_amqp() {
+    rm -Rf "/app/vendor"
+}
+
+
 
 # Make sure `cmake` is available
 which cmake 2>/dev/null || (apt update && apt install -y cmake)
@@ -154,4 +175,9 @@ build_amqp "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefix}"
 
 cp "${pkgname}-${version}/modules/amqp.so" "${EXT_DIR}/amqp.so"
 echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
+
+
+# Cleanup
+
+cleanup_amqp
 
