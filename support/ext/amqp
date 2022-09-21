@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+
+set -e
+
+#
+# This script is called by the `build_ext` function
+# which is defined in `php-buildpack/support/lib/php_ext`.
+#
+# The `build_ext` function is itself called by the `package_{internal_}ext` function,
+# which is defined in `php-buildpack/support/package_{internal_}ext`.
+#
+# The following parameters are passed when the script is called (yet, unused):
+# - $1: PHP version
+# - $2: Zend API version
+# - $3: Path to a temporary directory where PHP source code resides
+#       (only for internal extension)
+
+
+#
+# amqp requires librabbitmq to work.
+# Since our package deploys the PHP extension `amqp.so` in /app/vendor/php/...
+# librabbitmq must be deployed somewhere in there too.
+#
+# To do this, we use the CMAKE_INSTALL_PREFIX when compiling librabbitmq and
+# set it to /app/vendor/php/lib/rabbitmq.
+# This means `amqp.so` will look for the `librabbitmq.so` file in
+# /app/vendor/php/lib/rabbitmq/lib/
+#
+# We specify the same path when compiling amqp (`--with-librabbitmq-dir`).
+#
+# Since librabbitmq must be deployed along with the amqp extension, it must be
+# added to the future package. That's why we are moving the librabbitmq files
+# to $PREFIX once they are ready.
+#
+
+download_archive() {
+    local archive_url
+
+    archive_url="${1}"
+
+    curl --location "${archive_url}"
+}
+
+
+build_librabbitmq() {
+    local pkgname
+    local pkgver
+    local url
+    local librabbitmq_dir
+
+    pkgname="${1}"
+    pkgver="${2}"
+    url="${3}"
+    librabbitmq_dir="${4}"
+
+    printf -v archive_url "${url}" "${pkgver}"
+
+    mkdir -p "${pkgname}-${pkgver}"
+    pushd "${pkgname}-${pkgver}"
+
+    download_archive "${archive_url}" \
+        | tar xvz --strip-components=1
+
+    cmake \
+        -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_TOOLS=OFF \
+        -DBUILD_TOOLS_DOCS=OFF \
+        -DBUILD_API_DOCS=OFF \
+        -DRUN_SYSTEM_TESTS=OFF \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -Wno-dev \
+        || ( echo "Failed to build librabbitmq." \
+            && exit 1 )
+
+    cmake \
+        --build . \
+        --config Release \
+        --target install \
+        || ( echo "Failed to build librabbitmq." \
+            && exit 1 )
+
+    popd
+
+    mkdir -p "${PREFIX}/lib"
+
+    # Move things that have been stored in `${prefix}/lib/x86_64-linux-gnu`
+    # to `${prefix}/lib` so that AMQP's `configure` finds them.
+    find "${librabbitmq_dir}/lib/x86_64-linux-gnu" \
+        -mindepth 1 \
+        -maxdepth 1 \
+        -exec mv --target-directory "${librabbitmq_dir}/lib/" -- {} \+
+
+    rmdir "${librabbitmq_dir}/lib/x86_64-linux-gnu"
+
+    # Copy library to `$PREFIX/lib` so it's included in the future package
+    cp -ar "${librabbitmq_dir}" "${PREFIX}/lib/"
+}
+
+
+build_amqp() {
+    local pkgname
+    local pkgver
+    local url
+    local librabbitmq_dir
+
+    pkgname="${1}"
+    pkgver="${2}"
+    url="${3}"
+    librabbitmq_dir="${4}"
+
+    printf -v archive_url "${url}" "${pkgver}"
+
+    mkdir -p "${pkgname}-${pkgver}"
+    pushd "${pkgname}-${pkgver}"
+
+    download_archive "${archive_url}" \
+        | tar xvz --strip-components=1
+
+    /app/vendor/php/bin/phpize \
+        || ( echo "Failed to PHPize AMQP extension." \
+            && exit 1 )
+
+    ./configure \
+        --with-php-config="/app/vendor/php/bin/php-config" \
+        --with-librabbitmq-dir="${librabbitmq_dir}" \
+        || ( echo "Failed to configure AMQP extension." \
+            && exit 1 )
+
+    make \
+        || ( echo "Failed to build AMQP extension." \
+            && exit 1 )
+
+    popd
+}
+
+
+# Remove everything in /app to avoid conflicts while building other versions
+# of the extension.
+cleanup_amqp() {
+    rm -Rf "/app/vendor"
+}
+
+
+
+# Make sure `cmake` is available
+which cmake 2>/dev/null || (apt update && apt install -y cmake)
+
+source "/buildpack/conf/buildpack.conf"
+
+librabbitmq_prefix="/app/vendor/php/lib/rabbitmq"
+
+
+# librabbitmq
+# https://github.com/alanxz/rabbitmq-c/releases
+
+pkgname="librabbitmq-c"
+version="0.11.0"
+source_url="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v%s.tar.gz"
+
+build_librabbitmq "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefix}"
+
+
+# amqp
+# https://pecl.php.net/package/amqp
+# `$version` is loaded from the buildpack.conf file.
+
+pkgname="amqp"
+version="${amqp_version}"
+source_url="https://pecl.php.net/get/amqp-%s.tgz"
+
+build_amqp "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefix}"
+
+cp "${pkgname}-${version}/modules/amqp.so" "${EXT_DIR}/amqp.so"
+echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
+
+
+# Cleanup
+
+cleanup_amqp
+
