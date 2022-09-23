@@ -5,7 +5,7 @@ set -e
 php_version=${1:=7.4}
 
 if echo $php_version | grep -q -E '^[78].' ; then
-  apcu_version=5.1.21
+  apcu_version=5.1.22
 else
   apcu_version=4.0.11
 fi
