@@ -23,7 +23,7 @@ done
 
 for e in ./ext/*; do
   ext_name=$(basename $e)
-  if [[ "$php_version" = "8.1" ]]; then
+  if [[ "$php_version" = "8.1" || "$php_version" = "8.2" ]]; then
     if [[ "$ext_name" = "ds" ]]; then
       continue
     fi
