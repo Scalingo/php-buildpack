@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+
+php_version="${1:=8.1}"
+oci8_version="3.2.1"
+
+curl -L "https://pecl.php.net/get/oci8-${oci8_version}.tgz" \
+    | tar xzv
+
+cd "oci8-${oci8_version}"
+
+/app/vendor/php/bin/phpize
+
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+
+cp modules/oci8.so "$EXT_DIR/oci8.so"
+
+echo "extension=oci8.so" > "$PREFIX/etc/conf.d/oci8.ini"
