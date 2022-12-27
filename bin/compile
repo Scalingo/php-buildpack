@@ -12,6 +12,7 @@ source $basedir/../lib/composer
 source $basedir/../lib/datadog
 source $basedir/../lib/scout
 source $basedir/../lib/newrelic
+source $basedir/../lib/pecl
 
 if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
   source $basedir/../lib/nodejs

@@ -50,7 +50,7 @@ function install_composer_deps() {
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
     else
-        echo "Checksums match. Fetching from cache."
+        echo "Checksums match. Fetching Composer from cache."
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
@@ -76,13 +76,19 @@ function install_composer_deps() {
                 sodium_version=$sodium_php72_php73_version
               fi
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
+            else
+              # TODO How to check if the extension is in the cache?
+              local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
+              install_pecl_extension $ext "$ext_version" | indent
             fi
+
+            # TODO I don't think this instruction should be executed for all extensions
             fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done
     fi
 
     if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
-        status "Configuring the github authentication for Composer"
+        status "Configuring the GitHub authentication for Composer"
         php "vendor/composer/bin/composer.phar" config -g github-oauth.github.com "$COMPOSER_GITHUB_TOKEN" --no-interaction
     fi
 
@@ -101,4 +107,3 @@ function install_composer_deps() {
         cd "$cwd"
     } | indent
 }
-

@@ -1,0 +1,25 @@
+function install_pecl_extension() {
+  local extension_name="${1}"
+  local version="${2}"
+
+  local build_dir=$(pwd)
+  local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+  local temp_dir=$(mktmpdir "pecl-extension")
+
+  status "Installing PHP extension ${extension_name} version ${version}"
+
+  pushd "${temp_dir}" > /dev/null
+
+  curl --silent --location "https://pecl.php.net/get/${extension_name}-${version}.tgz" | tar xz
+
+  pushd ${extension_name}-${version} > /dev/null
+  /app/vendor/php/bin/phpize > /dev/null
+  ./configure --with-php-config=/app/vendor/php/bin/php-config --with-${extension_name}=${build_dir}/.apt/usr > /dev/null
+
+  make > /dev/null
+  cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
+  echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+
+  popd > /dev/null
+  popd > /dev/null
+}
