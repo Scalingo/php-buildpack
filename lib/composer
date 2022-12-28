@@ -77,9 +77,8 @@ function install_composer_deps() {
               fi
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             else
-              # TODO How to check if the extension is in the cache?
               local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
-              install_pecl_extension $ext "$ext_version" | indent
+              install_pecl_extension $ext "$ext_version" "$CACHE_DIR" | indent
             fi
 
             # TODO I don't think this instruction should be executed for all extensions
