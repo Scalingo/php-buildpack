@@ -2,9 +2,9 @@
 
 set -e
 
-php_version=${1:=7.4}
+php_version=${1:=8.2}
 
-event_version="3.0.5"
+event_version="3.0.8"
 
 # libwebp is required to compile this library starting with scalingo-20
 if [[ ! -d /app/vendor/libwebp ]]; then

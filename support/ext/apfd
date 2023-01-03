@@ -2,7 +2,7 @@
 
 set -e
 
-php_version=${1:=8.0}
+php_version=${1:=8.2}
 apfd_version=1.0.3
 
 curl -L "https://pecl.php.net/get/apfd-${apfd_version}.tgz" | tar xzv
