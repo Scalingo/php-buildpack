@@ -1,6 +1,11 @@
 #!/bin/bash
 
 set -e
+
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 set -o pipefail
 shopt -s dotglob
 

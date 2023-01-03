@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 mongo_version="1.6.16"
 
 curl -L "https://github.com/mongodb/mongo-php-driver-legacy/archive/${mongo_version}.tar.gz" \

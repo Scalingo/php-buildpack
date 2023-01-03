@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 php_version=$1
 zend_api_version=$2
 php_src_dir=$3

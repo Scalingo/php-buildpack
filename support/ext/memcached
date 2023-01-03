@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 # https://github.com/php-memcached-dev/php-memcached/releases
 php_memcached_version=3.2.0
 

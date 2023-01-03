@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 imagick_version="3.7.0"
 
 curl -L "https://pecl.php.net/get/imagick-${imagick_version}.tgz" \

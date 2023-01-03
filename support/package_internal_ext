@@ -5,6 +5,11 @@
 # can be added as module as shared library.
 
 set -e
+
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 set -o pipefail
 
 if [ -z "$1" ]; then

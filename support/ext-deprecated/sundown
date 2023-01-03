@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 sundown_version=0.3.11
 
 curl -L "https://pecl.php.net/get/sundown-${sundown_version}.tgz" \

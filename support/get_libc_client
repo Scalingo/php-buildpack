@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 # Require for imap extension
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"

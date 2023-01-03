@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 composer_version="$1"
 
 which jq 2>/dev/null || (apt-get update && apt-get install -y jq)
