@@ -296,12 +296,8 @@ status "Bundling PHP ${PHP_VERSION}"
 
 # Install libraries also on build container, so PHP doesn't complain about missing
 # dynamic libraries when running it during the slug compilation.
-if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" -o "$(php_api_version)" = "20190902" ] ; then
-  fetch_package "$PHP_BASE_URL" "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
-fi
-if [ "$(php_api_version)" = "20170718" ] ; then
-  fetch_package "$PHP_BASE_URL" "libzip-${zip_version}" /app/vendor/libzip > /dev/null
-fi
+fetch_package "$PHP_BASE_URL" "libmcrypt-${mcrypt_version}" /app/vendor/libmcrypt > /dev/null
+fetch_package "$PHP_BASE_URL" "libzip-${zip_version}" /app/vendor/libzip > /dev/null
 fetch_package "$PHP_BASE_URL" "libwebp-${webp_version}" /app/vendor/libwebp > /dev/null
 
 fetch_engine_package php "$PHP_VERSION" "${VENDORED_PHP}" | indent
