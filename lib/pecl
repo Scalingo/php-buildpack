@@ -1,3 +1,16 @@
+
+function enable_pecl_extension() {
+  local extension_name="${1}"
+  local is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_$extension_name"
+  local is_zend_extension=$(printenv $is_zend_extension_var_name)
+
+  if [[ -z $is_zend_extension ]] ; then 
+    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  else
+    echo "zen_extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  fi
+}
+
 function install_pecl_extension() {
   local extension_name="${1}"
   local version="${2}"
@@ -9,7 +22,7 @@ function install_pecl_extension() {
   if [ -f "${cache_extension_file}" ]; then
     echo "Installing PECL extension ${extension_name} version ${version} from the cache"
     cp "${cache_extension_file}" "${ext_dir}/${extension_name}.so"
-    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+    enable_pecl_extension ${extension_name}
     return
   fi
 
@@ -29,7 +42,7 @@ function install_pecl_extension() {
   make > /dev/null
   cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
   cp modules/${extension_name}.so "${cache_extension_file}"
-  echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  enable_pecl_extension ${extension_name}
 
   popd > /dev/null
   popd > /dev/null
