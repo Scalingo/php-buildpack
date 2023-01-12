@@ -37,7 +37,11 @@ function install_pecl_extension() {
 
   pushd ${extension_name}-${version} > /dev/null
   /app/vendor/php/bin/phpize > /dev/null
-  ./configure --with-php-config=/app/vendor/php/bin/php-config --with-${extension_name}=${build_dir}/.apt/usr > /dev/null
+
+  local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
+  local configure_extension_args=$(printenv $configure_extension_args_var_name)
+
+  ./configure --with-php-config=/app/vendor/php/bin/php-config $configure_extension_args > /dev/null
 
   make > /dev/null
   cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
