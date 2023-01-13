@@ -16,6 +16,9 @@ function install_pecl_extension() {
   local version="${2}"
   local cache_dir="${3}"
 
+  if [[ $version = '*' ]]; then
+    local version=$(curl --silent "https://pecl.php.net/rest/r/$extension_name/latest.txt")
+  fi
   local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
 
   local cache_extension_file="${cache_dir}/${extension_name}-${version}.so"
