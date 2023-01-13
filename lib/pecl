@@ -5,9 +5,9 @@ function enable_pecl_extension() {
   local is_zend_extension=$(printenv $is_zend_extension_var_name)
 
   if [[ $is_zend_extension = "true" ]] ; then
-    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
-  else
     echo "zend_extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  else
+    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
   fi
 }
 
