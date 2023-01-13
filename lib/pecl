@@ -4,7 +4,7 @@ function enable_pecl_extension() {
   local is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_$extension_name"
   local is_zend_extension=$(printenv $is_zend_extension_var_name)
 
-  if [[ -z $is_zend_extension ]] ; then
+  if [[ $is_zend_extension = "true" ]] ; then
     echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
   else
     echo "zend_extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
@@ -40,8 +40,9 @@ function install_pecl_extension() {
 
   local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
   local configure_extension_args=$(printenv $configure_extension_args_var_name)
+  local flags=$(echo $configure_extension_args | sed "s/\$BUILD_DIR/$build_dir/")
 
-  ./configure --with-php-config=/app/vendor/php/bin/php-config $configure_extension_args > /dev/null
+  ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > /dev/null
 
   make > /dev/null
   cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
