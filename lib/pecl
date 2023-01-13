@@ -40,7 +40,7 @@ function install_pecl_extension() {
 
   local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
   local configure_extension_args=$(printenv $configure_extension_args_var_name)
-  local flags=$(echo $configure_extension_args | sed "s/\$BUILD_DIR/$build_dir/")
+  local flags=$(echo $configure_extension_args | sed "s|\$BUILD_DIR|$build_dir|")
 
   ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > /dev/null
 
