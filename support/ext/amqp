@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 #
 # This script is called by the `build_ext` function
 # which is defined in `php-buildpack/support/lib/php_ext`.

@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 # Require for imap extension
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
@@ -31,6 +35,11 @@ elif [[ "$STACK" == "scalingo-18" ]]; then
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
 	)
 elif [[ "$STACK" == "scalingo-20" ]]; then
+	dep_urls+=(
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
+		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
+	)
+elif [[ "$STACK" == "scalingo-22" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc

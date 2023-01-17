@@ -2,7 +2,11 @@
 
 set -e
 
-php_version=${1:=7.4}
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
+php_version=${1:=8.2}
 
 if echo $php_version | grep -q -E '^[78].' ; then
   apcu_version=5.1.22

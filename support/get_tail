@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 coreutils_version=8.30
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 

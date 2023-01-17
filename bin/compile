@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+
 set -o pipefail
 shopt -s dotglob
 
@@ -461,9 +462,10 @@ fi
 "$FRAMEWORK" post-compile "$BUILD_DIR" "$CACHE_DIR" || true
 
 status "Vendoring binaries into slug"
-mv /app/vendor/libmcrypt vendor/libmcrypt
+
 mv /app/vendor/nginx vendor/nginx
 mv /app/vendor/php vendor/php
+[ -d "/app/vendor/libmcrypt" ] && mv /app/vendor/libmcrypt vendor/libmcrypt
 [ -d "/app/vendor/libonig" ] && mv /app/vendor/libonig vendor/libonig
 [ -d "/app/vendor/libzip" ] && mv /app/vendor/libzip vendor/libzip
 [ -d "/app/vendor/coreutils" ] && mv /app/vendor/coreutils vendor/coreutils

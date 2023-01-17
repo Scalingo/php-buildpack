@@ -2,8 +2,12 @@
 
 set -e
 
-php_version=${1:=8.0}
-ds_version=1.3.0
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
+php_version=${1:=8.2}
+ds_version=1.4.0
 
 curl -L "https://pecl.php.net/get/ds-${ds_version}.tgz" \
     | tar xzv

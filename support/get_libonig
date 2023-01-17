@@ -2,6 +2,12 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
+libonig_version="$1"
+
 which cmake 2>/dev/null || (apt-get update && apt-get install -y cmake)
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"

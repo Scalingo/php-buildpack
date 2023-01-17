@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 php_memcache_version=3.0.8
 
 curl -L "https://github.com/php/pecl-caching-memcache/archive/memcache-${php_memcache_version}.tar.gz" \

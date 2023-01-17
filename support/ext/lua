@@ -2,9 +2,13 @@
 
 set -e
 
-php_version=${1:=7.4}
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
 
-lua_version="5.3.6"
+php_version=${1:=8.2}
+
+lua_version="5.4.4"
 phplua_version="2.0.7"
 
 echo "-----> Downloading Lua v${lua_version}"

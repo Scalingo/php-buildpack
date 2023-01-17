@@ -2,9 +2,13 @@
 
 set -e
 
-php_version=${1:=7.4}
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
 
-mcrypt_version=1.0.4
+php_version=${1:=8.2}
+
+mcrypt_version=1.0.5
 
 curl -L "https://pecl.php.net/get/mcrypt-${mcrypt_version}.tgz" \
     | tar xzv

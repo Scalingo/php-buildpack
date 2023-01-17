@@ -2,7 +2,11 @@
 
 set -e
 
-php_version=${1:=8.0}
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
+php_version=${1:=8.2}
 
 # https://github.com/phpredis/phpredis/releases
 phpredis_version="5.3.7"

@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 # fail hard
 set -o pipefail
 # fail harder
 set -eu
 
-php_version=${1:=7.4}
+php_version=${1:=8.2}
 php_series="$(echo $php_version | cut -d '.' -f1,2)"
 # https://blackfire.io/docs/up-and-running/installation?action=install&mode=full&location=local&os=manual&language=php#install-the-php-probe
 #
 # → Select "Linux Binary", 64 bits, the right PHP version and you'll see the last version of the probe
-blackfire_probe_version=1.77.0
+blackfire_probe_version=1.86.3
 # https://blackfire.io/docs/up-and-running/installation?action=install&mode=full&location=local&os=manual&language=php#install-the-packages
 #
 # → Select "Linux Binary", 64 bits and you'll see the last version
-blackfire_agent_version=2.8.1
+blackfire_agent_version=2.13.2
 bin_dir=${PREFIX}/bin
 
 # Blackfire Probe

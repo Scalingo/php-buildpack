@@ -2,11 +2,18 @@
 #
 # Package all extensions: both internal and non-internal.
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 if [ -z "$1" ]; then
     echo "Usage: $0 PHP_VERSION"
     echo "Example: $0 7.4"
     exit 1
 fi
+
+set -e
+set -o pipefail
 
 php_version=$1
 

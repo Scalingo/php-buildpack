@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+webp_version="$1"
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
 source "$basedir/../conf/buildpack.conf"

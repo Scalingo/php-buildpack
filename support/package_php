@@ -2,6 +2,10 @@
 
 set -e
 
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
@@ -18,7 +22,7 @@ php_version="$1"
 php_series="$(echo $php_version | cut -d '.' -f1,2)"
 
 if [ -z "$PHP_ZLIB_VERSION" ]; then
-    PHP_ZLIB_VERSION=1.2.11
+    PHP_ZLIB_VERSION=1.2.13
 fi
 
 echo "-----> Packaging PHP $php_version"
