@@ -11,6 +11,21 @@ function enable_pecl_extension() {
   fi
 }
 
+function install_oracle_client_extension() {
+  mkdir oracle/
+
+  curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip --output oracleclient.zip
+  unzip -q oracleclient.zip -d oracle/
+  rm oracleclient.zip
+
+  export ORACLE_HOME=$(echo $(pwd)/oracle/instantclient_*) # TODO: Find a better way than * to catch the name of the client folder
+  export LD_LIBRARY_PATH=$ORACLE_HOME:$LD_LIBRARY_PATH
+  export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+
+  curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip --output oraclesdk.zip
+  unzip -q oraclesdk.zip -d oracle/
+}
+
 function install_pecl_extension() {
   local extension_name="${1}"
   local version="${2}"
@@ -45,6 +60,11 @@ function install_pecl_extension() {
   local configure_extension_args=$(printenv $configure_extension_args_var_name)
   local flags=$(echo $configure_extension_args | sed "s|\$BUILD_DIR|$build_dir|")
 
+  if [[ $extension_name = 'oci8' ]]; then
+    flags="--with-oci8=instantclient,$ORACLE_HOME"
+  fi
+
+  echo "COMMAND ======= ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > /dev/null"
   ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > /dev/null
 
   make > /dev/null

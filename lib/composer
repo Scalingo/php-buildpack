@@ -77,6 +77,10 @@ function install_composer_deps() {
               fi
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             else
+              if [[ $ext = 'oci8' ]]; then
+                install_oracle_client_extension
+              fi
+
               local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
               install_pecl_extension $ext "$ext_version" "$CACHE_DIR" | indent
             fi
