@@ -78,13 +78,12 @@ function install_composer_deps() {
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             else
               if [[ $ext = 'oci8' ]]; then
-                install_oracle_client_extension
+                install_apt_libaio "${BUILD_DIR}" "$CACHE_DIR"
+                install_oracle_client_extension "${BUILD_DIR}"
               fi
-
               local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
-              install_pecl_extension $ext "$ext_version" "$CACHE_DIR" | indent
+              install_pecl_extension $ext "$ext_version" "${BUILD_DIR}" "$CACHE_DIR" | indent
             fi
-
             # TODO I don't think this instruction should be executed for all extensions
             fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
         done

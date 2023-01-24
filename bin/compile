@@ -475,6 +475,7 @@ mv /app/vendor/php vendor/php
 [ -d "/app/vendor/libtidy" ] && mv /app/vendor/libtidy vendor/libtidy
 [ -d "/app/vendor/libsodium" ] && mv /app/vendor/libsodium vendor/libsodium
 [ -d "/app/vendor/libwebp" ] && mv /app/vendor/libwebp vendor/libwebp
+[ -d "/app/vendor/oracle-client" ] && mv /app/vendor/oracle-client vendor/oracle-client
 
 mkdir -p "bin" "vendor/bin"
 
