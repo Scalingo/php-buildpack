@@ -13,6 +13,7 @@ source $basedir/../lib/datadog
 source $basedir/../lib/scout
 source $basedir/../lib/newrelic
 source $basedir/../lib/pecl
+source $basedir/../lib/pecl_oci8
 
 if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
   source $basedir/../lib/nodejs
@@ -24,6 +25,7 @@ fi
 
 BUILD_DIR="$1"
 CACHE_DIR="$2"
+ENV_DIR="$3"
 
 cd "$BUILD_DIR"
 mkdir -p "$CACHE_DIR/package"
@@ -417,7 +419,7 @@ if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
   install_node_deps "$BUILD_DIR"
 fi
 
-install_composer_deps "$BUILD_DIR"
+install_composer_deps "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
 
 # Detect PHP framework
 # Set FRAMEWORK if not set in environment by user

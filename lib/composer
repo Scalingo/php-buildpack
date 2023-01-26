@@ -78,8 +78,13 @@ function install_composer_deps() {
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             else
               if [[ $ext = 'oci8' ]]; then
-                install_apt_libaio "${BUILD_DIR}" "$CACHE_DIR"
-                install_oracle_client_extension "${BUILD_DIR}"
+                echo "Installing libaio for oci8" | indent
+                install_env_file="$(install_apt_libaio "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}")"
+                # Source environment to export LD_LIBRARY_PATH
+                source "${install_env_file}"
+                rm "${install_env_file}"
+
+                install_oracle_client_extension "${BUILD_DIR}" "${CACHE_DIR}"
               fi
               local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
               install_pecl_extension $ext "$ext_version" "${BUILD_DIR}" "$CACHE_DIR" | indent
