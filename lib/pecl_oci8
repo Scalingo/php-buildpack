@@ -1,0 +1,48 @@
+function install_apt_libaio() {
+  # ----
+  # Install libaio to install oci8
+  local build_dir="${1}"
+  local cache_dir="${2}"
+  local env_dir="${3}"
+
+  echo "libaio1" > "${build_dir}/Aptfile"
+
+  apt_deps_buildpack_dir=$(mktemp apt_buildpack_XXXX)
+  rm "${apt_deps_buildpack_dir}"
+
+  readonly apt_buildpack_url="https://github.com/Scalingo/apt-buildpack.git"
+  git clone --quiet --depth=1 "${apt_buildpack_url}" "${build_dir}/$apt_deps_buildpack_dir" >/dev/null 2>/dev/null
+
+  "${build_dir}/${apt_deps_buildpack_dir}/bin/compile" "${build_dir}" "${cache_dir}" "${env_dir}" > /dev/null
+
+  # Source new libs for future buildpack (update of LD_LIBRARY_PATH)
+  export_file="${build_dir}/oci8_apt_export"
+  cp "${build_dir}/${apt_deps_buildpack_dir}/export" "${export_file}"
+
+  echo "${export_file}"
+}
+
+function install_oracle_client_extension() {
+  # ----
+  # Install oracle client
+  local build_dir="${1}"
+  local cache_dir="${2}"
+
+  local oracle_install_dir="${build_dir}/vendor/oracle-client/"
+  mkdir -p "${oracle_install_dir}"
+
+  curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip --output oracleclient.zip
+  unzip -q oracleclient.zip -d "${oracle_install_dir}"
+  rm oracleclient.zip
+
+  export ORACLE_HOME="${oracle_install_dir}$(ls ${oracle_install_dir})"
+  export LD_LIBRARY_PATH="${ORACLE_HOME}/lib:${ORACLE_HOME}:${LD_LIBRARY_PATH}"
+
+  curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip --output oraclesdk.zip
+  unzip -q oraclesdk.zip -d "${oracle_install_dir}"
+  rm oraclesdk.zip
+
+  local startup_script="${1}/.profile.d/oracle-client.sh"
+  echo "export ORACLE_HOME=${ORACLE_HOME}" >> "${startup_script}"
+  echo "export LD_LIBRARY_PATH=${ORACLE_HOME}/lib:${ORACLE_HOME}:\${LD_LIBRARY_PATH}" >> "${startup_script}"
+}

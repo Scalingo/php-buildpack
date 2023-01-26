@@ -39,11 +39,19 @@ function install_pecl_extension() {
   curl --silent --location "https://pecl.php.net/get/${extension_name}-${version}.tgz" | tar xz
 
   pushd ${extension_name}-${version} > /dev/null
-  /app/vendor/php/bin/phpize > /dev/null
+
+  /app/vendor/php/bin/phpize &> /dev/null
 
   local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
   local configure_extension_args=$(printenv $configure_extension_args_var_name)
   local flags=$(echo $configure_extension_args | sed "s|\$BUILD_DIR|$build_dir|")
+
+  if [[ $extension_name = 'oci8' ]]; then
+    if [ -e "${3}/${apt_deps_buildpack_dir}/export" ]; then
+      source "${3}/${apt_deps_buildpack_dir}/export"
+    fi
+    flags="--with-oci8=instantclient,${ORACLE_HOME}"
+  fi
 
   ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > /dev/null
 
