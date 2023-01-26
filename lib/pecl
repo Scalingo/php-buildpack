@@ -14,7 +14,7 @@ function enable_pecl_extension() {
 function install_pecl_extension() {
   local extension_name="${1}"
   local version="${2}"
-  local cache_dir="${4}"
+  local cache_dir="${3}"
 
   if [[ $version = '*' ]]; then
     local version=$(curl --silent "https://pecl.php.net/rest/r/$extension_name/latest.txt")
