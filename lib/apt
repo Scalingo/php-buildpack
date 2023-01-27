@@ -1,0 +1,32 @@
+function apt_install() {
+  local apt_deps="${1}"
+  local build_dir="${2}"
+  local cache_dir="${3}"
+  local env_dir="${4}"
+
+  apt_manifest="$(mktemp "${build_dir}/Aptfile.php-XXX")"
+  echo "${apt_deps}" | tr ' ' '\n' > "${apt_manifest}"
+
+  apt_deps_buildpack_dir=$(mktemp /tmp/apt_buildpack_XXXX)
+  rm "${apt_deps_buildpack_dir}"
+
+  readonly apt_buildpack_url="https://github.com/Scalingo/apt-buildpack.git"
+  git clone --quiet --depth=1 "${apt_buildpack_url}" "${apt_deps_buildpack_dir}" >/dev/null 2>/dev/null
+
+  readonly apt_log_file=$(mktemp /tmp/apt_log_XXXX.log)
+  APT_FILE_MANIFEST="$(basename ${apt_manifest})" "${apt_deps_buildpack_dir}/bin/compile" "${build_dir}" "${cache_dir}" "${env_dir}" >"${apt_log_file}" 2>&1
+  if [ $? -ne 0 ] ; then 
+    tail -n 30 "${apt_log_file}" | indent
+    echo
+    warn "Fail to install apt packages"
+    echo
+    exit 1
+  fi
+
+  # Source new libs for future buildpack (update of LD_LIBRARY_PATH)
+  export_file="${build_dir}/oci8_apt_export"
+  cp "${apt_deps_buildpack_dir}/export" "${export_file}"
+
+  rm "${apt_manifest}"
+  echo "${export_file}"
+}
