@@ -65,9 +65,7 @@ function install_composer_deps() {
         for ext in $required_extensions; do
             local apt_deps=""
             local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
-            local should_install_from_pecl="true"
 
-            # TODO: Find a better way to ignore extensions which were not found in S3
             if [ "$ext" = "oci8" ] ; then
               apt_deps="libaio-dev"
             fi
