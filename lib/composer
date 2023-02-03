@@ -66,6 +66,11 @@ function install_composer_deps() {
             local apt_deps=""
             local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
 
+            if [ "$(is_embedded_extension "${ext}")" = "true" ] ; then
+              echo "PHP extension ${ext} is embedded in runtime" | indent
+              continue
+            fi
+
             if [ "$ext" = "oci8" ] ; then
               apt_deps="libaio-dev"
             fi
@@ -124,4 +129,14 @@ function install_composer_deps() {
             $devopt
         cd "$cwd"
     } | indent
+}
+
+function is_embedded_extension() {
+  local extension_name="${1}"
+
+  if php --modules | grep --quiet "${extension_name}" ; then
+    echo "true"
+  else
+    echo "false"
+  fi
 }
