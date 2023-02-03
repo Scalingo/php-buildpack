@@ -18,7 +18,7 @@ function apt_install() {
   if [ $? -ne 0 ] ; then
     tail -n 30 "${apt_log_file}" | indent
     echo
-    warn "Fail to install apt packages"
+    warn "Fail to install apt packages $apt_deps"
     echo
     exit 1
   fi
