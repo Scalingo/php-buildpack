@@ -1,0 +1,87 @@
+function install_pecl_extension() {
+  local extension_name="${1}"
+  local version="${2}"
+  local cache_dir="${3}"
+
+  if [[ $version = '*' ]]; then
+    local version=$(curl --silent "https://pecl.php.net/rest/r/$extension_name/latest.txt")
+  fi
+  local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+
+  local cache_extension_file="${cache_dir}/${extension_name}-${version}.so"
+  if [ -f "${cache_extension_file}" ]; then
+    echo "Installing PECL extension ${extension_name} version ${version} from the cache" | indent
+    cp "${cache_extension_file}" "${ext_dir}/${extension_name}.so"
+    enable_pecl_extension ${extension_name}
+    return
+  fi
+
+  local build_dir=$(pwd)
+  local temp_dir=$(mktmpdir "pecl-extension")
+
+  echo "Installing PECL extension ${extension_name} version ${version}" | indent
+
+  pushd "${temp_dir}" > /dev/null
+
+  curl --silent --location "https://pecl.php.net/get/${extension_name}-${version}.tgz" | tar xz
+
+  pushd ${extension_name}-${version} > /dev/null
+  (
+    set +e
+    readonly phpize_log_file=$(mktemp "/tmp/pecl-phpize-${extension_name}-XXXX.log")
+    /app/vendor/php/bin/phpize > "${phpize_log_file}" 2>&1
+    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "package" "${phpize_log_file}"
+
+    local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
+    local configure_extension_args=$(printenv $configure_extension_args_var_name)
+    local flags=$(echo $configure_extension_args | sed "s|\$BUILD_DIR|$build_dir|")
+
+    if [[ $extension_name = 'oci8' ]]; then
+      flags="--with-oci8=instantclient,${ORACLE_HOME}"
+    fi
+
+    readonly configure_log_file=$(mktemp "/tmp/pecl-configure-${extension_name}-XXXX.log")
+    ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > "${configure_log_file}" 2>&1
+    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "configure build" "${configure_log_file}"
+
+    readonly make_log_file=$(mktemp "/tmp/pecl-make-${extension_name}-XXXX.log")
+    make -j 2 > "${make_log_file}" 2>&1
+    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "compile" "${make_log_file}"
+  )
+
+  cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
+  cp modules/${extension_name}.so "${cache_extension_file}"
+  enable_pecl_extension ${extension_name}
+
+  popd > /dev/null
+  popd > /dev/null
+}
+
+function enable_pecl_extension() {
+  local extension_name="${1}"
+  local is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_$extension_name"
+  local is_zend_extension=$(printenv $is_zend_extension_var_name)
+
+  if [[ $is_zend_extension = "true" ]] ; then
+    echo "zend_extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  else
+    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
+  fi
+}
+
+function install_pecl_error() {
+  local extension_name="${1}"
+  local action="${2}"
+  local log_file="${3}"
+
+  echo
+  tail -n 30 "${log_file}" | indent
+  echo
+  # This sleep prevents from having the following lines mixed up with the output
+  # of the above tail. Mystery of shellscripting.
+  sleep 0.1
+  warn "Fail to ${action} of PHP PECL extension: ${extension_name}"
+  echo "Read above logs to understand the source of the issue" | indent
+  echo
+  exit 1
+}

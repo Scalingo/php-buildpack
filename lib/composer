@@ -50,7 +50,7 @@ function install_composer_deps() {
         chmod a+x "$CACHE_DIR/composer.phar"
         echo "$checksum" > $CACHE_DIR/composer.phar.md5
     else
-        echo "Checksums match. Fetching from cache."
+        echo "Checksums match. Fetching Composer from cache." |indent
     fi
 
     cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
@@ -63,9 +63,25 @@ function install_composer_deps() {
     if [ -n "$required_extensions" ]; then
         status "Bundling additional extensions"
         for ext in $required_extensions; do
-            echo "$ext" | indent
-            # TODO: Find a better way to ignore extensions which were not found in S3
-            if [ "$ext" = "memcached" ] ; then
+            local apt_deps=""
+            local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
+
+            if [ "$ext" = "oci8" ] ; then
+              apt_deps="libaio-dev"
+            fi
+
+            if [ -n "$apt_deps" ] ; then
+              echo "Installing dependencies for ${ext}: ${apt_deps}" | indent
+              install_env_file="$(apt_install "${apt_deps}" "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}")"
+              # Source environment to export LD_LIBRARY_PATH
+              source "${install_env_file}"
+              rm "${install_env_file}"
+            fi
+
+            # Install third-party dependencies after ubuntu packages have been added
+            if [ "$ext" = "oci8" ] ; then
+              install_oracle_client_extension "${BUILD_DIR}" "${CACHE_DIR}"
+            elif [ "$ext" = "memcached" ] ; then
               fetch_package "$PHP_BASE_URL" "libmemcached-${libmemcached_version}" "/app/vendor/libmemcached" | indent
             elif [ "$ext" = "gmp" ] ; then
               fetch_package "$PHP_BASE_URL" "gmp-${gmp_version}" "/app/vendor/gmp" | indent
@@ -77,12 +93,20 @@ function install_composer_deps() {
               fi
               fetch_package "$PHP_BASE_URL" "libsodium-${sodium_version}" "/app/vendor/libsodium" | indent
             fi
-            fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-${ext}" "/app/vendor/php" 2>/dev/null || true | indent
+
+            local extension_package_path="ext/$(php_api_version)/php-${ext}"
+            package_found="$(has_package "${PHP_BASE_URL}" "${extension_package_path}")"
+            if [ "${package_found}" = "true" ] ; then
+              echo "Installing PHP extension: ${ext}" | indent
+              fetch_package "${PHP_BASE_URL}" "${extension_package_path}" "/app/vendor/php"
+            else
+              install_pecl_extension "${ext}" "${ext_version}" "${BUILD_DIR}" "$CACHE_DIR"
+            fi
         done
     fi
 
     if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
-        status "Configuring the github authentication for Composer"
+        status "Configuring the GitHub authentication for Composer"
         php "vendor/composer/bin/composer.phar" config -g github-oauth.github.com "$COMPOSER_GITHUB_TOKEN" --no-interaction
     fi
 
@@ -101,4 +125,3 @@ function install_composer_deps() {
         cd "$cwd"
     } | indent
 }
-

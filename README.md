@@ -11,7 +11,8 @@ support.
 * Lightweight stack compared to Apache-ModPHP
 * Composer support
 * Various frameworks support out of the box (no configuration)
-* Dynamic installing of [supported extensions](support/ext) listed as `ext-` requirements in `composer.json`.
+* Dynamic installing of PHP extensions, listed as `ext-` requirements in `composer.json`.
+* Interfacing with PECL platform to download and build extensions dynamically
 
 ## How to use it
 
@@ -414,6 +415,58 @@ A tail on each unique log file will be run at application startup
         "vendor/nginx/stuff.log"
     ],
 
+
+### PHP Extensions
+
+Different types of extensions can be added to the PHP runtime, with different
+levels of compatibility. All these extensions can be added in the `require`
+block of the `composer.json` and this buildpack will try to install them.
+
+```
+{
+  ...
+  "require": {
+    "ext-sodium": "*",
+    "ext-calendar": "*",
+  }
+}
+```
+
+#### Internal PHP Extensions
+
+The PHP binary is not built with all modules embedded. To reduce build size and
+attack surface, these extensions have to be enabled manually. The supported list
+can be found here: https://github.com/Scalingo/php-buildpack/tree/master/support/ext-internal
+
+#### PECL PHP Extensions
+
+PECL extensions are registered on the https://pecl.php.net platform. This
+buildpack will try to download and build them during deployments.
+
+Some extensions may require system dependencies absent from the stack your
+application is based on. In this case you're encouraged to prepend the [APT
+Buildpack](https://doc.scalingo.com/platform/deployment/buildpacks/apt) and
+install the missing package according to the extension documentation.
+
+You may need to add extra compilation flags, in this case define them through
+environment variables with the following pattern:
+
+```
+# replace $extension_name by the right extension name
+PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name="--flag-to-add"
+```
+
+If the extension you are trying to install is a Zend extension, please define
+
+```
+# replace $extension_name by the right extension name
+PHP_PECL_EXTENSION_IS_ZEND_$extension_name=true
+```
+
+#### Third Party PHP Extensions
+
+Some third party extensions can also be installed, list can be found here
+https://github.com/Scalingo/php-buildpack/tree/master/support/ext
 
 ## Node.js
 

@@ -1,0 +1,55 @@
+function fetch_engine_package() {
+    local engine="$1"
+    local version="$2"
+    local location="$3"
+
+    local base_url="$PHP_BASE_URL"
+    if [ "$engine" = "nginx" ] ; then
+      base_url="$NGINX_BASE_URL"
+    fi
+
+    fetch_package "$base_url" "${engine}-${version}" "$location"
+}
+
+function has_package() {
+    local base_url="${1}"
+    local package="${2}"
+
+    local package_url="${base_url}/package/${package}.tgz"
+
+    curl --output /dev/null --silent --head --location --fail "${package_url}"
+    if [ $? -eq 0 ] ; then
+      echo "true"
+    else
+      echo "false"
+    fi
+}
+
+function fetch_package() {
+    local base_url="$1"
+    local package="$2"
+    local location="$3"
+
+    mkdir -p "$location"
+
+    local checksum_url="${base_url}/package/${package}.md5"
+    local package_url="${base_url}/package/${package}.tgz"
+    local checksum=$(curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$checksum_url" 2> /dev/null)
+    local cache_checksum=""
+
+    if [ -f "$CACHE_DIR/package/${package}.md5" ]; then
+        local cache_checksum=$(cat "$CACHE_DIR/package/${package}.md5")
+    fi
+
+    mkdir -p "$CACHE_DIR/package/$(dirname "$package")"
+
+    if [ "$cache_checksum" != "$checksum" ]; then
+        curl --fail --retry 3 --retry-delay 2 --connect-timeout 3 --max-time 30 "$package_url" --location --silent > "$CACHE_DIR/package/${package}.tgz"
+        echo "$checksum" > "$CACHE_DIR/package/${package}.md5"
+    else
+        echo "Checksums match. Fetching from cache." | indent
+    fi
+
+    mkdir -p "$location"
+    tar xzf "$CACHE_DIR/package/${package}.tgz" --directory "$location"
+}
