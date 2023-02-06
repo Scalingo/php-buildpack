@@ -134,7 +134,7 @@ function install_composer_deps() {
 function is_embedded_extension() {
   local extension_name="${1}"
 
-  if php --modules | grep --quiet "${extension_name}" ; then
+  if php --modules | grep --quiet --ignore-case "${extension_name}" ; then
     echo "true"
   else
     echo "false"
