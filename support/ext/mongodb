@@ -2,35 +2,39 @@
 
 set -e
 
-if [ -n "$DEBUG" ]; then
+if [ -n "${BUILDPACK_DEBUG}" ]; then
     set -x
 fi
 
 # https://github.com/mongodb/mongo-php-driver/releases
-mongo_version="1.15.0"
+mongo_version="1.15.1"
 
-curl -L "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
+curl --location "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
     | tar xzv
 
 cd mongodb-${mongo_version}
 /app/vendor/php/bin/phpize ; rc=$?
+
 if [ $rc -ne 0 ] ; then
-  echo "Fail to PHPize mongo extension"
-  exit 1
+    echo "Fail to PHPize mongo extension"
+    exit 1
 fi
 
-./configure --with-php-config=/app/vendor/php/bin/php-config \
-            --enable-mongo ; rc=$?
+./configure \
+    --with-php-config=/app/vendor/php/bin/php-config \
+    --enable-mongo ; rc=$?
+
 if [ $rc -ne 0  ] ; then
-  echo "Fail to configure mongo extension"
-  exit 1
+    echo "Fail to configure mongo extension"
+    exit 1
 fi
 
 make ; rc=$?
+
 if [ $rc -ne 0 ] ; then
-  echo "Fail to build mongo extension"
-  exit 1
+    echo "Fail to build mongo extension"
+    exit 1
 fi
 
-cp modules/mongodb.so "$EXT_DIR/mongodb.so"
-echo "extension=mongodb.so" > "$PREFIX/etc/conf.d/mongodb.ini"
+cp modules/mongodb.so "${EXT_DIR}/mongodb.so"
+echo "extension=mongodb.so" > "${PREFIX}/etc/conf.d/mongodb.ini"
