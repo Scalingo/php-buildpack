@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -n "$DEBUG" ]; then
+if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
 fi
 
