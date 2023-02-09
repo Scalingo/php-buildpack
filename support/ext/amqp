@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -n "$DEBUG" ]; then
+if [ -n "$BUILDPACK_DEBUG" ]; then
     set -x
 fi
 
@@ -65,19 +65,35 @@ build_librabbitmq() {
     download_archive "${archive_url}" \
         | tar xvz --strip-components=1
 
-    cmake \
-        -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
-        -DBUILD_TESTS=OFF \
-        -DBUILD_EXAMPLES=OFF \
-        -DBUILD_TOOLS=OFF \
-        -DBUILD_TOOLS_DOCS=OFF \
-        -DBUILD_API_DOCS=OFF \
-        -DRUN_SYSTEM_TESTS=OFF \
-        -DBUILD_SHARED_LIBS=ON \
-        -DBUILD_STATIC_LIBS=OFF \
-        -Wno-dev \
-        || ( echo "Failed to build librabbitmq." \
-            && exit 1 )
+    if [ "${STACK}" = "scalingo-18" ]; then
+        cmake \
+            -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
+            -DBUILD_TESTS=OFF \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_TOOLS=OFF \
+            -DBUILD_TOOLS_DOCS=OFF \
+            -DBUILD_API_DOCS=OFF \
+            -DRUN_SYSTEM_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_STATIC_LIBS=OFF \
+            -Wno-dev \
+            || ( echo "Failed to build librabbitmq." \
+                && exit 1 )
+    else
+        cmake \
+            -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
+            -DBUILD_TESTING=OFF \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_TOOLS=OFF \
+            -DBUILD_TOOLS_DOCS=OFF \
+            -DBUILD_API_DOCS=OFF \
+            -DRUN_SYSTEM_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=ON \
+            -DBUILD_STATIC_LIBS=OFF \
+            -Wno-dev \
+            || ( echo "Failed to build librabbitmq." \
+                && exit 1 )
+    fi
 
     cmake \
         --build . \
@@ -90,14 +106,16 @@ build_librabbitmq() {
 
     mkdir -p "${PREFIX}/lib"
 
-    # Move things that have been stored in `${prefix}/lib/x86_64-linux-gnu`
-    # to `${prefix}/lib` so that AMQP's `configure` finds them.
-    find "${librabbitmq_dir}/lib/x86_64-linux-gnu" \
-        -mindepth 1 \
-        -maxdepth 1 \
-        -exec mv --target-directory "${librabbitmq_dir}/lib/" -- {} \+
+    if [ "${STACK}" = "scalingo-18" ]; then
+        # Move things that have been stored in `${prefix}/lib/x86_64-linux-gnu`
+        # to `${prefix}/lib` so that AMQP's `configure` finds them.
+        find "${librabbitmq_dir}/lib/x86_64-linux-gnu" \
+            -mindepth 1 \
+            -maxdepth 1 \
+            -exec mv --target-directory "${librabbitmq_dir}/lib/" -- {} \+
 
-    rmdir "${librabbitmq_dir}/lib/x86_64-linux-gnu"
+        rmdir "${librabbitmq_dir}/lib/x86_64-linux-gnu"
+    fi
 
     # Copy library to `$PREFIX/lib` so it's included in the future package
     cp -ar "${librabbitmq_dir}" "${PREFIX}/lib/"
@@ -161,8 +179,12 @@ librabbitmq_prefix="/app/vendor/php/lib/rabbitmq"
 # https://github.com/alanxz/rabbitmq-c/releases
 
 pkgname="librabbitmq-c"
-version="0.11.0"
+version="0.13.0"
 source_url="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v%s.tar.gz"
+
+if [ "${STACK}" = "scalingo-18" ]; then
+    version="0.11.0"
+fi
 
 build_librabbitmq "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefix}"
 
