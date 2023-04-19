@@ -21,25 +21,29 @@ dep_output=/app/vendor/libc-client
 dep_version=2007f
 dep_dirname=uw-imap-${dep_version}~dfsg
 
+# Handle minimal stacks
+deps_stack="$( sed -e 's/-minimal$//i' <<<"${STACK}" )"
+
 dep_urls=(
 	http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz
 )
-if [[ "$STACK" == "scalingo-14" ]]; then
+
+if [[ "${deps_stack}" == "scalingo-14" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.debian.tar.gz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.dsc
 	)
-elif [[ "$STACK" == "scalingo-18" ]]; then
+elif [[ "${deps_stack}" == "scalingo-18" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
 	)
-elif [[ "$STACK" == "scalingo-20" ]]; then
+elif [[ "${deps_stack}" == "scalingo-20" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
 	)
-elif [[ "$STACK" == "scalingo-22" ]]; then
+elif [[ "${deps_stack}" == "scalingo-22" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
@@ -51,7 +55,7 @@ echo "-----> Downloading libc-client ${version}"
 
 # we need that for IMAP
 needed=( libpam0g-dev )
-if [[ $STACK == "scalingo-14" ]]; then
+if [[ "${deps_stack}" == "scalingo-14" ]]; then
 	gpg --keyserver keyserver.ubuntu.com --recv-keys 7D61E3E6
 	gpg --no-default-keyring -a --export 7D61E3E6 | gpg --no-default-keyring --keyring ~/.gnupg/trustedkeys.gpg --import -
 else
