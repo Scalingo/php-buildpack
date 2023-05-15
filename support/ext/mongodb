@@ -7,7 +7,7 @@ if [ -n "${BUILDPACK_DEBUG}" ]; then
 fi
 
 # https://github.com/mongodb/mongo-php-driver/releases
-mongo_version="1.15.2"
+mongo_version="1.15.3"
 
 curl --location "https://github.com/mongodb/mongo-php-driver/releases/download/${mongo_version}/mongodb-${mongo_version}.tgz" \
     | tar xzv
