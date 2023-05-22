@@ -66,9 +66,12 @@ function install_composer_deps() {
             local apt_deps=""
             local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
 
-            if [ "$(is_embedded_extension "${ext}")" = "true" ] ; then
-              echo "PHP extension ${ext} is embedded in runtime" | indent
-              continue
+            is_embedded_extension "${ext}"
+            local is_embedded=${?}
+
+            if [ ${is_embedded} -eq 0 ] ; then
+                echo "PHP extension ${ext} is embedded in runtime" | indent
+                continue
             fi
 
             if [ "$ext" = "oci8" ] ; then
@@ -132,11 +135,26 @@ function install_composer_deps() {
 }
 
 function is_embedded_extension() {
-  local extension_name="${1}"
+    # Return codes:
+    #   0: The extension is embedded.
+    #   1: The extension is NOT embedded.
+    # 255: We couldn't check whether the extension is embedded or not.
 
-  if php --modules | grep --quiet --ignore-case "${extension_name}" ; then
-    echo "true"
-  else
-    echo "false"
-  fi
+    local rc=1
+    local extension_name="${1}"
+
+    local modules_list="$( php --modules )"
+    # For some reason, it seems that the above command always returns `0`,
+    # even when it fails.
+    # Hence comparing what the command echoed:
+
+    if [ "${modules_list}" = "" ] ; then
+        echo "Unable to check whether the extension is already embedded or not. Exiting." | indent
+        rc=255
+    else
+        grep --quiet --ignore-case "${extension_name}" <<< "${modules_list}"
+        rc=${?}
+    fi
+
+    exit ${rc}
 }
