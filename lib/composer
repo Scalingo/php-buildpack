@@ -64,9 +64,14 @@ function install_composer_deps() {
         status "Bundling additional extensions"
         for ext in $required_extensions; do
             local apt_deps=""
+            local is_embedded=""
             local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
 
-            if [ "$(is_embedded_extension "${ext}")" = "true" ] ; then
+            is_embedded="$(is_embedded_extension ${ext})"
+            rc=$?
+            [ ${rc} -ne 0 ] && error "error while trying to identify if ${ext} is embedded in runtime."
+
+            if [ "${is_embedded}" = "true" ] ; then
               echo "PHP extension ${ext} is embedded in runtime" | indent
               continue
             fi
@@ -133,10 +138,18 @@ function install_composer_deps() {
 
 function is_embedded_extension() {
   local extension_name="${1}"
+  local php_modules
 
-  if php --modules | grep --quiet --ignore-case "${extension_name}" ; then
+  php_modules=$(php --modules 2>&1)
+  rc=$?
+  # error function exits with a return code 1
+  [ ${rc} -ne 0 ] && \
+    error "error while trying to identify if ${extension_name} is embedded in runtime: ${php_modules} (${rc})."
+
+  if echo "${php_modules}" | grep --quiet --ignore-case "${extension_name}" ; then
     echo "true"
   else
     echo "false"
   fi
+  exit 0
 }
