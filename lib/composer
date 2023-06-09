@@ -60,12 +60,29 @@ function install_composer_deps() {
     cp "$target/vendor/composer/bin/composer.phar" "$target/bin/composer.phar"
 
     local required_extensions=$(jq --raw-output '.require // {} | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+
     if [ -n "$required_extensions" ]; then
         status "Bundling additional extensions"
+
         for ext in $required_extensions; do
+            local ext_lower
             local apt_deps=""
             local is_embedded=""
             local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
+
+            # The Zend OPCache extension is a bit special:
+            # It's listed by `php --modules` as `Zend OPCache`, but we must
+            # refer to it as `zend-opcache` in `composer.json`.
+            # Consequently, we have to detect it and rename it for the
+            # buildpack logic to work.
+
+            # First convert extension name to lowercase:
+            ext_lower="$( tr "[:upper:]" "[:lower:]" <<< "${ext}" )"
+
+            # Then compare:
+            if [ "${ext_lower}" = "zend-opcache" ]; then
+                ext="zend opcache"
+            fi
 
             is_embedded="$(is_embedded_extension ${ext})"
             rc=$?
