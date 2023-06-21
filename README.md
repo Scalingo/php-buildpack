@@ -5,6 +5,8 @@ This buildpack is a fork from
 has been improved for the PaaS https://scalingo.com to have a better PHP
 support.
 
+The changelog for this buildpack is in Scalingo [public changelog](https://doc.scalingo.com/changelog).
+
 ## Characteristics
 
 * __Nginx__ 1.3 to 1.10 - __PHP__ 5.3 (without extension), 5.4, 5.5, 5.6, 7.0 and 7.1 - __PHP FPM__
