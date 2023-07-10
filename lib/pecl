@@ -32,7 +32,7 @@ function php::pecl::get_latest_version() {
   local url="https://pecl.php.net/rest/r/${extension_name}/latest.txt"
 
   if version="$( curl --fail --silent --show-error --location "${url}" )"; then
-    echo "${version}"
+    echo -n "${version}"
     rc=0
   fi
 
@@ -83,7 +83,7 @@ function php::pecl::download_extension() {
   rc="${?}"
 
   if [ "${rc}" -eq 0 ]; then
-    echo "${temp_dir}/${file}"
+    echo -n "${temp_dir}/${file}"
   fi
 
   popd || return 1
@@ -125,7 +125,7 @@ function php::pecl::package_extension() {
   /app/vendor/php/bin/phpize >"${log}" 2>&1
   rc="${?}"
 
-  echo "${log}"
+  echo -n "${log}"
 
   return "${rc}"
 }
@@ -176,7 +176,7 @@ function php::pecl::configure_extension() {
   ./configure --with-php-config=/app/vendor/php/bin/php-config "${flags[@]}" >"${log}" 2>&1
   rc="${?}"
 
-  echo "${log}"
+  echo -n "${log}"
 
   return "${rc}"
 }
@@ -194,7 +194,7 @@ function php::pecl::make_extension() {
   make -j 2 >"${log}" 2>&1
   rc="${?}"
 
-  echo "${log}"
+  echo -n "${log}"
 
   return "${rc}"
 }
