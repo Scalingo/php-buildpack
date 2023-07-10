@@ -264,9 +264,8 @@ function install_pecl_extension() {
   # If version is given as '*', try to retrieve the latest version number:
   if [[ "${version}" = '*' ]]; then
     if ! version_number="$( php::pecl::get_latest_version "${extension_name}" )"; then
-      rc="${?}"
       echo "Unable retrieve PECL extension ${extension_name} latest version number. Aborting." >&2
-      exit "${rc}"
+      return 1
     fi
   fi
 
@@ -274,7 +273,7 @@ function install_pecl_extension() {
   # Try to install extension from cache, but never fail:
   if php::pecl::install_from_cache "${extension_name}" "${version_number}" "${cache_dir}" "${ext_dir}"; then
     echo "Successfully installed ${extension_name} ${version_number} from cache."
-    exit 0
+    return 0
   fi
 
 
