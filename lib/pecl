@@ -100,8 +100,8 @@ function php::pecl::extract_extension() {
 
   mkdir --parents "${output_dir}"
 
-  tar --extract --gzip --strip-components=1 --directory="${output_dir}" \
-    "${archive}"
+  tar --extract --gzip --strip-components=1 \
+    --directory="${output_dir}" --file="${archive}"
 
   rc="${?}"
 
