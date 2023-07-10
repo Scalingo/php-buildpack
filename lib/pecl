@@ -2,13 +2,23 @@
 
 function php::pecl::enable_pecl_extension() {
   local rc=0
+  local known_zend_extensions=("scoutapm")
 
   local name="${1}"
 
   local is_zend_extension_var_name
   local is_zend_extension
+  local is_in_array
 
   is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_${name}"
+
+  is_in_array="$( echo "${known_zend_extensions[@]}" | grep -ow "${name}" | wc -w )"
+
+  if [ "${is_in_array}" -gt 0 ]; then
+    declare "${is_zend_extension_var_name}"="true"
+    export "${is_zend_extension_var_name}"
+  fi
+
   is_zend_extension="$( printenv "${is_zend_extension_var_name}" )"
 
   if [[ "${is_zend_extension}" = "true" ]]; then
@@ -153,9 +163,6 @@ function php::pecl::configure_extension() {
 
     "scoutapm")
       flags=("--enable-scoutapm")
-      # scoutapm is a Zend extension:
-      PHP_PECL_EXTENSION_IS_ZEND_scoutapm="true"
-      export PHP_PECL_EXTENSION_IS_ZEND_scoutapm
       ;;
 
     "yaml")
