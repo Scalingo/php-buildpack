@@ -70,23 +70,23 @@ function php::pecl::download_extension() {
   local version="${2}"
   local temp_dir="${3}"
 
-  local file
+  local archive
   local url
 
-  file="${name}-${version}.tgz"
-  url="https://pecl.php.net/get/${file}"
+  archive="${name}-${version}.tgz"
+  url="https://pecl.php.net/get/${archive}"
 
   pushd "${temp_dir}" >/dev/null \
     || { echo "Unable to enter ${temp_dir}." >&2; return 1; }
 
-  curl --silent --location --fail "${url}" --output "${file}"
+  curl --silent --location --fail "${url}" --output "${archive}"
   rc="${?}"
 
   if [ "${rc}" -eq 0 ]; then
-    echo -n "${temp_dir}/${file}"
+    echo "${temp_dir}/${archive}"
   fi
 
-  popd || return 1
+  popd >/dev/null || return 1
 
   return "${rc}"
 }
@@ -229,7 +229,7 @@ function php::pecl::compile_extension() {
     fi
   fi
 
-  popd || return 1
+  popd >/dev/null || return 1
 
   return "${rc}"
 }
@@ -279,23 +279,20 @@ function install_pecl_extension() {
 
   # Download:
   if ! archive="$( php::pecl::download_extension "${extension_name}" "${version_number}" "${temp_dir}" )"; then
-    rc="${?}"
     echo "Unable to download PECL extension ${extension_name} ${version_number}. Aborting." >&2
-    exit "${rc}"
+    return 1
   fi
 
   # Extract:
   if ! php::pecl::extract_extension "${archive}" "${extension_temp_dir}"; then
-    rc="${?}"
     echo "Unable to unpack PECL extension ${extension_name}. Aborting." >&2
-    exit "${rc}"
+    return 1
   fi
 
   # Compile:
   if ! php::pecl::compile_extension "${extension_temp_dir}" "${build_dir}" "${extension_name}"; then
-    rc="${?}"
     echo "Unable to compile extension ${extension_name}. Aborting." >&2
-    exit "${rc}"
+    return 1
   fi
 
   pushd "${extension_temp_dir}" >/dev/null \
@@ -304,7 +301,7 @@ function install_pecl_extension() {
   cp "modules/${extension_name}.so" "${ext_dir}/${extension_name}.so"
   cp "modules/${extension_name}.so" "${cache_dir}/${extension_name}-${version_number}.so"
 
-  popd || return 1
+  popd >/dev/null || return 1
 
   php::pecl::enable_pecl_extension "${extension_name}"
   rc="${?}"
