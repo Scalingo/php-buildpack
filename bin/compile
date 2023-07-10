@@ -312,9 +312,9 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_datadog_enabled; then
     install_datadog "${DATADOG_TRACER_VERSION}" "${DATADOG_APPSEC_VERSION}"
 fi
 
-if [ -f "$BUILD_DIR/composer.json" ] && package_scout_enabled; then
-  install_scout "${SCOUT_APM_VERSION}"
-fi
+# if [ -f "$BUILD_DIR/composer.json" ] && package_scout_enabled; then
+#   install_scout "${SCOUT_APM_VERSION}"
+# fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     status "New Relic usage detected, installing Agent and PHP extension"
