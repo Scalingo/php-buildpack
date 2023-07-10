@@ -16,7 +16,7 @@ function php::pecl::enable_pecl_extension() {
 
   if [ "${is_in_array}" -gt 0 ]; then
     declare "${is_zend_extension_var_name}"="true"
-    export "${is_zend_extension_var_name}"
+    export "${is_zend_extension_var_name?}"
   fi
 
   is_zend_extension="$( printenv "${is_zend_extension_var_name}" )"
