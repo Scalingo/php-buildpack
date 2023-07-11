@@ -11,7 +11,6 @@ source $basedir/common.sh
 source $basedir/../lib/package
 source $basedir/../lib/composer
 source $basedir/../lib/datadog
-source $basedir/../lib/scout
 source $basedir/../lib/newrelic
 source $basedir/../lib/apt
 source $basedir/../lib/pecl
