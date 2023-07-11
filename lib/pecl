@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function php::pecl::enable_pecl_extension() {
+function php::pecl::enable_extension() {
   local rc=0
   local known_zend_extensions=("scoutapm")
 
@@ -65,7 +65,7 @@ function php::pecl::install_from_cache() {
   if [ -f "${cached_file}" ]; then
     cp "${cached_file}" "${ext_dir}/${name}.so"
 
-    php::pecl::enable_pecl_extension "${name}"
+    php::pecl::enable_extension "${name}"
     rc="${?}"
   fi
 
@@ -307,7 +307,7 @@ function php::pecl::install_extension() {
 
   popd >/dev/null || return 1
 
-  if ! php::pecl::enable_pecl_extension "${extension_name}"; then
+  if ! php::pecl::enable_extension "${extension_name}"; then
     echo "Unable to activate PECL extension '${extension_name}' ${version_number}. Aborting." >&2
     return 1
   else
