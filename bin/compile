@@ -44,47 +44,146 @@ function detect_framework() {
   done
 }
 
-function best_composer_version() {
-  local require_composer=""
-  if [ -f "$BUILD_DIR/composer.json" ] ; then
-    require_composer=$(jq --raw-output ".extra.${composer_extra_key}.engines.composer // \"\"" < "$BUILD_DIR/composer.json")
-  fi
-  if [ -n "$COMPOSER_VERSION" ] ; then
-    require_composer="$COMPOSER_VERSION"
-  fi
-  [ -z "${require_composer}" ] && require_composer="$DEFAULT_COMPOSER"
-  curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}/resolve/${require_composer}"
+
+function php::semver::resolve_version() {
+    #
+    # Retrieve the full semantic version of a component.
+    #
+    # Params:
+    #   semver_server
+    #     URL of the semver server to send the request to.
+    #
+    #   component
+    #     Name of the considered component.
+    #     Should be either 'composer', 'nginx' or 'php'.
+    #
+    #   stack
+    #     Name of the considered stack.
+    #
+    #   [required_version]
+    #     If specified, try to obtain a full semantic version matching the
+    #     given one. A non fully-qualified version can be given, in which case
+    #     the best matching full version will be returned, if any.
+    #     If not specified, return the default version of the component.
+    #
+
+    local rc=1
+
+    local -r semver_server="${1}"
+    local -r component="${2}"
+    local -r stack="${3}"
+    local -r required_version="${4:-""}"
+
+    local url
+    local version
+
+    url="${semver_server}/${component}-${stack}/resolve/${required_version}"
+
+    version="$( curl --fail --silent --location "${url}" )"
+    rc="${?}"
+
+    if [ "${rc}" -eq 0 ]; then
+        echo "${version}"
+    fi
+
+    return "${rc}"
 }
 
-function best_nginx_version() {
-  local require_nginx=""
-  if [ -f "$BUILD_DIR/composer.json" ] ; then
-    for key in ".require.nginx" ".extra.${composer_extra_key}.engines.nginx" ; do
-      require_nginx=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
-      [ -n "${require_nginx}" ] && break
-    done
-  fi
-  if [ -n "$NGINX_VERSION" ] ; then
-    require_nginx="$NGINX_VERSION"
-  fi
-  [ -z "${require_nginx}" ] && require_nginx="$DEFAULT_NGINX"
-  curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}/resolve/${require_nginx}"
+
+function php::retrieve_component_semantic_version() {
+    #
+    # Retrieve the semantic version of a component from a requirement.
+    #
+    # The requirement can be set by the user to ask a specific version of a
+    # component. This is done by using (in order or precedence) a specific
+    # environment variable or a specific key in their 'composer.json' file.
+    # If no requirement has been set by the user, falls back to default values.
+    #
+    # Params:
+    #   build_dir
+    #     The BUILD_DIR environment variable.
+    #
+    #   semver_server
+    #     URL of the semver server to send the request to.
+    #
+    #   component
+    #     Name of the considered component.
+    #     Should be either 'composer', 'nginx' or 'php'.
+    #
+    #   stack
+    #     Name of the considered stack.
+    #
+    #   extra_key
+    #     Name of an extra key to check in 'composer.json'.
+    #     It should always be 'paas' but we maintain this for a better Heroku
+    #     compatibility.
+    #
+    # See also:
+    #   `php::semver::resolve_version`
+    #
+
+    local rc=1
+
+    local -r build_dir="${1}"
+    local -r semver_server="${2}"
+    local -r component="${3}"
+    local -r stack="${4}"
+    local -r extra_key="${5}"
+
+    local composer_file
+    local search_keys
+    local env_var
+    local required_version
+
+    composer_file="${build_dir}/composer.json"
+
+    # Some vars depend on the component we are processing:
+    #   - `env_var` is the name of the environment variable that can be used to
+    #     require a specific version of the component.
+    #   - `search_keys` is an array containing the keys to search in
+    #      'composer.json' for a potential required version.
+    #      These keys are checked in order of definition.
+
+    env_var="${component^^}_VERSION"
+
+    case "${component}" in
+        "composer")
+            search_keys=(".extra.${extra_key}.engines.composer")
+            ;;
+        "nginx")
+            search_keys=(".require.nginx" ".extra.${extra_key}.engines.nginx")
+            ;;
+        *)
+            # PHP
+            search_keys=(".require.php" ".config.platform.php" ".extra.${extra_key}.engines.php")
+            ;;
+    esac
+
+    # 1. Check in a potentially-existing environment variable:
+    required_version="${!env_var:-""}"
+
+    # 2. Check in composer.json:
+    if [ -z "${required_version}" ] && [ -f "${composer_file}" ]; then
+        for key in "${search_keys[@]}"; do
+            required_version="$( jq --raw-output "${key} // \"\"" < "${composer_file}" )"
+
+            # Exit the loop as soon as we have a result
+            # This means the keys are checked with a priority order!
+            [ -n "${required_version}" ] && break
+        done
+    fi
+
+    # 3. Retrieve the fully-qualified version from semver:
+    semantic_version="$( php::semver::resolve_version "${semver_server}" "${component}" "${stack}" "${required_version}" )"
+    rc="${?}"
+
+    if [ "${rc}" -eq 0 ]; then
+        echo "${semantic_version}"
+    fi
+
+    return "${rc}"
 }
 
-function best_php_version() {
-  local require_php=""
-  if [ -f "$BUILD_DIR/composer.json" ] ; then
-    for key in ".require.php" ".config.platform.php" ".extra.${composer_extra_key}.engines.php" ; do
-      require_php=$(jq --raw-output "${key} // \"\"" < "$BUILD_DIR/composer.json")
-      [ -n "${require_php}" ] && break
-    done
-  fi
-  if [ -n "$PHP_VERSION" ] ; then
-    require_php="$PHP_VERSION"
-  fi
-  [ -z "${require_php}" ] && require_php="$DEFAULT_PHP"
-  curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}/resolve/${require_php}"
-}
 
 function php_api_version() {
   basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
@@ -181,10 +280,6 @@ export_env_dir "$3"
 # Create some required directories:
 mkdir -p "${BUILD_DIR}/bin" "${BUILD_DIR}/vendor"
 
-DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
-DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
-DEFAULT_COMPOSER=$(curl --fail --location --silent "${SEMVER_SERVER}/composer-${STACK}")
-
 # Read config variables from composer.json if it exists
 if [ -f "$BUILD_DIR/composer.json" ]; then
   composer_extra_key="paas"
@@ -194,9 +289,30 @@ if [ -f "$BUILD_DIR/composer.json" ]; then
   fi
 fi
 
-PHP_VERSION=$(best_php_version)
-NGINX_VERSION=$(best_nginx_version)
-COMPOSER_VERSION=$(best_composer_version)
+if ! PHP_VERSION="$( php::retrieve_component_semantic_version \
+                         "${BUILD_DIR}" "${SEMVER_SERVER}" "php" \
+                         "${STACK}" "${composer_extra_key}" )"
+then
+    echo "Unable to retrieve the required PHP version. Aborting." >&2
+    exit 1
+fi
+
+if ! NGINX_VERSION="$( php::retrieve_component_semantic_version \
+                           "${BUILD_DIR}" "${SEMVER_SERVER}" "nginx" \
+                           "${STACK}" "${composer_extra_key}" )"
+then
+    echo "Unable to retrieve the required Nginx version. Aborting." >&2
+    exit 1
+fi
+
+if ! COMPOSER_VERSION="$( php::retrieve_component_semantic_version \
+                              "${BUILD_DIR}" "${SEMVER_SERVER}" "composer" \
+                              "${STACK}" "${composer_extra_key}" )"
+then
+    echo "Unable to retrieve the required Composer version. Aborting." >&2
+    exit 1
+fi
+
 DOCUMENT_ROOT="${DOCUMENT_ROOT:-}"
 INDEX_DOCUMENT="${INDEX_DOCUMENT:-index.php}"
 FRAMEWORK="${FRAMEWORK:-}"
