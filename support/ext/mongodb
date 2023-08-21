@@ -8,7 +8,7 @@ fi
 
 # https://github.com/mongodb/mongo-php-driver/releases
 mongo_version="1.16.2"
-url="https://pecl.php.net/get/mongodb-{mongo_version}.tgz"
+url="https://pecl.php.net/get/mongodb-${mongo_version}.tgz"
 
 curl --location "${url}" \
     | tar xzv
