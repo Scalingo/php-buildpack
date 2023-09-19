@@ -7,33 +7,40 @@ source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
 function build_libsodium() {
-  version=$1
-  url_prefix=$2
+  version="${1}"
+  url_prefix="${2}"
 
-  tempdir=$(mktmpdir libsodium)
-  pushd $tempdir
+  rm --recursive --force /app/vendor/libsodium
+  mkdir --parents /app/vendor/libsodium
+
+  tempdir="$( mktmpdir libsodium )"
+  pushd "${tempdir}"
 
   echo "-----> Downloading Sodium v${version}"
-  curl -LO "https://download.libsodium.org/libsodium/$url_prefix/libsodium-${version}.tar.gz"
+  curl --location --remote-name "https://download.libsodium.org/libsodium/${url_prefix}/libsodium-${version}.tar.gz"
 
-  tar xvf "libsodium-${version}.tar.gz"
-  cd "libsodium-${version}"
-  rm -r /app/vendor/libsodium
-  mkdir -p /app/vendor/libsodium
+  mkdir "libsodium"
+  pushd "libsodium"
+
+  tar --extract --verbose --strip-components=1 \
+      --file="../libsodium-${version}.tar.gz"
 
   ./configure --prefix=/app/vendor/libsodium
   make
   make install
 
-  cd $tempdir
-  mkdir package
-  cd package
-  tar -C /app/vendor/libsodium -czvf "libsodium-${version}.tgz" .
-  cd ..
+  popd
 
-  swift_upload package/libsodium-${version}.tgz
+  mkdir "package"
+  pushd "package"
 
-  "$basedir/package-checksum" "libsodium-${version}"
+  tar --directory="/app/vendor/libsodium" --create --gzip --verbose \
+      --file="libsodium-${version}.tgz" .
+
+  popd
+
+  swift_upload "package/libsodium-${version}.tgz"
+  "${basedir}/package-checksum" "libsodium-${version}"
 
   popd
 }
