@@ -5,12 +5,15 @@ source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
+jq_download_url="https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux64"
+
 tempdir=$(mktmpdir jq)
 cd $tempdir
 
 echo "----> Vendoring 'jq'"
-curl -L https://stedolan.github.io/jq/download/linux64/jq > jq_bin
+curl --location "${jq_download_url}" --output jq_bin
 
 mkdir jq
 mv jq_bin jq/jq
+
 swift_upload jq/jq
