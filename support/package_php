@@ -21,18 +21,14 @@ fi
 php_version="$1"
 php_series="$(echo $php_version | cut -d '.' -f1,2)"
 
-if [ -z "$PHP_ZLIB_VERSION" ]; then
-    PHP_ZLIB_VERSION=1.2.13
-fi
-
 echo "-----> Packaging PHP $php_version"
 
 tempdir=$(mktmpdir php)
 cd $tempdir
 
-echo "-----> Downloading dependency zlib ${PHP_ZLIB_VERSION}"
-curl -LO "${PHP_BASE_URL}/zlib/zlib-${PHP_ZLIB_VERSION}.tar.gz"
-tar -xzvf "zlib-${PHP_ZLIB_VERSION}.tar.gz"
+echo "-----> Downloading dependency zlib ${zlib_version}"
+curl -LO "${PHP_BASE_URL}/zlib/zlib-${zlib_version}.tar.gz"
+tar -xzvf "zlib-${zlib_version}.tar.gz"
 
 # If we're using the stack scalingo-14
 # - it requires a custom libzip
@@ -124,7 +120,7 @@ if [[ "${PHP_MODULE_API_VERSIONS["$php_series"]}" -lt "${PHP_MODULE_API_VERSIONS
 fi
 
 mkdir -p "/app/vendor/php/etc/conf.d" \
-&& pushd zlib-${PHP_ZLIB_VERSION} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
+&& pushd zlib-${zlib_version} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
 && pushd php-${php_version} >/dev/null \
 && ./configure --prefix=/app/vendor/php \
 --with-config-file-path=/app/vendor/php/etc \
