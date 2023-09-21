@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
-source "$basedir/lib/utils"
-source "$basedir/lib/swift"
+source "${basedir}/../conf/buildpack.conf"
+source "${basedir}/lib/utils"
+source "${basedir}/lib/swift"
 
-jq_download_url="https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux64"
+jq_default_url="https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux64"
 
-tempdir=$(mktmpdir jq)
-cd $tempdir
+url="${JQ_DOWNLOAD_URL:-${jq_default_url}}"
+
+tempdir="$( mktmpdir jq )"
+cd "${tempdir}" || exit
 
 echo "----> Vendoring 'jq'"
-curl --location "${jq_download_url}" --output jq_bin
+curl --location "${url}" --output "jq_bin"
 
-mkdir jq
-mv jq_bin jq/jq
+mkdir "jq"
+mv "jq_bin" "jq/jq"
 
-swift_upload jq/jq
+swift_upload "jq/jq"
