@@ -352,11 +352,10 @@ application on your dashboard.
 _Default: false_
 
 Enable support for [Datadog](https://www.datadoghq.com/), and specifically:
-- _Datadog APM_ with the [Datadog Tracer extension](https://github.com/DataDog/dd-trace-php/)
-- _Datadog Application Security_ with the [Datadog AppSec extension](https://github.com/DataDog/dd-appsec-php)
+- _Datadog APM (Application Performance Monitoring)_
+- _Datadog ASM (Application Security Management)_
 
 _Important:_
-- both extensions will be installed using the Datadog AppSec installer, which is still in beta
 - the Datadog agent has to be installed first ([see the documentation](https://doc.scalingo.com/platform/app/datadog))
 
 To enable Datadog support, set the `extra.paas.datadog` property to `true`:
@@ -365,18 +364,12 @@ To enable Datadog support, set the `extra.paas.datadog` property to `true`:
     "datadog": true
 ```
 
-This will automatically install and enable the latest available version of the Datadog Tracer. To disable the Tracer
-or install a specific version, use the `DATADOG_TRACER_VERSION` environment variable (`latest` by default).
+This will automatically install the latest available version of the Datadog Tracer and enable Datadog APM. To disable
+the tracer, set the `DATADOG_TRACER_VERSION` environment variable to `0` (`latest` by default). Note that disabling
+the tracer will disable APM and all other extensions (like ASM).
 
-Example:
-
-```
-DATADOG_TRACER_VERSION=0.71.0
-```
-
-The Datadog AppSec extension will be disabled by default. To install and enable the AppSec extension, set the
-`DATADOG_APPSEC_VERSION` environment variable to `latest` or any other valid version (`0` by default). Note that
-the AppSec extension requires the Tracer extension.
+The Datadog ASM (Application Security Management) extension will be disabled by default. To install and enable ASM,
+set the `DATADOG_APPSEC_VERSION` environment variable to `latest` (`0` by default).
 
 Example:
 

@@ -4,15 +4,12 @@ function install_datadog() {
     local tracer_version="${1}"
     local appsec_version="${2}"
 
-    if [ "${tracer_version}" = "0" ] && [ "${appsec_version}" = "0" ]; then
+    if [ "${tracer_version}" = "0" ]; then
         echo >&2 "Skipping Datadog installation, as there is nothing to install."
     fi
 
-    local tracer_option
-    if [ "${tracer_version}" = "0" ]; then tracer_option="--no-tracer"; else tracer_option="--version=${tracer_version}"; fi
-
     local appsec_option
-    if [ "${appsec_version}" = "0" ]; then appsec_option="--no-appsec"; else appsec_option="--version=${appsec_version}"; fi
+    if [ "${appsec_version}" = "0" ]; then appsec_option=""; else appsec_option="--enable-appsec"; fi
 
     local install_dir="${BUILD_DIR}/vendor/datadog"
     local cwd=$(pwd)
@@ -20,15 +17,14 @@ function install_datadog() {
 
     cd "${tempdir}"
 
-    # the AppSec extension is in public beta right now, and the URL of the installer might change in the future
-    curl --silent -L "https://raw.githubusercontent.com/DataDog/dd-appsec-php/installer/dd-library-php-setup.php" > dd-library-php-setup.php
+    curl --silent -L "https://github.com/DataDog/dd-trace-php/releases/latest/download/datadog-setup.php" > datadog-setup.php
     mkdir -p ${install_dir}
-    php dd-library-php-setup.php ${tracer_option} ${appsec_option} --php-bin=all --install-dir=${install_dir}
+    php datadog-setup.php --php-bin=all ${appsec_option} --install-dir=${install_dir}
 
     [ -f '/app/vendor/php/etc/conf.d/98-ddtrace.ini' ] && sed -i "s@$BUILD_DIR@/app@g" /app/vendor/php/etc/conf.d/98-ddtrace.ini
     [ -f '/app/vendor/php/etc/conf.d/98-ddappsec.ini' ] && sed -i "s@$BUILD_DIR@/app@g" /app/vendor/php/etc/conf.d/98-ddappsec.ini
 
-    if [ "${appsec_option}" != "--no-appsec" ]; then
+    if [ "${appsec_option}" != "" ]; then
         mkdir -p "${BUILD_DIR}/.profile.d"
         local startup_script="${BUILD_DIR}/.profile.d/datadog.sh"
         # startup_script should have been created by the Datadog Agent buildpack, but let's make sure it's here anyway
