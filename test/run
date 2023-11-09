@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+buildpack_dir="${BUILDPACK_DIR:-"$( pwd )"}"
+
+suite() {
+    # Load tests from the following files:
+    source "${buildpack_dir}/test/tests"
+}
+
+# Load shUnit2, which also run the tests:
+source "${buildpack_dir}/test/shunit2"
