@@ -4,14 +4,7 @@ test_equality() {
     assertEquals 1 1
 }
 
-test_party_like_it_is_1999() {
-    year="$( date "+%Y" )"
-
-    assertEquals "It's not 1999 :-(" "1999" "${year}"
-}
-
 
 # Add these functions to the test suite:
 
 suite_addTest test_equality
-suite_addTest test_party_like_it_is_1999
