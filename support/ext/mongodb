@@ -7,7 +7,7 @@ if [ -n "${BUILDPACK_DEBUG}" ]; then
 fi
 
 # https://github.com/mongodb/mongo-php-driver/releases
-mongo_version="1.16.2"
+mongo_version="1.17.0"
 url="https://pecl.php.net/get/mongodb-${mongo_version}.tgz"
 
 curl --location "${url}" \
