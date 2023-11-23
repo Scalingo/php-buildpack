@@ -8,14 +8,10 @@ fi
 
 php_version=${1:=8.2}
 
-if echo $php_version | grep -q -E '^[78].' ; then
-  apcu_version=5.1.22
-else
-  apcu_version=4.0.11
-fi
+apcu_version=5.1.23
 
-curl -L "https://pecl.php.net/get/apcu-${apcu_version}.tgz" \
-    | tar xzv
+curl --location "https://pecl.php.net/get/apcu-${apcu_version}.tgz" \
+    | tar --extract --gzip --verbose
 
 cd apcu-${apcu_version}
 /app/vendor/php/bin/phpize
