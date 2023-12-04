@@ -20,30 +20,18 @@ php_version=$1
 cd $( cd -P "$( dirname "$0" )" && pwd )
 
 for e in ./ext-internal/*; do
-  ext_name=$(basename $e)
-  ./package_internal_ext $ext_name $php_version
+  ext_name="$( basename "${e}" )"
+
+  ./package_internal_ext "${ext_name}" "${php_version}"
+
   if [[ $? -ne 0 ]]; then
     echo "Error packaging internal extension ${ext_name}"
     exit -1
   fi
 done
 
-# Regex used to ignore PHP 8.1 and above:
-re='8.[123]'
-
 for e in ./ext/*; do
   ext_name="$( basename "${e}" )"
-
-  # Ignore 'ds' and 'lua' starting with PHP 8.1:
-  if [[ "${php_version}" =~ ${re} ]];
-    if [[ "${ext_name}" = "ds" ]]; then
-      continue
-    fi
-
-    if [[ "${ext_name}" = "lua" ]]; then
-      continue
-    fi
-  fi
 
   ./package_ext "${ext_name}" "${ext_name}" "${php_version}"
 
