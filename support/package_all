@@ -20,8 +20,10 @@ php_version=$1
 cd $( cd -P "$( dirname "$0" )" && pwd )
 
 for e in ./ext-internal/*; do
-  ext_name=$(basename $e)
-  ./package_internal_ext $ext_name $php_version
+  ext_name="$( basename "${e}" )"
+
+  ./package_internal_ext "${ext_name}" "${php_version}"
+
   if [[ $? -ne 0 ]]; then
     echo "Error packaging internal extension ${ext_name}"
     exit -1
@@ -29,16 +31,10 @@ for e in ./ext-internal/*; do
 done
 
 for e in ./ext/*; do
-  ext_name=$(basename $e)
-  if [[ "$php_version" = "8.1" || "$php_version" = "8.2" ]]; then
-    if [[ "$ext_name" = "ds" ]]; then
-      continue
-    fi
-    if [[ "$ext_name" = "lua" ]]; then
-      continue
-    fi
-  fi
-  ./package_ext $ext_name $ext_name $php_version
+  ext_name="$( basename "${e}" )"
+
+  ./package_ext "${ext_name}" "${ext_name}" "${php_version}"
+
   if [[ $? -ne 0 ]]; then
     echo "Error packaging extension ${ext_name}"
     exit -1
