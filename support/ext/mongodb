@@ -6,18 +6,20 @@ if [ -n "${BUILDPACK_DEBUG}" ]; then
     set -x
 fi
 
-# https://github.com/mongodb/mongo-php-driver/releases
-mongo_version="1.17.0"
-url="https://pecl.php.net/get/mongodb-${mongo_version}.tgz"
+# $mongodb_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
+source "/buildpack/conf/buildpack.conf"
+
+url="https://pecl.php.net/get/mongodb-${mongodb_version}.tgz"
 
 curl --location "${url}" \
     | tar xzv
 
-cd mongodb-${mongo_version}
+pushd "mongodb-${mongodb_version}"
+
 /app/vendor/php/bin/phpize ; rc=$?
 
 if [ $rc -ne 0 ] ; then
-    echo "Fail to PHPize mongo extension"
+    echo "Fail to PHPize mongodb extension"
     exit 1
 fi
 
@@ -33,9 +35,12 @@ fi
 make ; rc=$?
 
 if [ $rc -ne 0 ] ; then
-    echo "Fail to build mongo extension"
+    echo "Fail to build mongodb extension"
     exit 1
 fi
 
 cp modules/mongodb.so "${EXT_DIR}/mongodb.so"
+
+popd
+
 echo "extension=mongodb.so" > "${PREFIX}/etc/conf.d/mongodb.ini"
