@@ -6,20 +6,41 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
-php_version=${1:=8.2}
+# $phpredis_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
+source "/buildpack/conf/buildpack.conf"
 
-# https://github.com/phpredis/phpredis/releases
-phpredis_version="5.3.7"
+url="https://github.com/phpredis/phpredis/archives/${phpredis_version}.tar.gz"
 
-curl -L "https://github.com/nicolasff/phpredis/archive/${phpredis_version}.tar.gz" \
+curl --location "${url}" \
     | tar -xzv
 
-cd phpredis-${phpredis_version}
+pushd phpredis-${phpredis_version}
 
-/app/vendor/php/bin/phpize
-./configure --with-php-config=/app/vendor/php/bin/php-config \
-            --enable-redis
+/app/vendor/php/bin/phpize ; rc=$?
 
-make
-cp modules/redis.so "$EXT_DIR/redis.so"
-echo "extension=redis.so" > "$PREFIX/etc/conf.d/redis.ini"
+if [ $rc -ne 0 ] ; then
+    echo "Fail to PHPize phpredis extension"
+    exit 1
+fi
+
+./configure \
+    --with-php-config=/app/vendor/php/bin/php-config \
+    --enable-redis ; rc=$?
+
+if [ $rc -ne 0  ] ; then
+    echo "Fail to configure phpredis extension"
+    exit 1
+fi
+
+make ; rc=$?
+
+if [ $rc -ne 0 ] ; then
+    echo "Fail to build phpredis extension"
+    exit 1
+fi
+
+cp modules/redis.so "${EXT_DIR}/redis.so"
+
+popd
+
+echo "extension=redis.so" > "${PREFIX}/etc/conf.d/redis.ini"
