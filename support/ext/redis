@@ -9,7 +9,7 @@ fi
 # $phpredis_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
 source "/buildpack/conf/buildpack.conf"
 
-url="https://github.com/nicolasff/phpredis/archives/${phpredis_version}.tar.gz"
+url="https://github.com/phpredis/phpredis/archive/refs/tags/${phpredis_version}.tar.gz"
 
 curl --location "${url}" \
     | tar -xzv
