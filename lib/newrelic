@@ -23,10 +23,8 @@ function install_newrelic_user_config() {
 
     if [ -n "${NEW_RELIC_CONFIG_FILE:-}" ]; then
         if [ ! -f "${NEW_RELIC_CONFIG_FILE}" ]; then
-            error <<-EOF
-                Config var 'NEW_RELIC_CONFIG_FILE' points to non existing file
-                '${NEW_RELIC_CONFIG_FILE}'
-            EOF
+            error "Config var 'NEW_RELIC_CONFIG_FILE' points to non existing" \
+                " file '${NEW_RELIC_CONFIG_FILE}'"
         fi
 
         echo "Using custom New Relic config '${NEW_RELIC_CONFIG_FILE}'" \
