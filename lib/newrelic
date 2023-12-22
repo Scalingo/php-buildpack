@@ -28,10 +28,10 @@ function install_newrelic_user_config() {
         echo "Using custom New Relic config '${NEW_RELIC_CONFIG_FILE}'" \
             | indent
 
-        pushd "/app/vendor/php/etc/conf.d"
+        pushd "/app/vendor/php/etc/conf.d" > /dev/null
 
-        ln -s "../../../../${NEW_RELIC_CONFIG_FILE}" "ext-newrelic.user.ini"
+        ln -sf "../../../../${NEW_RELIC_CONFIG_FILE}" "ext-newrelic.user.ini"
 
-        popd
+        popd > /dev/null
     fi
 }
