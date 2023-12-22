@@ -389,7 +389,7 @@ To enable Scout support, set the `extra.paas.scout` property to `true`:
     "scout": true
 ```
 
-To install a specific version of the extension, use the `SCOUT_APM_VERSION` environment variable (`1.7.0` by default).
+To install a specific version of the extension, use the `SCOUT_APM_VERSION` environment variable (`1.10.0` by default).
 
 Example:
 
