@@ -19,8 +19,6 @@ function install_newrelic() {
 }
 
 function install_newrelic_user_config() {
-    local build_dir="${1}"
-
     if [ -n "${NEW_RELIC_CONFIG_FILE:-}" ]; then
         if [ ! -f "${NEW_RELIC_CONFIG_FILE}" ]; then
             error "Config var 'NEW_RELIC_CONFIG_FILE' points to non existing" \
@@ -30,7 +28,7 @@ function install_newrelic_user_config() {
         echo "Using custom New Relic config '${NEW_RELIC_CONFIG_FILE}'" \
             | indent
 
-        pushd "${build_dir}/vendor/php/etc/conf.d"
+        pushd "/app/vendor/php/etc/conf.d"
 
         ln -s "../../../../${NEW_RELIC_CONFIG_FILE}" "ext-newrelic.user.ini"
 

@@ -320,7 +320,7 @@ if [ -f "$BUILD_DIR/composer.json" ] && package_newrelic_enabled; then
     status "New Relic usage detected, installing Agent and PHP extension"
     LOG_FILES+=( "/app/vendor/newrelic/daemon.log" "/app/vendor/newrelic/agent.log" )
     install_newrelic "$NEWRELIC_VERSION"
-    install_newrelic_user_config "${BUILD_DIR}"
+    install_newrelic_user_config
 
     echo 'export NEW_RELIC_LOG_DAEMON=${NEW_RELIC_LOG_DAEMON:=/app/vendor/newrelic/daemon.log}' >> ".profile.d/php.sh"
     echo 'export NEW_RELIC_LOG_AGENT=${NEW_RELIC_LOG_AGENT:=/app/vendor/newrelic/agent.log}' >> ".profile.d/php.sh"
