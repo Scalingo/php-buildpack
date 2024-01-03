@@ -18,3 +18,20 @@ function install_newrelic() {
     cd "$cwd"
 }
 
+function install_newrelic_user_config() {
+    if [ -n "${NEW_RELIC_CONFIG_FILE:-}" ]; then
+        if [ ! -f "${NEW_RELIC_CONFIG_FILE}" ]; then
+            error "Config var 'NEW_RELIC_CONFIG_FILE' points to non existing" \
+                " file '${NEW_RELIC_CONFIG_FILE}'"
+        fi
+
+        echo "Using custom New Relic config '${NEW_RELIC_CONFIG_FILE}'" \
+            | indent
+
+        pushd "/app/vendor/php/etc/conf.d" > /dev/null
+
+        ln -sf "../../../../${NEW_RELIC_CONFIG_FILE}" "ext-newrelic.user.ini"
+
+        popd > /dev/null
+    fi
+}
