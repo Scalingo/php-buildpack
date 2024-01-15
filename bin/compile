@@ -178,11 +178,8 @@ function package_scout_enabled() {
 
 export_env_dir "$3"
 
-# Download jq binary for JSON processing
-mkdir -p $BUILD_DIR/bin
-export PATH="$BUILD_DIR/bin:$PATH"
-curl --fail  --retry 3 --retry-delay 2 "${PHP_BASE_URL}/jq/jq" -L -s -o - > "$BUILD_DIR/bin/jq"
-chmod +x "$BUILD_DIR/bin/jq"
+# Create some required directories:
+mkdir -p "${BUILD_DIR}/bin" "${BUILD_DIR}/vendor"
 
 DEFAULT_PHP=$(curl --fail --location --silent "${SEMVER_SERVER}/php-${STACK}")
 DEFAULT_NGINX=$(curl --fail --location --silent "${SEMVER_SERVER}/nginx-${STACK}")
@@ -250,7 +247,6 @@ fi
 VENDORED_NGINX=/app/vendor/nginx
 VENDORED_PHP=/app/vendor/php
 
-[ ! -d "$BUILD_DIR/vendor" ] && mkdir -p "$BUILD_DIR/vendor"
 
 status "Bundling Nginx ${NGINX_VERSION}"
 fetch_engine_package nginx "$NGINX_VERSION" "${VENDORED_NGINX}" | indent
