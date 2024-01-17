@@ -3,8 +3,33 @@
 buildpack_dir="${BUILDPACK_DIR:-"$( pwd )"}"
 
 suite() {
-    # Load tests from the following files:
+    # Load tests from the following file:
     source "${buildpack_dir}/test/tests"
+}
+
+oneTimeSetUp() {
+    TEST_SUITE_CACHE="$( mktemp --directory "${SHUNIT_TMPDIR}/test_suite_cache.XXXX" )"
+}
+
+oneTimeTearDown() {
+    rm -rf "${TEST_SUITE_CACHE}"
+}
+
+setUp() {
+    export OUTPUT_DIR="$( mktemp --directory "${SHUNIT_TMPDIR}/output.XXXX" )"
+
+    STD_OUT="${OUTPUT_DIR}/stdout"
+    STD_ERR="${OUTPUT_DIR}/stderr"
+
+    export BUILD_DIR="${OUTPUT_DIR}/build"
+    export CACHE_DIR="${OUTPUT_DIR}/cache"
+    export HOME="${BUILD_DIR}"
+
+    mkdir -p "${OUTPUT_DIR}" "${BUILD_DIR}" "${CACHE_DIR}"
+}
+
+tearDown() {
+    rm -rf "${OUTPUT_DIR}"
 }
 
 # Load shUnit2, which also run the tests:
