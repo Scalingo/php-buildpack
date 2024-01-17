@@ -3,33 +3,6 @@
 # taken from
 # https://github.com/ryanbrainard/heroku-buildpack-testrunner/blob/master/lib/test_utils.sh
 
-oneTimeSetUp()
-{
-   TEST_SUITE_CACHE="$(mktemp -d ${SHUNIT_TMPDIR}/test_suite_cache.XXXX)"
-}
-
-oneTimeTearDown()
-{
-  rm -rf ${TEST_SUITE_CACHE}
-}
-
-setUp()
-{
-  OUTPUT_DIR="$(mktemp -d ${SHUNIT_TMPDIR}/output.XXXX)"
-  STD_OUT="${OUTPUT_DIR}/stdout"
-  STD_ERR="${OUTPUT_DIR}/stderr"
-  BUILD_DIR="${OUTPUT_DIR}/build"
-  CACHE_DIR="${OUTPUT_DIR}/cache"
-  mkdir -p ${OUTPUT_DIR}
-  mkdir -p ${BUILD_DIR}
-  mkdir -p ${CACHE_DIR}
-}
-
-tearDown()
-{
-  rm -rf ${OUTPUT_DIR}
-}
-
 capture()
 {
   resetCapture
@@ -54,21 +27,6 @@ resetCapture()
   unset LAST_COMMAND
   unset RETURN
   unset rtrn # deprecated
-}
-
-detect()
-{
-  capture ${BUILDPACK_HOME}/bin/detect ${BUILD_DIR}
-}
-
-compile()
-{
-  capture ${BUILDPACK_HOME}/bin/compile ${BUILD_DIR} ${CACHE_DIR}
-}
-
-release()
-{
-  capture ${BUILDPACK_HOME}/bin/release ${BUILD_DIR}
 }
 
 assertSuccess() {
