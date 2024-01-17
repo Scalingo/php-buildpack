@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+### Helpers functions
+
+test::helpers::detect() {
+    local buildpack_dir
+
+    buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
+
+    cp -a "/buildpack"/* "${buildpack_dir}/"
+    cp -a "/buildpack/test/fixtures/${1}"/* "${BUILD_DIR}/"
+
+    pushd "${buildpack_dir}" > /dev/null
+
+    capture "${buildpack_dir}/bin/detect" "${BUILD_DIR}"
+
+    popd > /dev/null
+}
+
+test::helpers::compile() {
+    local buildpack_dir
+
+    buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
+
+    cp -a "/buildpack"/* "${buildpack_dir}/"
+    cp -a "/buildpack/test/fixtures/${1}"/* "${BUILD_DIR}/"
+
+    pushd "${buildpack_dir}" > /dev/null
+
+    capture "${buildpack_dir}/bin/compile" "${BUILD_DIR}" "${CACHE_DIR}"
+
+    popd > /dev/null
+}
