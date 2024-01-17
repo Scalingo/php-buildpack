@@ -7,8 +7,8 @@ test::helpers::detect() {
 
     buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
 
-    cp -a "/buildpack"/* "${buildpack_dir}/"
-    cp -a "/buildpack/test/fixtures/${1}"/* "${BUILD_DIR}/"
+    cp -a "$( pwd )"/* "${buildpack_dir}/"
+    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
 
     pushd "${buildpack_dir}" > /dev/null
 
@@ -22,8 +22,8 @@ test::helpers::compile() {
 
     buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
 
-    cp -a "/buildpack"/* "${buildpack_dir}/"
-    cp -a "/buildpack/test/fixtures/${1}"/* "${BUILD_DIR}/"
+    cp -a "$( pwd )"/* "${buildpack_dir}/"
+    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
 
     pushd "${buildpack_dir}" > /dev/null
 
