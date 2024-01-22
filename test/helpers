@@ -2,32 +2,24 @@
 
 ### Helpers functions
 
-test::helpers::detect() {
-    local buildpack_dir
+test::helpers::get_php_version() {
+    local old_home
 
-    buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
+    old_home="${HOME}"
 
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
+    HOME="/app"
+    export HOME
 
-    pushd "${buildpack_dir}" > /dev/null
+    pushd "${HOME}" > /dev/null
 
-    capture "${buildpack_dir}/bin/detect" "${BUILD_DIR}"
+    cp --archive --recursive "${BUILD_DIR}"/* "${HOME}/"
 
-    popd > /dev/null
-}
-
-test::helpers::compile() {
-    local buildpack_dir
-
-    buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
-
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
-
-    pushd "${buildpack_dir}" > /dev/null
-
-    capture "${buildpack_dir}/bin/compile" "${BUILD_DIR}" "${CACHE_DIR}"
+    test::utils::capture ./vendor/php/bin/php --version
 
     popd > /dev/null
+
+    rm -Rf "${HOME}"/*
+
+    HOME="${old_home}"
+    export HOME
 }

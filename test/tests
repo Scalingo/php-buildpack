@@ -5,30 +5,84 @@ source "$( pwd )/test/helpers"
 
 test::detect_legacy_default() {
     # Test the buildpack detect script with a single simple .php file
-    test::helpers::detect "legacy_default"
-    assertCapturedSuccess
-    assertCapturedEquals "PHP (classic)"
+    test::utils::detect "legacy_default"
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedEquals "PHP (classic)"
 }
 
 test::compile_legacy_default() {
     # Test the buildpack compile script with a single simple .php file
-    test::helpers::compile "legacy_default"
-    assertCapturedSuccess
+    test::utils::compile "legacy_default"
+    test::utils::assertCapturedSuccess
+
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedStartswith "PHP 8.1."
 }
 
 test::detect_composer_default() {
-    test::helpers::detect "composer_default"
-    assertCapturedSuccess
-    assertCapturedEquals "PHP (composer.json)"
+    test::utils::detect "composer_default"
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedEquals "PHP (composer.json)"
 }
 
 test::compile_composer_default() {
-    test::helpers::compile "composer_default"
+    test::utils::compile "composer_default"
     # We can't use assertCapturedSuccess here:
     # Even with an empty composer.json file, composer will use stderr to warn
-    # us that nothing had to be installed -_-, causing the test to fail for no
-    # reason.
-    assertSuccess
+    # us that nothing had to be installed, causing the test to fail for no
+    # reason -_-
+    test::utils::assertSuccess
+
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedStartswith "PHP 8.1."
+}
+
+test::compile_composer_php80() {
+    # PHP 8.0 is only available on stack `scalingo-20`:
+    [[ "${STACK}" != "scalingo-20" ]] && startSkipping
+
+    test::utils::compile "composer_php80"
+    test::utils::assertSuccess
+
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedStartswith "PHP 8.0."
+}
+
+test::compile_composer_php81() {
+    test::utils::compile "composer_php81"
+    test::utils::assertSuccess
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedStartswith "PHP 8.1."
+}
+
+test::compile_composer_php82() {
+    test::utils::compile "composer_php82"
+    test::utils::assertSuccess
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedStartswith "PHP 8.2."
+}
+
+test::compile_composer_php83() {
+    test::utils::compile "composer_php83"
+    test::utils::assertSuccess
+    test::utils::resetCapture
+
+    test::helpers::get_php_version
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedStartswith "PHP 8.3."
 }
 
 # Add these functions to the test suite:
@@ -37,3 +91,7 @@ suite_addTest test::detect_legacy_default
 suite_addTest test::compile_legacy_default
 suite_addTest test::detect_composer_default
 suite_addTest test::compile_composer_default
+suite_addTest test::compile_composer_php80
+suite_addTest test::compile_composer_php81
+suite_addTest test::compile_composer_php82
+suite_addTest test::compile_composer_php83

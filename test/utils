@@ -3,173 +3,294 @@
 # taken from
 # https://github.com/ryanbrainard/heroku-buildpack-testrunner/blob/master/lib/test_utils.sh
 
-capture()
-{
-  resetCapture
+test::utils::detect() {
+    local buildpack_dir
 
-  LAST_COMMAND="$@"
+    export buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
 
-  "$@" >${STD_OUT} 2>${STD_ERR}
-  RETURN=$?
-  rtrn=${RETURN} # deprecated
+    cp -a "$( pwd )"/* "${buildpack_dir}/"
+    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
+
+    pushd "${buildpack_dir}" > /dev/null
+
+    test::utils::capture "${buildpack_dir}/bin/detect" "${BUILD_DIR}"
+
+    popd > /dev/null
 }
 
-resetCapture()
-{
-  if [ -f ${STD_OUT} ]; then
-    rm ${STD_OUT}
-  fi
+test::utils::compile() {
+    local buildpack_dir
 
-  if [ -f ${STD_ERR} ]; then
-    rm ${STD_ERR}
-  fi
+    buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
 
-  unset LAST_COMMAND
-  unset RETURN
-  unset rtrn # deprecated
+    cp -a "$( pwd )"/* "${buildpack_dir}/"
+    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
+
+    pushd "${buildpack_dir}" > /dev/null
+
+    test::utils::capture "${buildpack_dir}/bin/compile" "${BUILD_DIR}" \
+        "${CACHE_DIR}"
+
+    popd > /dev/null
 }
 
-assertSuccess() {
-  assertEquals "Expected captured exit code to be 0; was <${RETURN}>" \
-    "0" "${RETURN}"
+test::utils::capture() {
+    test::utils::resetCapture
+
+    LAST_COMMAND="$@"
+
+    "$@" >"${STD_OUT}" 2>"${STD_ERR}"
+
+    RETURN="${?}"
 }
 
-assertCapturedEquals()
-{
-  assertEquals "$@" "$(cat ${STD_OUT})"
+test::utils::resetCapture() {
+    if [ -f "${STD_OUT}" ]; then
+        rm "${STD_OUT}"
+    fi
+
+    if [ -f "${STD_ERR}" ]; then
+        rm "${STD_ERR}"
+    fi
+
+    unset LAST_COMMAND
+    unset RETURN
 }
 
-assertCapturedNotEquals()
-{
-  assertNotEquals "$@" "$(cat ${STD_OUT})"
+test::utils::assertSuccess() {
+    assertEquals  \
+        "Expected captured exit code to be 0; was <${RETURN}>" \
+        "0" "${RETURN}"
 }
 
-assertCaptured()
-{
-  assertFileContains "$@" "${STD_OUT}"
+test::utils::assertCapturedEquals() {
+    assertEquals "$@" "$( cat "${STD_OUT}" )"
 }
 
-assertNotCaptured()
-{
-  assertFileNotContains "$@" "${STD_OUT}"
+test::utils::assertCapturedNotEquals() {
+    assertNotEquals "$@" "$( cat "${STD_OUT}" )"
 }
 
-assertCapturedSuccess()
-{
-  assertSuccess
-  assertEquals "Expected STD_ERR to be empty; was <$(cat ${STD_ERR})>" "" "$(cat ${STD_ERR})"
+test::utils::assertCaptured() {
+    test:utils::assertFileContains "$@" "${STD_OUT}"
+}
+
+test::utils::assertNotCaptured() {
+    test::utils::assertFileNotContains "$@" "${STD_OUT}"
+}
+
+test::utils::assertCapturedSuccess() {
+    test::utils::assertSuccess
+
+    assertEquals \
+        "Expected STD_ERR to be empty; was <$( cat "${STD_ERR}" )>" \
+        "" "$( cat "${STD_ERR}" )"
 }
 
 # assertCapturedError [[expectedErrorCode] expectedErrorMsg]
-assertCapturedError()
-{
-  if [ $# -gt 1 ]; then
-    local expectedErrorCode=${1}
-    shift
-  fi
+test::utils::assertCapturedError() {
+    if [ $# -gt 1 ]; then
+        local expectedErrorCode="${1}"
+        shift
+    fi
 
-  local expectedErrorMsg=${1:-""}
+    local expectedErrorMsg="${1:-""}"
 
-  if [ -z ${expectedErrorCode} ]; then
-    assertTrue "Expected captured exit code to be greater than 0; was <${RETURN}>" "[ ${RETURN} -gt 0 ]"
-  else
-    assertTrue "Expected captured exit code to be <${expectedErrorCode}>; was <${RETURN}>" "[ ${RETURN} -eq ${expectedErrorCode} ]"
-  fi
+    if [ -z "${expectedErrorCode}" ]; then
+        assertTrue \
+            "Expected captured exit code to be greater than 0; was <${RETURN}>" \
+            "[ ${RETURN} -gt 0 ]"
+    else
+        assertTrue \
+            "Expected captured exit code to be <${expectedErrorCode}>; was <${RETURN}>" \
+            "[ ${RETURN} -eq ${expectedErrorCode} ]"
+    fi
 
-  if [ "${expectedErrorMsg}" != "" ]; then
-    assertFileContains "Expected STD_ERR to contain error <${expectedErrorMsg}>" "${expectedErrorMsg}" "${STD_ERR}"
-  fi
+    if [ "${expectedErrorMsg}" != "" ]; then
+        test::utils::assertFileContains \
+            "Expected STD_ERR to contain error <${expectedErrorMsg}>" \
+            "${expectedErrorMsg}" "${STD_ERR}"
+    fi
 }
 
-_assertContains()
-{
-  if [ 5 -eq $# ]; then
-    local msg=$1
-    shift
-  elif [ ! 4 -eq $# ]; then
-    fail "Expected 4 or 5 parameters; Receieved $# parameters"
-  fi
+test::utils::_assertContains() {
+    if [ 5 -eq $# ]; then
+        local msg="${1}"
+        shift
+    elif [ ! 4 -eq $# ]; then
+        fail "Expected 4 or 5 parameters; Receieved $# parameters"
+    fi
 
-  local needle=$1
-  local haystack=$2
-  local expectation=$3
-  local haystack_type=$4
+    local needle="${1}"
+    local haystack="${2}"
+    local expectation="${3}"
+    local haystack_type="${4}"
 
-  case "${haystack_type}" in
-    "file") grep -q -F -e "${needle}" ${haystack} ;;
-    "text") echo "${haystack}" | grep -q -F -e "${needle}" ;;
-  esac
-
-  if [ "${expectation}" != "$?" ]; then
-    case "${expectation}" in
-      0) default_msg="Expected <${haystack}> to contain <${needle}>" ;;
-      1) default_msg="Did not expect <${haystack}> to contain <${needle}>" ;;
+    case "${haystack_type}" in
+        "file")
+            grep --quiet --fixed-strings --regexp="${needle}" "${haystack}"
+            ;;
+        "text")
+            echo "${haystack}" \
+                | grep --quiet --fixed-strings --regexp="${needle}"
+            ;;
     esac
 
-    fail "${msg:-${default_msg}}"
-  fi
+    if [ "${expectation}" != "$?" ]; then
+        case "${expectation}" in
+            0)
+                default_msg="Expected <${haystack}> to contain <${needle}>"
+                ;;
+            1)
+                default_msg="Did not expect <${haystack}> to contain <${needle}>"
+                ;;
+        esac
+
+        fail "${msg:-${default_msg}}"
+    fi
 }
 
-assertFileContains()
-{
-  _assertContains "$@" 0 "file"
+test::utils::_assertMatches() {
+    if [ 5 -eq $# ]; then
+        local msg="${1}"
+        shift
+    elif [ ! 4 -eq $# ]; then
+        fail "Expected 4 or 5 parameters; Receieved $# parameters"
+    fi
+
+    local needle
+    local haystack
+    local expectation
+    local haystack_type
+
+    needle="${1}"
+    haystack="${2}"
+    expectation="${3}"
+    haystack_type="${4}"
+
+    case "${haystack_type}" in
+        "file")
+            grep --quiet --extended-regexp --regexp="${needle}" "${haystack}"
+            ;;
+        "text")
+            echo "${haystack}" \
+                | grep --quiet --extended-regexp --regexp="${needle}"
+            ;;
+    esac
+
+    if [ "${expectation}" != "$?" ]; then
+        case "${expectation}" in
+            0)
+                default_msg="Expected <${haystack}> to match <${needle}>"
+                ;;
+            1)
+                default_msg="Did not expect <${haystack}> to match <${needle}>"
+                ;;
+        esac
+
+        fail "${msg:-${default_msg}}"
+    fi
 }
 
-assertFileNotContains()
-{
-  _assertContains "$@" 1 "file"
+test::utils::assertTextContains() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertContains "${needle}" "${haystack}" 0 "text"
 }
 
-assertFileContainsMatch()
-{
-  local needle=$1
-  local haystack=$2
+test::utils::assertTextNotContains() {
+    local needle="${1}"
+    local haystack="${2}"
 
-  grep -q -E -e "${needle}" ${haystack}
-  if [ "$?" != 0 ]; then
-    fail "Expected <${haystack}> to contain <${needle}>"
-  fi
+    test::utils::_assertContains "${needle}" "${haystack}" 1 "text"
 }
 
-command_exists () {
-    type "$1" > /dev/null 2>&1 ;
+test::utils::assertFileContains() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertContains "${needle}" "${haystack}" 0 "file"
 }
 
-assertFileMD5()
-{
-  expectedHash=$1
-  filename=$2
+test::utils::assertFileNotContains() {
+    local needle="${1}"
+    local haystack="${2}"
 
-  if command_exists "md5sum"; then
-    md5_cmd="md5sum ${filename}"
-    expected_md5_cmd_output="${expectedHash}  ${filename}"
-  elif command_exists "md5"; then
-    md5_cmd="md5 ${filename}"
-    expected_md5_cmd_output="MD5 (${filename}) = ${expectedHash}"
-  else
-    fail "no suitable MD5 hashing command found on this system"
-  fi
-
-  assertEquals "${expected_md5_cmd_output}" "$(${md5_cmd})"
+    test::utils::_assertContains "${needle}" "${haystack}" 1 "file"
 }
 
-assertDirectoryExists() {
-  if [[ ! -e "$1" ]]; then
-    fail "$1 does not exist"
-  fi
-  if [[ ! -d $1 ]]; then
-    fail "$1 is not a directory"
-  fi
+test::utils::assertFileStartswith() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertMatches "^${needle}" "${haystack}" 0 "file"
 }
 
-assertFileExists()
-{
-  filename=$1
-  assertTrue "$filename doesn't exist" "[[ -e $filename ]]"
+test::utils::assertFileNotStartswith() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertMatches "^${needle}" "${haystack}" 1 "file"
 }
 
-assertFileDoesNotExist()
-{
-  filename=$1
-  assertTrue "$filename exists" "[[ ! -e $filename ]]"
+test::utils::assertTextStartswith() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertMatches "^${needle}" "${haystack}" 0 "text"
+}
+
+test::utils::assertTextNotStartswith() {
+    local needle="${1}"
+    local haystack="${2}"
+
+    test::utils::_assertMatches "^${needle}" "${haystack}" 1 "text"
+}
+
+test::utils::assertCapturedStartswith() {
+    local needle="${1}"
+
+    test::utils::assertFileStartswith "${needle}" "${STD_OUT}"
+}
+
+test::utils::command_exists () {
+    type "${1}" > /dev/null 2>&1 ;
+}
+
+test::utils::assertFileMD5() {
+    expectedHash="${1}"
+    filename="${2}"
+
+    if test::utils::command_exists "md5sum"; then
+        md5_cmd="md5sum ${filename}"
+        expected_md5_cmd_output="${expectedHash}  ${filename}"
+    elif test::utils::command_exists "md5"; then
+        md5_cmd="md5 ${filename}"
+        expected_md5_cmd_output="MD5 (${filename}) = ${expectedHash}"
+    else
+        fail "no suitable MD5 hashing command found on this system"
+    fi
+
+    assertEquals "${expected_md5_cmd_output}" "$( "${md5_cmd}" )"
+}
+
+test::utils::assertDirectoryExists() {
+    if [[ ! -e "${1}" ]]; then
+        fail "${1} does not exist"
+    fi
+
+    if [[ ! -d "${1}" ]]; then
+        fail "${1} is not a directory"
+    fi
+}
+
+test::utils::assertFileExists() {
+  filename="${1}"
+  assertTrue "${filename} doesn't exist" "[[ -e "${filename}" ]]"
+}
+
+test::utils::assertFileDoesNotExist() {
+  filename="${1}"
+  assertTrue "${filename} exists" "[[ ! -e "${filename}" ]]"
 }
