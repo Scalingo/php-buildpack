@@ -23,3 +23,55 @@ test::helpers::get_php_version() {
     HOME="${old_home}"
     export HOME
 }
+
+test::helpers::list_php_modules() {
+    local old_home
+
+    old_home="${HOME}"
+
+    HOME="/app"
+    export HOME
+
+    pushd "${HOME}" > /dev/null
+
+    cp --archive --recursive "${BUILD_DIR}"/* "${HOME}/"
+
+    test::utils::capture ./vendor/php/bin/php --modules
+
+    popd > /dev/null
+
+    rm -Rf "${HOME}"/*
+
+    HOME="${old_home}"
+    export HOME
+}
+
+
+test::helpers::test_compile() {
+    local fixture="${1}"
+    local php_version="${2}"
+
+    # PHP 8.0 is only available on stack `scalingo-20`:
+    [[ "${STACK}" != "scalingo-20" && "${php_version}" == "8.0." ]] \
+        && echo "[skipping] PHP 8.0 is not available on scalingo-22" \
+        && startSkipping
+
+    # Test that buildpack compiles:
+    test::utils::compile "${fixture}"
+    # We can't use assertCapturedSuccess here:
+    # Even with an empty composer.json file, composer will use stderr to warn
+    # us that nothing had to be installed, causing the test to fail for no
+    # reason -_-
+    test::utils::assertSuccess
+
+    # Test that we have the appropriate PHP version:
+    test::helpers::get_php_version
+    test::utils::assertCapturedStartswith "PHP ${php_version}"
+
+    # Test that all default PHP modules are present:
+    test::helpers::list_php_modules
+
+    for module in "${default_modules[@]}"; do
+        test::utils::assertFileContains "${module}" "${STD_OUT}"
+    done
+}
