@@ -52,9 +52,10 @@ test::helpers::test_compile() {
     local php_version="${2}"
 
     # PHP 8.0 is only available on stack `scalingo-20`:
-    [[ "${STACK}" != "scalingo-20" && "${php_version}" == "8.0." ]] \
-        && echo "[skipping] PHP 8.0 is not available on scalingo-22" \
-        && startSkipping
+    if [[ "${STACK}" != "scalingo-20" && "${php_version}" == "8.0." ]]; then
+        echo "[skipping] PHP 8.0 is not available on scalingo-22"
+        startSkipping
+    fi
 
     # Test that buildpack compiles:
     test::utils::compile "${fixture}"
