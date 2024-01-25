@@ -3,38 +3,26 @@
 # taken from
 # https://github.com/ryanbrainard/heroku-buildpack-testrunner/blob/master/lib/test_utils.sh
 
+test::utils::setupFixture() {
+    local fixture="${1}"
+
+    cp --archive "${BUILDPACK_DIR}/test/fixtures/${fixture}"/* "${BUILD_DIR}/"
+}
+
 test::utils::detect() {
-    local buildpack_dir
-
-    export buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
-
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
-
-    pushd "${buildpack_dir}" > /dev/null
-
-    test::utils::capture "${buildpack_dir}/bin/detect" "${BUILD_DIR}"
-
-    popd > /dev/null
+    test::utils::capture "${BUILDPACK_DIR}/bin/detect" "${BUILD_DIR}"
 }
 
 test::utils::compile() {
-    local buildpack_dir
-
-    buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
-
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
-
-    pushd "${buildpack_dir}" > /dev/null
-
-    test::utils::capture "${buildpack_dir}/bin/compile" "${BUILD_DIR}" \
+    test::utils::capture "${BUILDPACK_DIR}/bin/compile" "${BUILD_DIR}" \
         "${CACHE_DIR}"
-
-    popd > /dev/null
 }
 
 test::utils::capture() {
+    # Redirects stdout to $STD_OUT and stderr to $STD_ERR so we can
+    # analyze/test/grep these outputs after.
+    # It also set a few variables ($LAST_COMMAND, $RETURN) for further use.
+
     test::utils::resetCapture
 
     LAST_COMMAND="$@"
@@ -158,15 +146,10 @@ test::utils::_assertMatches() {
         fail "Expected 4 or 5 parameters; Receieved $# parameters"
     fi
 
-    local needle
-    local haystack
-    local expectation
-    local haystack_type
-
-    needle="${1}"
-    haystack="${2}"
-    expectation="${3}"
-    haystack_type="${4}"
+    local needle="${1}"
+    local haystack="${2}"
+    local expectation="${3}"
+    local haystack_type="${4}"
 
     case "${haystack_type}" in
         "file")
@@ -259,8 +242,8 @@ test::utils::command_exists () {
 }
 
 test::utils::assertFileMD5() {
-    expectedHash="${1}"
-    filename="${2}"
+    local expectedHash="${1}"
+    local filename="${2}"
 
     if test::utils::command_exists "md5sum"; then
         md5_cmd="md5sum ${filename}"
@@ -286,11 +269,13 @@ test::utils::assertDirectoryExists() {
 }
 
 test::utils::assertFileExists() {
-  filename="${1}"
-  assertTrue "${filename} doesn't exist" "[[ -e "${filename}" ]]"
+    local filename="${1}"
+
+    assertTrue "${filename} doesn't exist" "[[ -e "${filename}" ]]"
 }
 
 test::utils::assertFileDoesNotExist() {
-  filename="${1}"
-  assertTrue "${filename} exists" "[[ ! -e "${filename}" ]]"
+    local filename="${1}"
+
+    assertTrue "${filename} exists" "[[ ! -e "${filename}" ]]"
 }
