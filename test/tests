@@ -16,15 +16,15 @@ readonly default_modules=(
 )
 
 
-test::legacy::defaults() {
-    # Test a deployment of a legacy app (not using Composer)
+test::classic::defaults() {
+    # Test a deployment of a classic app (not using Composer)
     # With default settings
 
-    test::helpers::test_deploy "legacy_default" "PHP (classic)" "8.1."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
 }
 
-test::legacy::php80() {
-    # Test a deployment of a legacy app (not using Composer)
+test::classic::php80() {
+    # Test a deployment of a classic app (not using Composer)
     # Specifying we want PHP 8.0.x via environment
 
     PHP_VERSION="8.0"
@@ -36,37 +36,37 @@ test::legacy::php80() {
         startSkipping
     fi
 
-    test::helpers::test_deploy "legacy_default" "PHP (classic)" "8.0."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.0."
 }
 
-test::legacy::php81() {
-    # Test a deployment of a legacy app (not using Composer)
+test::classic::php81() {
+    # Test a deployment of a classic app (not using Composer)
     # Specifying we want PHP 8.1.x via environment
 
     PHP_VERSION="8.1"
     export PHP_VERSION
 
-    test::helpers::test_deploy "legacy_default" "PHP (classic)" "8.1."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
 }
 
-test::legacy::php82() {
-    # Test a deployment of a legacy app (not using Composer)
+test::classic::php82() {
+    # Test a deployment of a classic app (not using Composer)
     # Specifying we want PHP 8.2.x via environment
 
     PHP_VERSION="8.2"
     export PHP_VERSION
 
-    test::helpers::test_deploy "legacy_default" "PHP (classic)" "8.2."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.2."
 }
 
-test::legacy::php83() {
-    # Test a deployment of a legacy app (not using Composer)
+test::classic::php83() {
+    # Test a deployment of a classic app (not using Composer)
     # Specifying we want PHP 8.3.x via environment
 
     PHP_VERSION="8.3"
     export PHP_VERSION
 
-    test::helpers::test_deploy "legacy_default" "PHP (classic)" "8.3."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.3."
 }
 
 test::composer::defaults() {
@@ -113,11 +113,11 @@ test::composer::php83() {
 
 # Add these functions to the test suite:
 
-suite_addTest test::legacy::defaults
-suite_addTest test::legacy::php80
-suite_addTest test::legacy::php81
-suite_addTest test::legacy::php82
-suite_addTest test::legacy::php83
+suite_addTest test::classic::defaults
+suite_addTest test::classic::php80
+suite_addTest test::classic::php81
+suite_addTest test::classic::php82
+suite_addTest test::classic::php83
 
 suite_addTest test::composer::defaults
 suite_addTest test::composer::php80
