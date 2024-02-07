@@ -3,9 +3,41 @@
 ### Helpers functions
 
 test::helpers::test_deploy() {
-    # Deploy a PHP app in a Scalingo runtime and test that everything is as
-    # expected. The different fixtures allow us to test different setup and
-    # conditions.
+    # Deploys a PHP app step by step and tests that everything is working as
+    # expected.
+    # To do so, this function runs the buildpack scripts and mimicks the
+    # platform behavior wherever needed.
+    # The different fixtures allow us to test different setup and conditions.
+    #
+    # Globals:
+    #   STD_OUT
+    #   default_modules
+    #
+    # Arguments:
+    #   $1 > $fixture_name: Name of the fixture to deploy.
+    #      The fixture sets the deployment conditions.
+    #      In fact, this is the name of a directory that must exist in
+    #      `BUILDPACK_DIR/test/fixtures/` and that contains the fixture code.
+    #      See `test::utils::setupFixture` for more details.
+    #
+    #   $2 > $detect_expectation: Expected output of `bin/compile`.
+    #      The value of this variable is compared to the actual output of the
+    #      `bin/detect` script (and should match).
+    #
+    #   $3 > $version: Expected version of PHP.
+    #      The value of this variable is compared to the version of PHP
+    #      that has actually been installed by the buildpack.
+    #      PHP version numbers follow the semver standard (i.e.
+    #      `maj.min.patch`).
+    #      Consequently, to test that PHP 8 is installed, one must set this
+    #      variable value to `8.` (notice the ending `.`) to make sure the test
+    #      fails if any other version starting with a `8` is installed (for
+    #      example, PHP `80.1.0`).
+    #      The logic is the same with minor version: to test that PHP 8.2 is
+    #      installed, set this variable to `8.2.` to make sure the test fails
+    #      if PHP 8.20.1 is installed, for example.
+    #      To test a full version, please add a trailing space, i.e. `8.1.15␣`,
+    #      so that `8.1.156` doesn't make the test pass.
 
     local fixture_name="${1}"
     local detect_expectation="${2}"
@@ -70,6 +102,11 @@ test::helpers::enter_prod() {
     # /!\ This function is meant to be called after a successful call to
     #     to `test::utils::compile` to further test the result of the
     #     bin/compile call. It makes no sense to call it in another context.
+    #
+    # Globals:
+    #   HOME
+    #   PREV_HOME
+    #   BUILD_DIR
 
     PREV_HOME="${HOME}"
     export PREV_HOME
