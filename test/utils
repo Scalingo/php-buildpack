@@ -3,38 +3,66 @@
 # taken from
 # https://github.com/ryanbrainard/heroku-buildpack-testrunner/blob/master/lib/test_utils.sh
 
+test::utils::setupFixture() {
+    # Deploys a fixture by copying the fixture files in $BUILD_DIR.
+    # The fixture code must be stored in `BUILDPACK_DIR/test/fixtures/$fixture`
+    #
+    # Globals:
+    #   BUILDPACK_DIR
+    #   BUILD_DIR
+    #
+    # Arguments:
+    #   $1 > $fixture: Name of the fixture. This is also the name of the
+    #      directory that contains the code to be deployed.
+
+    local fixture="${1}"
+
+    cp --archive "${BUILDPACK_DIR}/test/fixtures/${fixture}"/* "${BUILD_DIR}/"
+}
+
 test::utils::detect() {
-    local buildpack_dir
+    # Runs the `bin/detect` script of the buildpack.
+    # Outputs are captured to allow for further analysis.
+    #
+    # Globals:
+    #   BUILDPACK_DIR
+    #   BUILD_DIR
 
-    export buildpack_dir="$( mktemp --directory "/tmp/test-detect-XXXXXX" )"
-
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
-
-    pushd "${buildpack_dir}" > /dev/null
-
-    test::utils::capture "${buildpack_dir}/bin/detect" "${BUILD_DIR}"
-
-    popd > /dev/null
+    test::utils::capture "${BUILDPACK_DIR}/bin/detect" "${BUILD_DIR}"
 }
 
 test::utils::compile() {
-    local buildpack_dir
+    # Runs the `bin/compile` script of the buildpack.
+    # Outputs are captured to allow for further analysis.
+    #
+    # Globals:
+    #   BUILDPACK_DIR
+    #   BUILD_DIR
+    #   CACHE_DIR
 
-    buildpack_dir="$( mktemp --directory "/tmp/test-compile-XXXXXX" )"
-
-    cp -a "$( pwd )"/* "${buildpack_dir}/"
-    cp -a "$( pwd )/test/fixtures/${1}"/* "${BUILD_DIR}/"
-
-    pushd "${buildpack_dir}" > /dev/null
-
-    test::utils::capture "${buildpack_dir}/bin/compile" "${BUILD_DIR}" \
+    test::utils::capture "${BUILDPACK_DIR}/bin/compile" "${BUILD_DIR}" \
         "${CACHE_DIR}"
-
-    popd > /dev/null
 }
 
 test::utils::capture() {
+    # Runs the given command and captures its outputs:
+    # - redirects stdout to $STD_OUT
+    # - redirects stderr to $STD_ERR
+    # - stores the command in $LAST_COMMAND
+    # - stores the exit code of the command run in $RETURN
+    #
+    # All outputs (see Globals) are emptied prior to the command being run.
+    #
+    # Globals:
+    #   LAST_COMMAND
+    #   RETURN
+    #   STD_OUT
+    #   STD_ERR
+    #
+    # Arguments:
+    #   $@ > $LAST_COMMAND: Command (with arguments) to run and for which
+    #      outputs are captured.
+
     test::utils::resetCapture
 
     LAST_COMMAND="$@"
@@ -45,6 +73,18 @@ test::utils::capture() {
 }
 
 test::utils::resetCapture() {
+    # Resets the globals used to capture the functions results:
+    # - removes the file pointed by $STD_OUT
+    # - removes the file pointed by $STD_ERR
+    # - unsets LAST_COMMAND
+    # - unsets RETURN
+    #
+    # Globals:
+    #   LAST_COMMAND
+    #   RETURN
+    #   STD_OUT
+    #   STD_ERR
+
     if [ -f "${STD_OUT}" ]; then
         rm "${STD_OUT}"
     fi
@@ -58,28 +98,82 @@ test::utils::resetCapture() {
 }
 
 test::utils::assertSuccess() {
+    # Asserts that the last command run exited with a status code of 0.
+    #
+    # Globals:
+    #   RETURN
+
     assertEquals  \
         "Expected captured exit code to be 0; was <${RETURN}>" \
         "0" "${RETURN}"
 }
 
 test::utils::assertCapturedEquals() {
-    assertEquals "$@" "$( cat "${STD_OUT}" )"
+    # Asserts that the last command output equals the given string.
+    #
+    # Globals:
+    #   STD_OUT
+    #
+    # Arguments:
+    #   $1 > $expected: Text that is compared to the last command output and
+    #      that must be the exact same.
+
+    local expected="${1}"
+
+    assertEquals "${expected}" "$( cat "${STD_OUT}" )"
 }
 
 test::utils::assertCapturedNotEquals() {
-    assertNotEquals "$@" "$( cat "${STD_OUT}" )"
+    # Asserts that the last command output does not equal the given string.
+    #
+    # Globals:
+    #   STD_OUT
+    #
+    # Arguments:
+    #   $1 > $notExpected: Text that is compared to the last command output and
+    #      that must not be the same.
+
+    local notExpected="${1}"
+
+    assertNotEquals "${notExpected}" "$( cat "${STD_OUT}" )"
 }
 
 test::utils::assertCaptured() {
-    test:utils::assertFileContains "$@" "${STD_OUT}"
+    # Asserts that the last command output contains the given string.
+    #
+    # Globals:
+    #   STD_OUT
+    #
+    # Arguments:
+    #   $1 > $expected: Text that must be present in the last command output.
+
+    local expected="${1}"
+
+    test:utils::assertFileContains "${expected}" "${STD_OUT}"
 }
 
 test::utils::assertNotCaptured() {
-    test::utils::assertFileNotContains "$@" "${STD_OUT}"
+    # Asserts that the last command output does not contain the given string.
+    #
+    # Globals:
+    #   STD_OUT
+    #
+    # Arguments:
+    #   $1 > $notExpected: Text that must not be present in the last command
+    #      output.
+
+    local notExpected="${1}"
+
+    test::utils::assertFileNotContains "${notExpected}" "${STD_OUT}"
 }
 
 test::utils::assertCapturedSuccess() {
+    # Asserts that the last command succeeded and that stderr is empty.
+    #
+    # Globals:
+    #   RETURN
+    #   STD_ERR
+
     test::utils::assertSuccess
 
     assertEquals \
@@ -87,8 +181,20 @@ test::utils::assertCapturedSuccess() {
         "" "$( cat "${STD_ERR}" )"
 }
 
-# assertCapturedError [[expectedErrorCode] expectedErrorMsg]
 test::utils::assertCapturedError() {
+    # Asserts that the last command failed with the given return code.
+    # Optionally also asserts that stderr contains the given error message.
+    #
+    # Globals:
+    #   RETURN
+    #   STD_ERR
+    #
+    # Arguments:
+    #   $1 > $expectedErrorCode: Expected return code (must be > 0).
+    #
+    #   $2 > $expectedErrorMsg: (optional) Expected error message (full or
+    #      partial.
+
     if [ $# -gt 1 ]; then
         local expectedErrorCode="${1}"
         shift
@@ -114,85 +220,105 @@ test::utils::assertCapturedError() {
 }
 
 test::utils::_assertContains() {
-    if [ 5 -eq $# ]; then
-        local msg="${1}"
-        shift
-    elif [ ! 4 -eq $# ]; then
-        fail "Expected 4 or 5 parameters; Receieved $# parameters"
+    # Asserts that the given `$needle` is in the given `$haystack`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: Either a string or a file to search in. (See
+    #      `$haystack_type` for further details).
+    #
+    #   $3 > $expectation: (optional) Either `0` if `$needle` should be found
+    #      in `$haystack` or `1` otherwise. Defaults to `0`.
+    #
+    #   $4 > $haystack_type: (optional) Either "file" to search in a file or
+    #      "text" to search in a variable. Defaults to "file".
+
+    if [ ! $# -ge 2 ] && [ ! $# -le 4 ]; then
+        fail "Expected 2 to 4 parameters, $# given"
     fi
 
     local needle="${1}"
     local haystack="${2}"
-    local expectation="${3}"
-    local haystack_type="${4}"
+    local expectation="${3:0}"
+    local haystack_type="${4:-"file"}"
 
-    case "${haystack_type}" in
-        "file")
-            grep --quiet --fixed-strings --regexp="${needle}" "${haystack}"
-            ;;
-        "text")
-            echo "${haystack}" \
-                | grep --quiet --fixed-strings --regexp="${needle}"
-            ;;
-    esac
+    if [ "${haystack_type}" = "text" ]; then
+        echo "${haystack}" \
+            | grep --quiet --fixed-strings --regexp="${needle}"
+    else
+        grep --quiet --fixed-strings --regexp="${needle}" "${haystack}"
+    fi
 
     if [ "${expectation}" != "$?" ]; then
         case "${expectation}" in
             0)
-                default_msg="Expected <${haystack}> to contain <${needle}>"
+                msg="Expected <${haystack}> to contain <${needle}>"
                 ;;
             1)
-                default_msg="Did not expect <${haystack}> to contain <${needle}>"
+                msg="Did not expect <${haystack}> to contain <${needle}>"
                 ;;
         esac
 
-        fail "${msg:-${default_msg}}"
+        fail "${msg}"
     fi
 }
 
 test::utils::_assertMatches() {
-    if [ 5 -eq $# ]; then
-        local msg="${1}"
-        shift
-    elif [ ! 4 -eq $# ]; then
-        fail "Expected 4 or 5 parameters; Receieved $# parameters"
+    # Asserts that the given `$needle` matches the given `$haystack`.
+    #
+    # Arguments:
+    #   $1 > $needle: Regular expression that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: Either a string or a file to search in. (See
+    #      `$haystack_type` for further details).
+    #
+    #   $3 > $expectation: (optional) Either `0` if `$needle` should match
+    #      `$haystack` or `1` otherwise. Defaults to `0`.
+    #
+    #   $4 > $haystack_type: (optional) Either "file" to search in a file or
+    #      "text" to search in a variable. Defaults to "file".
+
+    if [ ! $# -ge 2 ] && [ ! $# -le 4 ]; then
+        fail "Expected 2 to 4 parameters, $# given"
     fi
 
-    local needle
-    local haystack
-    local expectation
-    local haystack_type
+    local needle="${1}"
+    local haystack="${2}"
+    local expectation="${3:0}"
+    local haystack_type="${4:-"file"}"
 
-    needle="${1}"
-    haystack="${2}"
-    expectation="${3}"
-    haystack_type="${4}"
-
-    case "${haystack_type}" in
-        "file")
-            grep --quiet --extended-regexp --regexp="${needle}" "${haystack}"
-            ;;
-        "text")
-            echo "${haystack}" \
-                | grep --quiet --extended-regexp --regexp="${needle}"
-            ;;
-    esac
+    if [ "${haystack_type}" = "text" ]; then
+        echo "${haystack}" \
+            | grep --quiet --extended-regexp --regexp="${needle}"
+    else
+        grep --quiet --extended-regexp --regexp="${needle}" "${haystack}"
+    fi
 
     if [ "${expectation}" != "$?" ]; then
         case "${expectation}" in
             0)
-                default_msg="Expected <${haystack}> to match <${needle}>"
+                msg="Expected <${haystack}> to match <${needle}>"
                 ;;
             1)
-                default_msg="Did not expect <${haystack}> to match <${needle}>"
+                msg="Did not expect <${haystack}> to match <${needle}>"
                 ;;
         esac
 
-        fail "${msg:-${default_msg}}"
+        fail "${msg}"
     fi
 }
 
 test::utils::assertTextContains() {
+    # Asserts that the given `$needle` is in the given (text) `$haystack`.
+    #
+    # Shortcut for `_assertContains $needle $haystack 0 "text"`
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: String to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -200,6 +326,15 @@ test::utils::assertTextContains() {
 }
 
 test::utils::assertTextNotContains() {
+    # Asserts that the given `$needle` is not in the given (text) `$haystack`.
+    #
+    # Shortcut for `_assertContains $needle $haystack 1 "text"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: String to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -207,6 +342,15 @@ test::utils::assertTextNotContains() {
 }
 
 test::utils::assertFileContains() {
+    # Asserts that the given `$needle` is in the given (file) `$haystack`.
+    #
+    # Shortcut for `_assertContains $needle $haystack 0 "file"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: File to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -214,6 +358,15 @@ test::utils::assertFileContains() {
 }
 
 test::utils::assertFileNotContains() {
+    # Asserts that the given `$needle` is not in the given (file) `$haystack`.
+    #
+    # Shortcut for `_assertContains $needle $haystack 1 "file"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$haystack`.
+    #
+    #   $2 > $haystack: File to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -221,6 +374,17 @@ test::utils::assertFileNotContains() {
 }
 
 test::utils::assertFileStartswith() {
+    # Asserts that the given (file) `$haystack` starts with the given
+    # `$needle`.
+    #
+    # Shortcut for `_assertMatches $needle $haystack 0 "file"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched at the very beginning of
+    #      `$haystack`.
+    #
+    #   $2 > $haystack: File to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -228,6 +392,17 @@ test::utils::assertFileStartswith() {
 }
 
 test::utils::assertFileNotStartswith() {
+    # Asserts that the given (file) `$haystack` does not start with the given
+    # `$needle`.
+    #
+    # Shortcut for `_assertMatches $needle $haystack 1 "file"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched at the very beginning of
+    #      `$haystack`.
+    #
+    #   $2 > $haystack: File to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -235,6 +410,17 @@ test::utils::assertFileNotStartswith() {
 }
 
 test::utils::assertTextStartswith() {
+    # Asserts that the given (text) `$haystack` starts with the given
+    # `$needle`.
+    #
+    # Shortcut for `_assertMatches $needle $haystack 0 "text"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched at the very beginning of
+    #      `$haystack`.
+    #
+    #   $2 > $haystack: Text to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -242,6 +428,17 @@ test::utils::assertTextStartswith() {
 }
 
 test::utils::assertTextNotStartswith() {
+    # Asserts that the given (text) `$haystack` does not start with the given
+    # `$needle`.
+    #
+    # Shortcut for `_assertMatches $needle $haystack 1 "text"`.
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched at the very beginning of
+    #      `$haystack`.
+    #
+    #   $2 > $haystack: File to search in.
+
     local needle="${1}"
     local haystack="${2}"
 
@@ -249,18 +446,41 @@ test::utils::assertTextNotStartswith() {
 }
 
 test::utils::assertCapturedStartswith() {
+    # Asserts that the last command output starts with the given `$needle`.
+    #
+    # Shortcut for `assertFileStartswith $needle $STD_OUT`.
+    #
+    # Globals:
+    #   STD_OUT
+    #
+    # Arguments:
+    #   $1 > $needle: Fixed string that is searched in `$STD_OUT`.
+
     local needle="${1}"
 
     test::utils::assertFileStartswith "${needle}" "${STD_OUT}"
 }
 
 test::utils::command_exists () {
+    # Asserts that the given command exists.
+    #
+    # Arguments:
+    #   $1: Name of the command that should be present.
+
     type "${1}" > /dev/null 2>&1 ;
 }
 
 test::utils::assertFileMD5() {
-    expectedHash="${1}"
-    filename="${2}"
+    # Asserts that the given file md5 checksum matches the actual one.
+    #
+    # Arguments:
+    #   $1 > $expectedHash: Expected md5 hash.
+    #
+    #   $2 > $filename: Path to the file for which we want to check the md5
+    #      hash.
+
+    local expectedHash="${1}"
+    local filename="${2}"
 
     if test::utils::command_exists "md5sum"; then
         md5_cmd="md5sum ${filename}"
@@ -276,21 +496,47 @@ test::utils::assertFileMD5() {
 }
 
 test::utils::assertDirectoryExists() {
-    if [[ ! -e "${1}" ]]; then
-        fail "${1} does not exist"
+    # Asserts that the given path exists and is a directory.
+    #
+    # Arguments:
+    #   $1 > $dir_path: Fixed string that is searched at the very beginning of
+    #      `$haystack`.
+
+    local dir_path="${1}"
+
+    if [[ ! -e "${dir_path}" ]]; then
+        fail "${dir_path} does not exist"
     fi
 
-    if [[ ! -d "${1}" ]]; then
-        fail "${1} is not a directory"
+    if [[ ! -d "${dir_path}" ]]; then
+        fail "${dir_path} is not a directory"
     fi
 }
 
 test::utils::assertFileExists() {
-  filename="${1}"
-  assertTrue "${filename} doesn't exist" "[[ -e "${filename}" ]]"
+    # Asserts that the given path exists and is a file.
+    #
+    # Arguments:
+    #   $1 > $file_path: Path to the file that must exist.
+
+    local file_path="${1}"
+
+    if [[ ! -e "${file_path}" ]]; then
+        fail "${file_path} does not exist"
+    fi
+
+    if [[ ! -f "${file_path}" ]]; then
+        fail "${file_path} is not a file"
+    fi
 }
 
 test::utils::assertFileDoesNotExist() {
-  filename="${1}"
-  assertTrue "${filename} exists" "[[ ! -e "${filename}" ]]"
+    # Asserts that the given path does not exist.
+    #
+    # Arguments:
+    #   $1 > $file_path: Path that must not exist.
+
+    local file_path="${1}"
+
+    assertTrue "${file_path} exists" "[[ ! -e "${file_path}" ]]"
 }

@@ -3,95 +3,124 @@
 source "$( pwd )/test/utils"
 source "$( pwd )/test/helpers"
 
-test::detect_legacy_default() {
-    # Test the buildpack detect script with a single simple .php file
-    test::utils::detect "legacy_default"
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedEquals "PHP (classic)"
+# List of modules that we want to ship with every PHP setup.
+# For now, users can't specify a version for these modules, we just ship
+# what we have. Hence no specific versions constraints here.
+readonly default_modules=(
+    "apcu" "bcmath" "bz2" "Core" "ctype" "curl" "date" "dom" "exif" "fileinfo"
+    "filter" "gd" "hash" "iconv" "intl" "json" "libxml" "mbstring" "mongodb"
+    "mysqli" "mysqlnd" "openssl" "pcntl" "pcre" "PDO" "pdo_mysql" "pdo_pgsql"
+    "pdo_sqlite" "pgsql" "Phar" "posix" "readline" "redis" "Reflection"
+    "session" "shmop" "SimpleXML" "soap" "sockets" "SPL" "sqlite3" "standard"
+    "tokenizer" "xml" "xmlreader" "xmlwriter" "xsl" "Zend OPcache" "zip" "zlib"
+)
+
+
+test::classic::defaults() {
+    # Test a deployment of a classic app (not using Composer)
+    # With default settings
+
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
 }
 
-test::compile_legacy_default() {
-    # Test the buildpack compile script with a single simple .php file
-    test::utils::compile "legacy_default"
-    test::utils::assertCapturedSuccess
+test::classic::php80() {
+    # Test a deployment of a classic app (not using Composer)
+    # Specifying we want PHP 8.0.x via environment
 
-    test::utils::resetCapture
+    PHP_VERSION="8.0"
+    export PHP_VERSION
 
-    test::helpers::get_php_version
-    test::utils::assertCapturedStartswith "PHP 8.1."
-}
-
-test::detect_composer_default() {
-    test::utils::detect "composer_default"
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedEquals "PHP (composer.json)"
-}
-
-test::compile_composer_default() {
-    test::utils::compile "composer_default"
-    # We can't use assertCapturedSuccess here:
-    # Even with an empty composer.json file, composer will use stderr to warn
-    # us that nothing had to be installed, causing the test to fail for no
-    # reason -_-
-    test::utils::assertSuccess
-
-    test::utils::resetCapture
-
-    test::helpers::get_php_version
-    test::utils::assertCapturedStartswith "PHP 8.1."
-}
-
-test::compile_composer_php80() {
     # PHP 8.0 is only available on stack `scalingo-20`:
-    [[ "${STACK}" != "scalingo-20" ]] && startSkipping
+    if [[ "${STACK}" != "scalingo-20" ]]; then
+        echo "[skipping] PHP 8.0 is not available on scalingo-22"
+        startSkipping
+    fi
 
-    test::utils::compile "composer_php80"
-    test::utils::assertSuccess
-
-    test::utils::resetCapture
-
-    test::helpers::get_php_version
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedStartswith "PHP 8.0."
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.0."
 }
 
-test::compile_composer_php81() {
-    test::utils::compile "composer_php81"
-    test::utils::assertSuccess
-    test::utils::resetCapture
+test::classic::php81() {
+    # Test a deployment of a classic app (not using Composer)
+    # Specifying we want PHP 8.1.x via environment
 
-    test::helpers::get_php_version
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedStartswith "PHP 8.1."
+    PHP_VERSION="8.1"
+    export PHP_VERSION
+
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
 }
 
-test::compile_composer_php82() {
-    test::utils::compile "composer_php82"
-    test::utils::assertSuccess
-    test::utils::resetCapture
+test::classic::php82() {
+    # Test a deployment of a classic app (not using Composer)
+    # Specifying we want PHP 8.2.x via environment
 
-    test::helpers::get_php_version
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedStartswith "PHP 8.2."
+    PHP_VERSION="8.2"
+    export PHP_VERSION
+
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.2."
 }
 
-test::compile_composer_php83() {
-    test::utils::compile "composer_php83"
-    test::utils::assertSuccess
-    test::utils::resetCapture
+test::classic::php83() {
+    # Test a deployment of a classic app (not using Composer)
+    # Specifying we want PHP 8.3.x via environment
 
-    test::helpers::get_php_version
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedStartswith "PHP 8.3."
+    PHP_VERSION="8.3"
+    export PHP_VERSION
+
+    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.3."
 }
+
+test::composer::defaults() {
+    # Test a deployment of a PHP app using Composer
+    # With default settings
+
+    test::helpers::test_deploy "composer_default" "PHP (composer.json)" "8.1."
+}
+
+test::composer::php80() {
+    # Test a deployment of a PHP app using Composer
+    # Specifying we want PHP 8.0.x in composer.json
+
+    # PHP 8.0 is only available on stack `scalingo-20`:
+    if [[ "${STACK}" != "scalingo-20" ]]; then
+        echo "[skipping] PHP 8.0 is not available on scalingo-22"
+        startSkipping
+    fi
+
+    test::helpers::test_deploy "composer_php80" "PHP (composer.json)" "8.0."
+}
+
+test::composer::php81() {
+    # Test a deployment of a PHP app using Composer
+    # Specifying we want PHP 8.1.x in composer.json
+
+    test::helpers::test_deploy "composer_php81" "PHP (composer.json)" "8.1."
+}
+
+test::composer::php82() {
+    # Test a deployment of a PHP app using Composer
+    # Specifying we want PHP 8.2.x in composer.json
+
+    test::helpers::test_deploy "composer_php82" "PHP (composer.json)" "8.2."
+}
+
+test::composer::php83() {
+    # Test a deployment of a PHP app using Composer
+    # Specifying we want PHP 8.3.x in composer.json
+
+    test::helpers::test_deploy "composer_php83" "PHP (composer.json)" "8.3."
+}
+
 
 # Add these functions to the test suite:
 
-suite_addTest test::detect_legacy_default
-suite_addTest test::compile_legacy_default
-suite_addTest test::detect_composer_default
-suite_addTest test::compile_composer_default
-suite_addTest test::compile_composer_php80
-suite_addTest test::compile_composer_php81
-suite_addTest test::compile_composer_php82
-suite_addTest test::compile_composer_php83
+suite_addTest test::classic::defaults
+suite_addTest test::classic::php80
+suite_addTest test::classic::php81
+suite_addTest test::classic::php82
+suite_addTest test::classic::php83
+
+suite_addTest test::composer::defaults
+suite_addTest test::composer::php80
+suite_addTest test::composer::php81
+suite_addTest test::composer::php82
+suite_addTest test::composer::php83
