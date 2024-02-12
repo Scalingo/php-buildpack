@@ -51,7 +51,7 @@ test::helpers::detect() {
     test::utils::assertCapturedEquals "${expected_output}"
 }
 
-test::helpers::test_compile() {
+test::helpers::compile() {
     # Runs the `bin/compile` script of the buildpack and then:
     # - Asserts that is succeeded
     # - Asserts that the version of installed PHP is the one expected
