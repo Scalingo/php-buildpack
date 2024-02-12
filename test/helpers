@@ -89,7 +89,7 @@ test::helpers::compile() {
     test::utils::assertCapturedStartswith "PHP ${version}"
 }
 
-test::helpers::test_default_modules() {
+test::helpers::default_modules() {
     # Test that all default PHP modules are available.
     #
     # Globals:
