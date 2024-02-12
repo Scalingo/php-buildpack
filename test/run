@@ -3,8 +3,48 @@
 buildpack_dir="${BUILDPACK_DIR:-"$( pwd )"}"
 
 suite() {
-    # Load tests from the following files:
+    # Load tests from the following file:
     source "${buildpack_dir}/test/tests"
+}
+
+oneTimeSetUp() {
+    TEST_SUITE_CACHE="$( mktemp --directory "${SHUNIT_TMPDIR}/test_suite_cache.XXXX" )"
+}
+
+oneTimeTearDown() {
+    rm -rf "${TEST_SUITE_CACHE}"
+}
+
+setUp() {
+    OUTPUT_DIR="$( mktemp --directory "${SHUNIT_TMPDIR}/output.XXXX" )"
+
+    STD_OUT="${OUTPUT_DIR}/stdout"
+    STD_ERR="${OUTPUT_DIR}/stderr"
+
+    BUILD_DIR="${OUTPUT_DIR}/build"
+    CACHE_DIR="${OUTPUT_DIR}/cache"
+    HOME="${BUILD_DIR}"
+    BUILDPACK_DIR="$( mktemp --directory "/tmp/test-XXXXXX" )"
+
+    mkdir -p "${OUTPUT_DIR}" "${BUILD_DIR}" "${CACHE_DIR}"
+    export OUTPUT_DIR STD_OUT STD_ERR BUILD_DIR CACHE_DIR HOME BUILDPACK_DIR
+
+    # Copy the buildpack code into BUILDPACK_DIR:
+    cp --archive "$( pwd )"/* "${BUILDPACK_DIR}/"
+}
+
+tearDown() {
+    # Empty OUTPUT_DIR and BUILDPACK_DIR
+    rm -rf "${OUTPUT_DIR}"
+    rm -rf "${BUILDPACK_DIR}"
+
+    unset BUILDPACK_DIR BUILD_DIR CACHE_DIR PHP_VERSION
+
+    # We may have changed working dir, let's switch back to the initial one:
+    popd > /dev/null 2>&1
+
+    # Make sure /app is empty:
+    rm -rf "/app"/*
 }
 
 # Load shUnit2, which also run the tests:

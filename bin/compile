@@ -46,26 +46,21 @@ function detect_framework() {
 
 
 function php::semver::resolve_version() {
-    #
     # Retrieve the full semantic version of a component.
     #
-    # Params:
-    #   semver_server
-    #     URL of the semver server to send the request to.
+    # Arguments:
+    #   $1 > $semver_server: URL of the semver server to send the request to.
     #
-    #   component
-    #     Name of the considered component.
-    #     Should be either 'composer', 'nginx' or 'php'.
+    #   $2 > $component: Name of the considered component. Should be either
+    #      'composer', 'nginx' or 'php'.
     #
-    #   stack
-    #     Name of the considered stack.
+    #   $3 > $stack: Name of the considered stack.
     #
-    #   [required_version]
-    #     If specified, try to obtain a full semantic version matching the
-    #     given one. A non fully-qualified version can be given, in which case
-    #     the best matching full version will be returned, if any.
-    #     If not specified, return the default version of the component.
-    #
+    #   $4 > $required_version: (optional) If specified, try to obtain a full
+    #      semantic version matching the given one. A non fully-qualified
+    #      version can be given, in which case the best matching full version
+    #      will be returned, if any.
+    #      If not specified, return the default version of the component.
 
     local rc=1
 
@@ -91,36 +86,29 @@ function php::semver::resolve_version() {
 
 
 function php::retrieve_component_semantic_version() {
-    #
     # Retrieve the semantic version of a component from a requirement.
     #
     # The requirement can be set by the user to ask a specific version of a
-    # component. This is done by using (in order or precedence) a specific
-    # environment variable or a specific key in their 'composer.json' file.
-    # If no requirement has been set by the user, falls back to default values.
+    # component. This is done by using (in order or precedence) a specific key
+    # in the `composer.json` file or by using a specific environment variable.
+    # If no requirement has been set by the user, falls back to default value.
     #
-    # Params:
-    #   build_dir
-    #     The BUILD_DIR environment variable.
+    # Arguments:
+    #   $1 > $build_dir: The BUILD_DIR environment variable.
     #
-    #   semver_server
-    #     URL of the semver server to send the request to.
+    #   $2 > $semver_server: URL of the semver server to send the request to.
     #
-    #   component
-    #     Name of the considered component.
-    #     Should be either 'composer', 'nginx' or 'php'.
+    #   $3 > $component: Name of the considered component.
+    #      Should be either 'composer', 'nginx' or 'php'.
     #
-    #   stack
-    #     Name of the considered stack.
+    #   $4 > $stack: Name of the considered stack.
     #
-    #   extra_key
-    #     Name of an extra key to check in 'composer.json'.
-    #     It should always be 'paas' but we maintain this for a better Heroku
-    #     compatibility.
+    #   $5 > $extra_key: Name of an extra key to check in 'composer.json'.
+    #      It should always be 'paas' but we maintain this for a better Heroku
+    #      compatibility.
     #
     # See also:
     #   `php::semver::resolve_version`
-    #
 
     local rc=1
 
@@ -159,11 +147,8 @@ function php::retrieve_component_semantic_version() {
             ;;
     esac
 
-    # 1. Check in a potentially-existing environment variable:
-    required_version="${!env_var:-""}"
-
-    # 2. Check in composer.json:
-    if [ -z "${required_version}" ] && [ -f "${composer_file}" ]; then
+    # 1. Check in composer.json:
+    if [ -f "${composer_file}" ]; then
         for key in "${search_keys[@]}"; do
             required_version="$( jq --raw-output "${key} // \"\"" < "${composer_file}" )"
 
@@ -171,6 +156,11 @@ function php::retrieve_component_semantic_version() {
             # This means the keys are checked with a priority order!
             [ -n "${required_version}" ] && break
         done
+    fi
+
+    # 2. Check in a potentially-existing environment variable:
+    if [ -z "${required_version}" ]; then
+        required_version="${!env_var:-""}"
     fi
 
     # 3. Retrieve the fully-qualified version from semver:
@@ -183,7 +173,6 @@ function php::retrieve_component_semantic_version() {
 
     return "${rc}"
 }
-
 
 function php_api_version() {
   basename "$(php-config --extension-dir)" | tr '-' ' ' | cut -f 5 -d ' '
@@ -328,7 +317,7 @@ DATADOG_TRACER_VERSION="${DATADOG_TRACER_VERSION:-latest}"
 DATADOG_APPSEC_VERSION="${DATADOG_APPSEC_VERSION:-0}"
 SCOUT_APM_VERSION=${SCOUT_APM_VERSION:-1.10.0}
 # Version number comes from https://download.newrelic.com/php_agent/archive/
-NEWRELIC_VERSION="${NEWRELIC_VERSION:=10.14.0.3}"
+NEWRELIC_VERSION="${NEWRELIC_VERSION:=10.15.0.4}"
 LOG_FILES=( "/app/vendor/nginx/logs/access.log" "/app/vendor/nginx/logs/error.log" "/app/vendor/php/var/log/error.log" )
 
 # Display a warning that Composer version 1.x is End of Life
