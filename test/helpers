@@ -33,7 +33,7 @@ test::helpers::test_deploy() {
     test::helpers::test_default_modules
 }
 
-test::helpers::test_detect() {
+test::helpers::detect() {
     # Runs the `bin/detect`script of the buildpack and then:
     # - Asserts that it succeeded
     # - Asserts that the output equals what's expected.
