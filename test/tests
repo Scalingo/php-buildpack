@@ -120,7 +120,7 @@ test::composer::php83() {
     test::helpers::test_deploy "PHP (composer.json)" "8.3."
 }
 
-test::composer::over_defaults() {
+test::composer::php_version_defaults() {
     # Test a deployment of a PHP app using Composer
     # Where the PHP version requirement is only specified in PHP_VERSION.
 
