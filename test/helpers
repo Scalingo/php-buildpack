@@ -2,7 +2,7 @@
 
 ### Helpers functions
 
-test::helpers::test_deploy() {
+test::helpers::deploy() {
     # Deploys a PHP app step by step and tests that everything is working as
     # expected.
     # To do so, this function runs the buildpack scripts and mimicks the
@@ -14,17 +14,50 @@ test::helpers::test_deploy() {
     #   default_modules
     #
     # Arguments:
-    #   $1 > $fixture_name: Name of the fixture to deploy.
-    #      The fixture sets the deployment conditions.
-    #      In fact, this is the name of a directory that must exist in
-    #      `BUILDPACK_DIR/test/fixtures/` and that contains the fixture code.
-    #      See `test::utils::setupFixture` for more details.
+    #   $1 > $detect_expectation
+    #      See `test::helpers::test_detect`.
     #
-    #   $2 > $detect_expectation: Expected output of `bin/compile`.
-    #      The value of this variable is compared to the actual output of the
-    #      `bin/detect` script (and should match).
+    #   $2 > $version
+    #      See `test::helpers::test_compile`.
+
+    local detect_expectation="${1}"
+    local version="${2}"
+
+    # Test that bin/detect works as expected:
+    test::helpers::detect "${detect_expectation}"
+
+    # Test that bin/compile works as expected:
+    test::helpers::compile "${version}"
+
+    # Test that all default PHP modules are available:
+    test::helpers::default_modules
+}
+
+test::helpers::detect() {
+    # Runs the `bin/detect` script of the buildpack and then:
+    # - Asserts that it succeeded
+    # - Asserts that the output equals what's expected.
     #
-    #   $3 > $version: Expected version of PHP.
+    # Arguments:
+    #   $1 > $expected_output
+    #      The value of this variable must equal the actual output of the
+    #      `bin/detect` script for the assertion to pass.
+
+    local expected_output="${1}"
+
+    test::utils::detect
+
+    test::utils::assertCapturedSuccess
+    test::utils::assertCapturedEquals "${expected_output}"
+}
+
+test::helpers::compile() {
+    # Runs the `bin/compile` script of the buildpack and then:
+    # - Asserts that is succeeded
+    # - Asserts that the version of installed PHP is the one expected
+    #
+    # Arguments:
+    #   $1 > $version: Expected version of PHP.
     #      The value of this variable is compared to the version of PHP
     #      that has actually been installed by the buildpack.
     #      PHP version numbers follow the semver standard (i.e.
@@ -39,19 +72,8 @@ test::helpers::test_deploy() {
     #      To test a full version, please add a trailing space, i.e. `8.1.15␣`,
     #      so that `8.1.156` doesn't make the test pass.
 
-    local fixture_name="${1}"
-    local detect_expectation="${2}"
-    local version="${3}"
+    local version="${1}"
 
-    # Setup the fixture:
-    test::utils::setupFixture "${fixture_name}"
-
-    # Test that bin/detect works as expected:
-    test::utils::detect
-    test::utils::assertCapturedSuccess
-    test::utils::assertCapturedEquals "${detect_expectation}"
-
-    # Test that bin/compile works as expected:
     test::utils::compile
     # We can't use assertCapturedSuccess here:
     # With an empty composer.json file, composer will use stderr to warn us
@@ -62,12 +84,20 @@ test::helpers::test_deploy() {
     # Switch environment:
     test::helpers::enter_prod
 
-    # Test that PHP has the awaited version:
+    # Test that PHP has the expected version:
     test::helpers::get_php_version
     test::utils::assertCapturedStartswith "PHP ${version}"
+}
 
-    # Test that all default PHP modules are available:
+test::helpers::default_modules() {
+    # Test that all default PHP modules are available.
+    #
+    # Globals:
+    #   default_modules
+
+    # List all installed modules in STD_OUT:
     test::helpers::list_php_modules
+
     for module in "${default_modules[@]}"; do
         test::utils::assertFileContains "${module}" "${STD_OUT}"
     done
