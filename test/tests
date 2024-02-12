@@ -145,7 +145,7 @@ test::composer::php_version_lower_than_env() {
     test::helpers::test_compile "8.3."
 }
 
-test::composer::over_greater_env() {
+test::composer::php_version_greater_than_env() {
     # Test a deployment of a PHP app using Composer
     # Where PHP version requirement is specified in both composer.json
     # and PHP_VERSION.
