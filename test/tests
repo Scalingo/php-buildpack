@@ -20,7 +20,8 @@ test::classic::defaults() {
     # Test a deployment of a classic app (not using Composer)
     # With default settings
 
-    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
+    test::utils::setupFixture "classic_default"
+    test::helpers::test_deploy "PHP (classic)" "8.1."
 }
 
 test::classic::php80() {
@@ -36,7 +37,8 @@ test::classic::php80() {
         startSkipping
     fi
 
-    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.0."
+    test::utils::setupFixture "classic_default"
+    test::helpers::test_deploy "PHP (classic)" "8.0."
 }
 
 test::classic::php81() {
@@ -46,7 +48,8 @@ test::classic::php81() {
     PHP_VERSION="8.1"
     export PHP_VERSION
 
-    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.1."
+    test::utils::setupFixture "classic_default"
+    test::helpers::test_deploy "PHP (classic)" "8.1."
 }
 
 test::classic::php82() {
@@ -56,7 +59,8 @@ test::classic::php82() {
     PHP_VERSION="8.2"
     export PHP_VERSION
 
-    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.2."
+    test::utils::setupFixture "classic_default"
+    test::helpers::test_deploy "PHP (classic)" "8.2."
 }
 
 test::classic::php83() {
@@ -66,14 +70,16 @@ test::classic::php83() {
     PHP_VERSION="8.3"
     export PHP_VERSION
 
-    test::helpers::test_deploy "classic_default" "PHP (classic)" "8.3."
+    test::utils::setupFixture "classic_default"
+    test::helpers::test_deploy "PHP (classic)" "8.3."
 }
 
 test::composer::defaults() {
     # Test a deployment of a PHP app using Composer
     # With default settings
 
-    test::helpers::test_deploy "composer_default" "PHP (composer.json)" "8.1."
+    test::utils::setupFixture "composer_default"
+    test::helpers::test_deploy "PHP (composer.json)" "8.1."
 }
 
 test::composer::php80() {
@@ -86,28 +92,71 @@ test::composer::php80() {
         startSkipping
     fi
 
-    test::helpers::test_deploy "composer_php80" "PHP (composer.json)" "8.0."
+    test::utils::setupFixture "composer_php80"
+    test::helpers::test_deploy "PHP (composer.json)" "8.0."
 }
 
 test::composer::php81() {
     # Test a deployment of a PHP app using Composer
     # Specifying we want PHP 8.1.x in composer.json
 
-    test::helpers::test_deploy "composer_php81" "PHP (composer.json)" "8.1."
+    test::utils::setupFixture "composer_php81"
+    test::helpers::test_deploy "PHP (composer.json)" "8.1."
 }
 
 test::composer::php82() {
     # Test a deployment of a PHP app using Composer
     # Specifying we want PHP 8.2.x in composer.json
 
-    test::helpers::test_deploy "composer_php82" "PHP (composer.json)" "8.2."
+    test::utils::setupFixture "composer_php82"
+    test::helpers::test_deploy "PHP (composer.json)" "8.2."
 }
 
 test::composer::php83() {
     # Test a deployment of a PHP app using Composer
     # Specifying we want PHP 8.3.x in composer.json
 
-    test::helpers::test_deploy "composer_php83" "PHP (composer.json)" "8.3."
+    test::utils::setupFixture "composer_php83"
+    test::helpers::test_deploy "PHP (composer.json)" "8.3."
+}
+
+test::composer::over_defaults() {
+    # Test a deployment of a PHP app using Composer
+    # Where the PHP version requirement is only specified in PHP_VERSION.
+
+    PHP_VERSION="8.3"
+    export PHP_VERSION
+
+    test::utils::setupFixture "composer_default"
+    test::helpers::test_compile "8.3."
+}
+
+test::composer::over_lower_env() {
+    # Test a deployment of a PHP app using Composer
+    # Where the PHP version requirement is specified in both composer.json
+    # and PHP_VERSION.
+    # And where the version specified in composer.json is greater than the one
+    # specified in PHP_VERSION.
+
+    PHP_VERSION="8.2"
+    export PHP_VERSION
+
+    test::utils::setupFixture "composer_php83"
+    test::helpers::test_compile "8.3."
+}
+
+test::composer::over_greater_env() {
+    # Test a deployment of a PHP app using Composer
+    # Where PHP version requirement is specified in both composer.json
+    # and PHP_VERSION.
+    # And where the version specified in composer.json is lower than the one
+    # specified in PHP_VERSION.
+
+    PHP_VERSION="8.3"
+    export PHP_VERSION
+
+    test::utils::setupFixture "composer_php82"
+    test::helpers::test_compile "8.2."
 }
 
 
@@ -124,3 +173,8 @@ suite_addTest test::composer::php80
 suite_addTest test::composer::php81
 suite_addTest test::composer::php82
 suite_addTest test::composer::php83
+
+suite_addTest test::composer::over_defaults
+suite_addTest test::composer::over_lower_env
+suite_addTest test::composer::over_greater_env
+
