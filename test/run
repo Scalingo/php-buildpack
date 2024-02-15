@@ -12,7 +12,7 @@ oneTimeSetUp() {
 }
 
 oneTimeTearDown() {
-    rm -rf "${TEST_SUITE_CACHE}"
+    rm --recursive --force "${TEST_SUITE_CACHE}"
 }
 
 setUp() {
@@ -29,22 +29,41 @@ setUp() {
     mkdir -p "${OUTPUT_DIR}" "${BUILD_DIR}" "${CACHE_DIR}"
     export OUTPUT_DIR STD_OUT STD_ERR BUILD_DIR CACHE_DIR HOME BUILDPACK_DIR
 
+    # We'll probably update PATH during the test,
+    # let's keep the original value safe
+    PREV_PATH="${PATH}"
+    export PREV_PATH
+
     # Copy the buildpack code into BUILDPACK_DIR:
     cp --archive "$( pwd )"/* "${BUILDPACK_DIR}/"
+
+    # Make sure we have a /app directory:
+    mkdir -p "/app"
 }
 
 tearDown() {
-    # Empty OUTPUT_DIR and BUILDPACK_DIR
-    rm -rf "${OUTPUT_DIR}"
-    rm -rf "${BUILDPACK_DIR}"
-
-    unset BUILDPACK_DIR BUILD_DIR CACHE_DIR PHP_VERSION
+    # Set HOME back to its original value:
+    HOME="/root"
+    export HOME
 
     # We may have changed working dir, let's switch back to the initial one:
     popd > /dev/null 2>&1
 
-    # Make sure /app is empty:
-    rm -rf "/app"/*
+    # Set PATH back to its original value:
+    PATH="${PREV_PATH}"
+    export PATH
+
+    # Remove /app:
+    rm --recursive --force "/app"
+
+    # Remove OUTPUT_DIR, which also removes BUILD_DIR and CACHE_DIR:
+    rm --recursive --force "${OUTPUT_DIR}"
+
+    # Remove BUILDPACK_DIR:
+    rm --recursive --force "${BUILDPACK_DIR}"
+
+    unset BUILDPACK_DIR BUILD_DIR CACHE_DIR
+    unset PHP_VERSION NGINX_VERSION COMPOSER_VERSION
 }
 
 # Load shUnit2, which also run the tests:
