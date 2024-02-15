@@ -347,7 +347,6 @@ suite_addTest test::classic::php83
 
 suite_addTest test::classic::nginx_version_via_env
 
-
 suite_addTest test::composer::defaults
 suite_addTest test::composer::php80
 suite_addTest test::composer::php81

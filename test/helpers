@@ -111,7 +111,17 @@ test::helpers::detect() {
 test::helpers::compile() {
     # Runs the `bin/compile` script of the buildpack and then:
     # - Asserts that is succeeded
-    # - Asserts that the version of installed PHP is the one expected
+
+    test::utils::compile
+    # We can't use assertCapturedSuccess here:
+    # With an empty composer.json file, composer will use stderr to warn us
+    # that nothing had to be installed, causing the test to fail for no
+    # reason -_-
+    test::utils::assertSuccess
+}
+
+test::helpers::php() {
+    # Tests that PHP has the expected version.
     #
     # Arguments:
     #   $1 > $version: Expected version of PHP.
@@ -131,28 +141,12 @@ test::helpers::compile() {
 
     local version="${1}"
 
-    test::utils::compile
-    # We can't use assertCapturedSuccess here:
-    # With an empty composer.json file, composer will use stderr to warn us
-    # that nothing had to be installed, causing the test to fail for no
-    # reason -_-
-    test::utils::assertSuccess
-}
-
-test::helpers::php() {
-    # Test that PHP has the expected version.
-    #
-    # Arguments:
-    #   $1 > $version: Expected PHP version
-
-    local version="${1}"
-
     test::utils::capture php --version
     test::utils::assertCapturedStartswith "PHP ${version}"
 }
 
 test::helpers::default_php_modules() {
-    # Test that all default PHP modules are available.
+    # Tests that all default PHP modules are available.
     #
     # Globals:
     #   default_modules
@@ -165,7 +159,7 @@ test::helpers::default_php_modules() {
 }
 
 test::helpers::composer() {
-    # Test that Composer has the expected version.
+    # Tests that Composer has the expected version.
     #
     # Arguments:
     #   $1 > $version: Expected Composer version
