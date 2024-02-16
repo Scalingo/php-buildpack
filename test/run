@@ -38,7 +38,7 @@ setUp() {
     cp --archive "$( pwd )"/* "${BUILDPACK_DIR}/"
 
     # Make sure we have a /app directory:
-    mkdir -p "/app"
+    mkdir --parents "/app"
 }
 
 tearDown() {
