@@ -44,7 +44,6 @@ function detect_framework() {
   done
 }
 
-
 function php::semver::resolve_version() {
     # Retrieve the full semantic version of a component.
     #
@@ -83,7 +82,6 @@ function php::semver::resolve_version() {
 
     return "${rc}"
 }
-
 
 function php::retrieve_component_semantic_version() {
     # Retrieve the semantic version of a component from a requirement.

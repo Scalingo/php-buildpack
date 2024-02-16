@@ -2,12 +2,11 @@
 
 ### Helpers functions
 
-test::helpers::deploy() {
-    # Deploys a PHP app step by step and tests that everything is working as
-    # expected.
+test::helpers::common_deploy() {
+    # Deploys a PHP app step by step and tests that everything related to the
+    # PHP setup is as expected.
     # To do so, this function runs the buildpack scripts and mimicks the
     # platform behavior wherever needed.
-    # The different fixtures allow us to test different setup and conditions.
     #
     # Globals:
     #   STD_OUT
@@ -15,22 +14,87 @@ test::helpers::deploy() {
     #
     # Arguments:
     #   $1 > $detect_expectation
-    #      See `test::helpers::test_detect`.
+    #      See `test::helpers::detect`.
     #
-    #   $2 > $version
-    #      See `test::helpers::test_compile`.
+    #   $2 > $php_version
+    #      See `test::helpers::php`.
 
     local detect_expectation="${1}"
-    local version="${2}"
+    local php_version="${2}"
 
-    # Test that bin/detect works as expected:
+    # Test bin/detect:
     test::helpers::detect "${detect_expectation}"
 
-    # Test that bin/compile works as expected:
-    test::helpers::compile "${version}"
+    # Test bin/compile:
+    test::helpers::compile
 
-    # Test that all default PHP modules are available:
-    test::helpers::default_modules
+    # Switch environment:
+    test::helpers::enter_prod
+
+    # Test PHP version:
+    test::helpers::php "${php_version}"
+
+    # Test PHP default modules:
+    test::helpers::default_php_modules
+}
+
+test::helpers::classic_deploy() {
+    # Deploys a classic PHP app step by step and tests that everything is
+    # working as expected, including the Nginx version.
+    #
+    # Globals:
+    #   STD_OUT
+    #   default_modules
+    #
+    # Arguments:
+    #   $1 > $php_version
+    #      See `test::helpers::php`.
+    #
+    #   $2 > $nginx_version
+    #      See `test::helpers::nginx`
+
+    local php_version="${1}"
+    local nginx_version="${2}"
+
+    # Test everything related to PHP:
+    test::helpers::common_deploy "PHP (classic)" "${php_version}"
+
+    # Test Nginx version:
+    test::helpers::nginx "${nginx_version}"
+
+    # No Composer
+}
+
+test::helpers::composer_deploy() {
+    # Deploys a Composer PHP app step by step and tests that everything is
+    # working as expected, including the Nginx and the Composer versions.
+    #
+    # Globals:
+    #   STD_OUT
+    #   default_modules
+    #
+    # Arguments:
+    #   $1 > $php_version
+    #      See `test::helpers::php`.
+    #
+    #   $2 > $nginx_version
+    #      See `test::helpers::nginx`.
+    #
+    #   $3 > $composer_version
+    #      See `test::helpers::composer`.
+
+    local php_version="${1}"
+    local nginx_version="${2}"
+    local composer_version="${3}"
+
+    # Test everything related to PHP:
+    test::helpers::common_deploy "PHP (composer.json)" "${php_version}"
+
+    # Test Nginx version:
+    test::helpers::nginx "${nginx_version}"
+
+    # Test Composer version:
+    test::helpers::composer "${composer_version}"
 }
 
 test::helpers::detect() {
@@ -54,7 +118,17 @@ test::helpers::detect() {
 test::helpers::compile() {
     # Runs the `bin/compile` script of the buildpack and then:
     # - Asserts that is succeeded
-    # - Asserts that the version of installed PHP is the one expected
+
+    test::utils::compile
+    # We can't use assertCapturedSuccess here:
+    # With an empty composer.json file, composer will use stderr to warn us
+    # that nothing had to be installed, causing the test to fail for no
+    # reason -_-
+    test::utils::assertSuccess
+}
+
+test::helpers::php() {
+    # Tests that PHP has the expected version.
     #
     # Arguments:
     #   $1 > $version: Expected version of PHP.
@@ -74,48 +148,53 @@ test::helpers::compile() {
 
     local version="${1}"
 
-    test::utils::compile
-    # We can't use assertCapturedSuccess here:
-    # With an empty composer.json file, composer will use stderr to warn us
-    # that nothing had to be installed, causing the test to fail for no
-    # reason -_-
-    test::utils::assertSuccess
-
-    # Switch environment:
-    test::helpers::enter_prod
-
-    # Test that PHP has the expected version:
-    test::helpers::get_php_version
+    test::utils::capture php --version
     test::utils::assertCapturedStartswith "PHP ${version}"
 }
 
-test::helpers::default_modules() {
-    # Test that all default PHP modules are available.
+test::helpers::default_php_modules() {
+    # Tests that all default PHP modules are available.
     #
     # Globals:
     #   default_modules
 
-    # List all installed modules in STD_OUT:
-    test::helpers::list_php_modules
+    test::utils::capture php --modules
 
     for module in "${default_modules[@]}"; do
         test::utils::assertFileContains "${module}" "${STD_OUT}"
     done
 }
 
-test::helpers::get_php_version() {
-    # Captures the output of `php --version` so we can check that the version
-    # installed is the expected one.
+test::helpers::composer() {
+    # Tests that Composer has the expected version.
+    #
+    # Arguments:
+    #   $1 > $version: Expected Composer version
 
-    test::utils::capture ./vendor/php/bin/php --version
+    local version="${1}"
+
+    test::utils::capture composer --version
+
+    test::utils::assertCapturedStartswith "Composer version ${version}"
 }
 
-test::helpers::list_php_modules() {
-    # Captures the output of `php --modules` so we can check that all default
-    # modules are indeed available.
+test::helpers::nginx() {
+    # Tests that Nginx has the expected version.
+    #
+    # Arguments:
+    #   $1 > $version: Expected Nginx version
 
-    test::utils::capture ./vendor/php/bin/php --modules
+    local version="${1}"
+
+    test::utils::capture nginx -version
+    # For some reason known to Nginx, `-version` outputs on stderr...
+    # See https://trac.nginx.org/test/ticket/592 for further details.
+    # Consequently, we have to use this assertion:
+    test::utils::assertFileStartswith \
+        "nginx version: nginx/${version}" \
+        "${STD_ERR}"
 }
+
 
 test::helpers::enter_prod() {
     # Helper to switch to a production-like environment:
@@ -137,9 +216,7 @@ test::helpers::enter_prod() {
     #   HOME
     #   PREV_HOME
     #   BUILD_DIR
-
-    PREV_HOME="${HOME}"
-    export PREV_HOME
+    #   PATH
 
     HOME="/app"
     export HOME
@@ -147,4 +224,7 @@ test::helpers::enter_prod() {
     pushd "${HOME}" > /dev/null
 
     cp --archive --recursive "${BUILD_DIR}"/* "${HOME}/"
+
+    PATH="${PATH}:${HOME}/bin:${HOME}/vendor/php/bin:${HOME}/vendor/nginx/sbin"
+    export PATH
 }
