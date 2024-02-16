@@ -2,11 +2,45 @@
 
 ### Helpers functions
 
-test::helpers::classic_deploy() {
-    # Deploys a classic PHP app step by step and tests that everything is
-    # working as expected.
+test::helpers::common_deploy() {
+    # Deploys a PHP app step by step and tests that everything related to the
+    # PHP setup is as expected.
     # To do so, this function runs the buildpack scripts and mimicks the
     # platform behavior wherever needed.
+    #
+    # Globals:
+    #   STD_OUT
+    #   default_modules
+    #
+    # Arguments:
+    #   $1 > $detect_expectation
+    #      See `test::helpers::detect`.
+    #
+    #   $2 > $php_version
+    #      See `test::helpers::php`.
+
+    local detect_expectation="${1}"
+    local php_version="${2}"
+
+    # Test bin/detect:
+    test::helpers::detect "${detect_expectation}"
+
+    # Test bin/compile:
+    test::helpers::compile
+
+    # Switch environment:
+    test::helpers::enter_prod
+
+    # Test PHP version:
+    test::helpers::php "${php_version}"
+
+    # Test PHP default modules:
+    test::helpers::default_php_modules
+}
+
+test::helpers::classic_deploy() {
+    # Deploys a classic PHP app step by step and tests that everything is
+    # working as expected, including the Nginx version.
     #
     # Globals:
     #   STD_OUT
@@ -22,20 +56,8 @@ test::helpers::classic_deploy() {
     local php_version="${1}"
     local nginx_version="${2}"
 
-    # Test bin/detect:
-    test::helpers::detect "PHP (classic)"
-
-    # Test bin/compile:
-    test::helpers::compile
-
-    # Switch environment:
-    test::helpers::enter_prod
-
-    # Test PHP version:
-    test::helpers::php "${php_version}"
-
-    # Test PHP default modules:
-    test::helpers::default_php_modules
+    # Test everything related to PHP:
+    test::helpers::common_deploy "PHP (classic)" "${php_version}"
 
     # Test Nginx version:
     test::helpers::nginx "${nginx_version}"
@@ -45,10 +67,7 @@ test::helpers::classic_deploy() {
 
 test::helpers::composer_deploy() {
     # Deploys a Composer PHP app step by step and tests that everything is
-    # working as expected.
-    # To do so, this function runs the buildpack scripts and mimicks the
-    # platform behavior wherever needed.
-    # The different fixtures allow us to test different setup and conditions.
+    # working as expected, including the Nginx and the Composer versions.
     #
     # Globals:
     #   STD_OUT
@@ -68,20 +87,8 @@ test::helpers::composer_deploy() {
     local nginx_version="${2}"
     local composer_version="${3}"
 
-    # Test bin/detect:
-    test::helpers::detect "PHP (composer.json)"
-
-    # Test bin/compile:
-    test::helpers::compile
-
-    # Switch environment:
-    test::helpers::enter_prod
-
-    # Test PHP version:
-    test::helpers::php "${php_version}"
-
-    # Test default PHP defaults modules:
-    test::helpers::default_php_modules
+    # Test everything related to PHP:
+    test::helpers::common_deploy "PHP (composer.json)" "${php_version}"
 
     # Test Nginx version:
     test::helpers::nginx "${nginx_version}"
