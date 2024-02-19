@@ -60,6 +60,13 @@ function php::semver::resolve_version() {
     #      version can be given, in which case the best matching full version
     #      will be returned, if any.
     #      If not specified, return the default version of the component.
+    #
+    # Outputs:
+    #   stdout: When successful, prints out the semantic version of the
+    #           considered component on `stdout`.
+    #
+    # Returns:
+    #   0 on success ; `curl` error code otherwise
 
     local rc=1
 
@@ -104,6 +111,13 @@ function php::retrieve_component_semantic_version() {
     #   $5 > $extra_key: Name of an extra key to check in 'composer.json'.
     #      It should always be 'paas' but we maintain this for a better Heroku
     #      compatibility.
+    #
+    # Outputs:
+    #   stdout: When successful, prints out the semantic version of the
+    #           considered component on `stdout`.
+    #
+    # Returns:
+    #   0 on success ; `curl` error code otherwise
     #
     # See also:
     #   `php::semver::resolve_version`
