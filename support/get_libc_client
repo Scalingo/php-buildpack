@@ -28,12 +28,7 @@ dep_urls=(
 	http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz
 )
 
-if [[ "${deps_stack}" == "scalingo-14" ]]; then
-	dep_urls+=(
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.debian.tar.gz
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-2.dsc
-	)
-elif [[ "${deps_stack}" == "scalingo-18" ]]; then
+if [[ "${deps_stack}" == "scalingo-18" ]]; then
 	dep_urls+=(
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
 		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
@@ -55,12 +50,7 @@ echo "-----> Downloading libc-client ${version}"
 
 # we need that for IMAP
 needed=( libpam0g-dev )
-if [[ "${deps_stack}" == "scalingo-14" ]]; then
-	gpg --keyserver keyserver.ubuntu.com --recv-keys 7D61E3E6
-	gpg --no-default-keyring -a --export 7D61E3E6 | gpg --no-default-keyring --keyring ~/.gnupg/trustedkeys.gpg --import -
-else
-	needed+=( debian-keyring )
-fi
+needed+=( debian-keyring )
 
 missing=$(comm -1 -3 <(dpkg-query -W -f '${package}\n' | sort) <(IFS=$'\n'; echo "${needed[*]}" | sort))
 if [[ "$missing" ]]; then
