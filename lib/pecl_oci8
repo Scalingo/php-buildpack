@@ -8,14 +8,16 @@ function install_oracle_client_extension() {
   mkdir -p "${oracle_install_dir}"
 
   curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip --output oracleclient.zip
-  unzip -q oracleclient.zip -d "${oracle_install_dir}"
+  # We are only interested in the "instantclient_..." directory:
+  unzip -o -q oracleclient.zip "instantclient*" -d "${oracle_install_dir}"
   rm oracleclient.zip
 
   export ORACLE_HOME="${oracle_install_dir}$(ls ${oracle_install_dir})"
   export LD_LIBRARY_PATH="${ORACLE_HOME}/lib:${ORACLE_HOME}:${LD_LIBRARY_PATH}"
 
   curl --silent https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip --output oraclesdk.zip
-  unzip -q oraclesdk.zip -d "${oracle_install_dir}"
+  # We are only interested in the "instantclient_..." directory:
+  unzip -o -q oraclesdk.zip "instantclient*" -d "${oracle_install_dir}"
   rm oraclesdk.zip
 
   readonly startup_script="${1}/.profile.d/oracle-client.sh"
