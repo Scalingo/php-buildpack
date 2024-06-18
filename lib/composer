@@ -204,7 +204,7 @@ function is_embedded_extension() {
   [ ${rc} -ne 0 ] && \
     error "error while trying to identify if ${extension_name} is embedded in runtime: ${php_modules} (${rc})."
 
-  if echo "${php_modules}" | grep --quiet --ignore-case "${extension_name}" ; then
+  if echo "${php_modules}" | grep --quiet --extended-regexp --ignore-case "^${extension_name}$" ; then
     echo "true"
   else
     echo "false"
