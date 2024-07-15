@@ -125,7 +125,7 @@ function install_composer_deps() {
               fi
             fi
 
-            is_embedded="$(is_embedded_extension ${ext})"
+            is_embedded="$( is_embedded_extension "${ext}" )"
             rc=$?
             [ ${rc} -ne 0 ] && error "error while trying to identify if ${ext} is embedded in runtime."
 
