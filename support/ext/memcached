@@ -6,18 +6,17 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
-# https://github.com/php-memcached-dev/php-memcached/releases
-php_memcached_version=3.2.0
-
-curl -L "https://github.com/php-memcached-dev/php-memcached/archive/v${php_memcached_version}.tar.gz" \
-    | tar xzv
-
+# $memcached_version, $libmemcached_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
 source "/buildpack/conf/buildpack.conf"
+
+curl --location "https://github.com/php-memcached-dev/php-memcached/archive/v${memcached_version}.tar.gz" \
+    | tar --extract --gzip --verbose
+
 mkdir -p /app/vendor/libmemcached
 curl "${PHP_BASE_URL}/package/libmemcached-${libmemcached_version}.tgz" \
-    | tar xzv -C /app/vendor/libmemcached
+    | tar --extract --gzip --verbose --directory=/app/vendor/libmemcached
 
-cd php-memcached-${php_memcached_version}
+cd php-memcached-${memcached_version}
 /app/vendor/php/bin/phpize
 ./configure --with-php-config=/app/vendor/php/bin/php-config \
             --disable-memcached-sasl \
