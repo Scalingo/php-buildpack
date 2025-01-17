@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+readonly default_builtins_extensions_83=(
+	"bcmath" "bz2" "Core" "ctype" "curl" "date" "dom" "exif" "fileinfo"
+	"filter" "gd" "hash" "iconv" "intl" "json" "libxml" "mbstring" "mysqli"
+	"mysqlnd" "openssl" "pcntl" "pcre" "PDO" "pdo_mysql" "pdo_pgsql"
+	"pdo_sqlite" "pgsql" "Phar" "posix" "random" "readline" "Reflection"
+	"session" "shmop" "SimpleXML" "soap" "sockets" "SPL" "sqlite3" "standard"
+	"tokenizer" "xml" "xmlreader" "xmlwriter" "xsl" "Zend OPcache" "zip" "zlib"
+)
+
+readonly default_pecl_extensions_83=(
+	"apcu" "mongodb" "redis"
+)
+
+readonly optional_builtin_extensions_83=(
+	"calendar" "ftp" "gettext" "gmp" "imap" "sodium" "tidy"
+)
+
+test::php83::classic() {
+#
+# Test a deployment of a classic app (not using Composer)
+# Specifying we want PHP 8.3.x via environment
+#
+
+	PHP_VERSION="8.3"
+	export PHP_VERSION
+
+	test::utils::setupFixture "defaults/classic"
+	test::helpers::classic_deploy \
+		"8.3." \
+		"${default_nginx["${STACK}"]}"
+}
+
+test::php83::composer() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying we want PHP 8.3.x via composer.json
+#
+
+	test::utils::setupFixture "php-8.3/composer"
+	test::helpers::composer_deploy \
+		"8.3." \
+		"${default_nginx["${STACK}"]}" \
+		"${default_composer["${STACK}"]}"
+}
+
+test::php83::extensions::default() {
+#
+# Test the presence of default enabled built-in extensions.
+#
+
+	test::utils::setupFixture "php-8.3/composer"
+
+	test::utils::compile
+	test::helpers::enter_prod
+
+	local extensions=("${default_builtin_extensions_83[@]}")
+	extensions+=("${default_pecl_extensions_83[@]}")
+
+	test::helpers::enabled_extensions "${extensions[@]}"
+}
+
+test::php83::extensions::optional_builtin() {
+#
+# Test the presence of available built-in extensions that are not
+# enabled by default.
+#
+
+	test::utils::setupFixture "php-8.3/optional_builtin"
+
+	test::utils::compile
+	test::helpers::enter_prod
+
+	test::helpers::enabled_extensions "${optional_builtin_extensions_83[@]}"
+}

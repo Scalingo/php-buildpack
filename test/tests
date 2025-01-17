@@ -3,366 +3,57 @@
 source "$( pwd )/test/utils"
 source "$( pwd )/test/helpers"
 
-# List of modules that we want to ship with every PHP setup.
-# For now, users can't specify a version for these modules, we just ship
-# what we have. Hence no specific versions constraints here.
-readonly default_modules=(
-    "apcu" "bcmath" "bz2" "Core" "ctype" "curl" "date" "dom" "exif" "fileinfo"
-    "filter" "gd" "hash" "iconv" "intl" "json" "libxml" "mbstring" "mongodb"
-    "mysqli" "mysqlnd" "openssl" "pcntl" "pcre" "PDO" "pdo_mysql" "pdo_pgsql"
-    "pdo_sqlite" "pgsql" "Phar" "posix" "readline" "redis" "Reflection"
-    "session" "shmop" "SimpleXML" "soap" "sockets" "SPL" "sqlite3" "standard"
-    "tokenizer" "xml" "xmlreader" "xmlwriter" "xsl" "Zend OPcache" "zip" "zlib"
-)
-
-declare -gA default_php
-declare -gA default_nginx
-declare -gA default_composer
-
-# Defaults for scalingo-20:
-default_php["scalingo-20"]="8.1."
-default_nginx["scalingo-20"]="1.26."
-default_composer["scalingo-20"]="2.8."
-
-# Defaults for scalingo-22:
-default_php["scalingo-22"]="8.1."
-default_nginx["scalingo-22"]="1.26."
-default_composer["scalingo-22"]="2.8."
-
-
-test::classic::defaults() {
-    # Test a deployment of a classic app (not using Composer)
-    # With default settings
-
-    test::utils::setupFixture "classic_default"
-    test::helpers::classic_deploy \
-        "${default_php["${STACK}"]}" \
-        "${default_nginx["${STACK}"]}"
-}
-
-test::classic::php80() {
-    # Test a deployment of a classic app (not using Composer)
-    # Specifying we want PHP 8.0.x via environment
-
-    PHP_VERSION="8.0"
-    export PHP_VERSION
-
-    if [[ "${STACK}" != "scalingo-20" ]]; then
-        echo "[skipping] PHP 8.0 is not available on scalingo-22"
-        startSkipping
-    fi
-
-    test::utils::setupFixture "classic_default"
-    test::helpers::classic_deploy \
-        "8.0." \
-        "${default_nginx["${STACK}"]}"
-}
-
-test::classic::php81() {
-    # Test a deployment of a classic app (not using Composer)
-    # Specifying we want PHP 8.1.x via environment
-
-    PHP_VERSION="8.1"
-    export PHP_VERSION
-
-    test::utils::setupFixture "classic_default"
-    test::helpers::classic_deploy \
-        "8.1." \
-        "${default_nginx["${STACK}"]}"
-}
-
-test::classic::php82() {
-    # Test a deployment of a classic app (not using Composer)
-    # Specifying we want PHP 8.2.x via environment
-
-    PHP_VERSION="8.2"
-    export PHP_VERSION
-
-    test::utils::setupFixture "classic_default"
-    test::helpers::classic_deploy \
-        "8.2." \
-        "${default_nginx["${STACK}"]}"
-}
-
-test::classic::php83() {
-    # Test a deployment of a classic app (not using Composer)
-    # Specifying we want PHP 8.3.x via environment
-
-    PHP_VERSION="8.3"
-    export PHP_VERSION
-
-    test::utils::setupFixture "classic_default"
-    test::helpers::classic_deploy \
-        "8.3." \
-        "${default_nginx["${STACK}"]}"
-}
-
-
-test::classic::nginx_version_via_env() {
-    # Test a deployment of a classic app (not using Composer)
-    # Specifying we want Nginx 1.22.1 via environment
-    # We don't test every step here, we just test that the Nginx version is
-    # the one expected.
-
-    NGINX_VERSION="1.22.1"
-    export NGINX_VERSION
-
-    test::utils::setupFixture "classic_default"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::nginx "1.22.1"
-}
-
-
-test::composer::defaults() {
-    # Test a deployment of a PHP app using Composer
-    # With default settings
-
-    test::utils::setupFixture "composer_default"
-    test::helpers::composer_deploy \
-        "${default_php["${STACK}"]}" \
-        "${default_nginx["${STACK}"]}" \
-        "${default_composer["${STACK}"]}"
-}
-
-test::composer::php80() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying we want PHP 8.0.x via composer.json
-
-    if [[ "${STACK}" != "scalingo-20" ]]; then
-        echo "[skipping] PHP 8.0 is not available on scalingo-22"
-        startSkipping
-    fi
-
-    test::utils::setupFixture "composer_php-8.0"
-    test::helpers::composer_deploy \
-        "8.0." \
-        "${default_nginx["${STACK}"]}" \
-        "${default_composer["${STACK}"]}"
-}
-
-test::composer::php81() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying we want PHP 8.1.x via composer.json
-
-    test::utils::setupFixture "composer_php-8.1"
-    test::helpers::composer_deploy \
-        "8.1." \
-        "${default_nginx["${STACK}"]}" \
-        "${default_composer["${STACK}"]}"
-}
-
-test::composer::php82() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying we want PHP 8.2.x via composer.json
-
-    test::utils::setupFixture "composer_php-8.2"
-    test::helpers::composer_deploy \
-        "8.2." \
-        "${default_nginx["${STACK}"]}" \
-        "${default_composer["${STACK}"]}"
-}
-
-test::composer::php83() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying we want PHP 8.3.x via composer.json
-
-    test::utils::setupFixture "composer_php-8.3"
-    test::helpers::composer_deploy \
-        "8.3." \
-        "${default_nginx["${STACK}"]}" \
-        "${default_composer["${STACK}"]}"
-}
-
-
-test::composer::php_version_via_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the PHP version only via PHP_VERSION.
-
-    PHP_VERSION="8.3"
-    export PHP_VERSION
-
-    test::utils::setupFixture "composer_default"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::php "8.3."
-}
-
-test::composer::php_version_via_composer_over_lower_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the PHP version via both composer.json and PHP_VERSION.
-    # And where the version specified in composer.json is greater than the one
-    # specified in PHP_VERSION.
-
-    PHP_VERSION="8.2"
-    export PHP_VERSION
-
-    test::utils::setupFixture "composer_php-8.3"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::php "8.3."
-}
-
-test::composer::php_version_via_composer_over_greater_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the PHP version via both composer.json and PHP_VERSION.
-    # And where the version specified in composer.json is lower than the one
-    # specified in PHP_VERSION.
-
-    PHP_VERSION="8.3"
-    export PHP_VERSION
-
-    test::utils::setupFixture "composer_php-8.2"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::php "8.2."
-}
-
-test::composer::nginx_version_via_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Nginx version only via NGINX_VERSION.
-
-    NGINX_VERSION="1.21.6"
-    export NGINX_VERSION
-
-    test::utils::setupFixture "composer_default"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::nginx "1.21.6"
-}
-
-test::composer::nginx_version_via_composer() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Nginx version only via composer.json.
-
-    test::utils::setupFixture "composer_nginx-1.21.6"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::nginx "1.21.6"
-}
-
-test::composer::nginx_version_via_composer_over_lower_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Nginx version via both composer.json and NGINX_VERSION.
-    # And where the version specified in composer.json is greater than the one
-    # specified in NGINX_VERSION.
-
-    NGINX_VERSION="1.21.6"
-    export NGINX_VERSION
-
-    test::utils::setupFixture "composer_nginx-1.22.1"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::nginx "1.22.1"
-}
-
-test::composer::nginx_version_via_composer_over_greater_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Nginx version via  both composer.json and NGINX_VERSION.
-    # And where the version specified in composer.json is lower than the one
-    # specified in NGINX_VERSION.
-
-    NGINX_VERSION="1.22.1"
-    export NGINX_VERSION
-
-    test::utils::setupFixture "composer_nginx-1.21.6"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::nginx "1.21.6"
-}
-
-
-test::composer::composer_version_via_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Composer version only via environment.
-
-    COMPOSER_VERSION="2.7.0"
-    export COMPOSER_VERSION
-
-    test::utils::setupFixture "composer_default"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::composer "2.7.0"
-}
-
-test::composer::composer_version_via_composer() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying the Composer version only via composer.json.
-
-    test::utils::setupFixture "composer_composer-2.7.0"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::composer "2.7.0"
-}
-
-test::composer::composer_version_via_composer_over_lower_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying Composer version via both composer.json and COMPOSER_VERSION.
-    # And where the version specified in composer.json is greater than the one
-    # specified in COMPOSER_VERSION.
-
-    COMPOSER_VERSION="2.6.0"
-    export COMPOSER_VERSION
-
-    test::utils::setupFixture "composer_composer-2.7.0"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::composer "2.7.0"
-}
-
-test::composer::composer_version_via_composer_over_greater_env() {
-    # Test a deployment of a PHP app using Composer
-    # Specifying Composer version via both composer.json and COMPOSER_VERSION.
-    # And where the version specified in composer.json is greater than the one
-    # specified in COMPOSER_VERSION.
-
-    COMPOSER_VERSION="2.7.0"
-    export COMPOSER_VERSION
-
-    test::utils::setupFixture "composer_composer-2.6.0"
-    test::utils::compile
-    test::helpers::enter_prod
-
-    test::helpers::composer "2.6.0"
-}
+source "$( pwd )/test/defaults"
+source "$( pwd )/test/php81"
+source "$( pwd )/test/php82"
+source "$( pwd )/test/php83"
+source "$( pwd )/test/php84"
+source "$( pwd )/test/php"
+source "$( pwd )/test/composer"
+source "$( pwd )/test/nginx"
 
 # Add these functions to the test suite:
 
-suite_addTest test::classic::defaults
-suite_addTest test::classic::php80
-suite_addTest test::classic::php81
-suite_addTest test::classic::php82
-suite_addTest test::classic::php83
+# Defaults
+suite_addTest test::defaults::classic
+suite_addTest test::defaults::composer
 
-suite_addTest test::classic::nginx_version_via_env
+# PHP 8.1
+suite_addTest test::php81::classic
+suite_addTest test::php81::composer
+suite_addTest test::php81::extensions::default
+suite_addTest test::php81::extensions::optional_builtin
 
-suite_addTest test::composer::defaults
-suite_addTest test::composer::php80
-suite_addTest test::composer::php81
-suite_addTest test::composer::php82
-suite_addTest test::composer::php83
+# PHP 8.2
+suite_addTest test::php82::classic
+suite_addTest test::php82::composer
+suite_addTest test::php82::extensions::default
+suite_addTest test::php82::extensions::optional_builtin
 
-suite_addTest test::composer::php_version_via_env
-suite_addTest test::composer::php_version_via_composer_over_lower_env
-suite_addTest test::composer::php_version_via_composer_over_greater_env
+# PHP 8.3
+suite_addTest test::php83::classic
+suite_addTest test::php83::composer
+suite_addTest test::php83::extensions::default
+suite_addTest test::php83::extensions::optional_builtin
 
-suite_addTest test::composer::nginx_version_via_env
-suite_addTest test::composer::nginx_version_via_composer
-suite_addTest test::composer::nginx_version_via_composer_over_lower_env
-suite_addTest test::composer::nginx_version_via_composer_over_greater_env
+# PHP 8.4
+suite_addTest test::php84::classic
+suite_addTest test::php84::composer
+suite_addTest test::php84::extensions::default
+suite_addTest test::php84::extensions::optional_builtin
 
-suite_addTest test::composer::composer_version_via_env
-suite_addTest test::composer::composer_version_via_composer
-suite_addTest test::composer::composer_version_via_composer_over_lower_env
-suite_addTest test::composer::composer_version_via_composer_over_greater_env
+# PHP
+suite_addTest test::php::composer_over_lower_classic
+suite_addTest test::php::composer_over_higher_classic
+
+# Composer
+suite_addTest test::composer::classic
+suite_addTest test::composer::composer
+suite_addTest test::composer::composer_over_lower_classic
+suite_addTest test::composer::composer_over_higher_classic
+
+# nginx
+suite_addTest test::nginx::classic
+suite_addTest test::nginx::composer
+suite_addTest test::nginx::composer_over_lower_classic
+suite_addTest test::nginx::composer_over_higher_classic
