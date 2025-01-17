@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+test::php::composer_over_lower_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the PHP version via both composer.json and PHP_VERSION.
+# And where the version specified in composer.json is greater than the one
+# specified in PHP_VERSION.
+#
+
+    PHP_VERSION="8.2"
+    export PHP_VERSION
+
+    test::utils::setupFixture "php-8.3/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::php "8.3."
+}
+
+test::php::composer_over_higher_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the PHP version via both composer.json and PHP_VERSION.
+# And where the version specified in composer.json is lower than the one
+# specified in PHP_VERSION.
+#
+
+    PHP_VERSION="8.3"
+    export PHP_VERSION
+
+    test::utils::setupFixture "php-8.2/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::php "8.2."
+}

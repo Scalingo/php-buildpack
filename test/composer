@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+test::composer::classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the Composer version only via environment.
+#
+
+    COMPOSER_VERSION="2.7.0"
+    export COMPOSER_VERSION
+
+    test::utils::setupFixture "defaults/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::composer "2.7.0"
+}
+
+test::composer::composer() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the Composer version only via composer.json.
+#
+
+    test::utils::setupFixture "composer-2.7.0/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::composer "2.7.0"
+}
+
+test::composer::composer_over_lower_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying Composer version via both composer.json and COMPOSER_VERSION.
+# And where the version specified in composer.json is greater than the one
+# specified in COMPOSER_VERSION.
+#
+
+    COMPOSER_VERSION="2.6.0"
+    export COMPOSER_VERSION
+
+    test::utils::setupFixture "composer-2.7.0/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::composer "2.7.0"
+}
+
+test::composer::composer_over_higher_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying Composer version via both composer.json and COMPOSER_VERSION.
+# And where the version specified in composer.json is greater than the one
+# specified in COMPOSER_VERSION.
+#
+
+    COMPOSER_VERSION="2.7.0"
+    export COMPOSER_VERSION
+
+    test::utils::setupFixture "composer-2.6.0/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::composer "2.6.0"
+}

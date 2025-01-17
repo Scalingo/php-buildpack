@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+declare -gA default_php
+declare -gA default_nginx
+declare -gA default_composer
+
+# Defaults for scalingo-20:
+default_php["scalingo-20"]="8.1."
+default_nginx["scalingo-20"]="1.26."
+default_composer["scalingo-20"]="2.8."
+
+# Defaults for scalingo-22:
+default_php["scalingo-22"]="8.1."
+default_nginx["scalingo-22"]="1.26."
+default_composer["scalingo-22"]="2.8."
+
+
+test::defaults::classic() {
+#
+# Test a deployment of a classic app (not using Composer)
+# With default settings
+#
+
+    test::utils::setupFixture "defaults/classic"
+    test::helpers::classic_deploy \
+        "${default_php["${STACK}"]}" \
+        "${default_nginx["${STACK}"]}"
+}
+
+test::defaults::composer() {
+#
+# Test a deployment of a PHP app using Composer
+# With default settings
+#
+
+    test::utils::setupFixture "defaults/composer"
+    test::helpers::composer_deploy \
+        "${default_php["${STACK}"]}" \
+        "${default_nginx["${STACK}"]}" \
+        "${default_composer["${STACK}"]}"
+}

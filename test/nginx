@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+# Testing the default Nginx version deployed with a default classic app
+# is done in `test::helpers::classic_deploy`, which is called by
+# `test::defaults::classic`.
+
+test::nginx::classic() {
+#
+# Test a deployment of a classic app (not using Composer)
+# Specifying we want Nginx 1.22.1 via environment
+# We don't test every step here, we just test that the Nginx version is
+# the one expected.
+#
+
+    NGINX_VERSION="1.22.1"
+    export NGINX_VERSION
+
+    test::utils::setupFixture "defaults/classic"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::nginx "1.22.1"
+}
+
+test::nginx::composer() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the nginx version only via composer.json
+#
+
+    test::utils::setupFixture "nginx-1.21.6/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::nginx "1.21.6"
+}
+
+#test::composer::nginx_version_via_env() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the Nginx version only via NGINX_VERSION.
+#
+
+#    NGINX_VERSION="1.21.6"
+#    export NGINX_VERSION
+
+#    test::utils::setupFixture "composer_default"
+#    test::utils::compile
+#    test::helpers::enter_prod
+
+#    test::helpers::nginx "1.21.6"
+#}
+
+test::nginx::composer_over_lower_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the Nginx version via both composer.json and NGINX_VERSION.
+# And where the version specified in composer.json is greater than the one
+# specified in NGINX_VERSION.
+#
+
+    NGINX_VERSION="1.21.6"
+    export NGINX_VERSION
+
+    test::utils::setupFixture "nginx-1.22.1/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::nginx "1.22.1"
+}
+
+test::nginx::composer_over_higher_classic() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying the Nginx version via  both composer.json and NGINX_VERSION.
+# And where the version specified in composer.json is lower than the one
+# specified in NGINX_VERSION.
+#
+
+    NGINX_VERSION="1.22.1"
+    export NGINX_VERSION
+
+    test::utils::setupFixture "nginx-1.21.6/composer"
+    test::utils::compile
+    test::helpers::enter_prod
+
+    test::helpers::nginx "1.21.6"
+}

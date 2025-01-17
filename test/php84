@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+
+readonly default_builtins_extensions_84=(
+	"bcmath" "bz2" "Core" "ctype" "curl" "date" "dom" "exif" "fileinfo"
+	"filter" "gd" "hash" "iconv" "intl" "json" "libxml" "mbstring" "mysqli"
+	"mysqlnd" "openssl" "pcntl" "pcre" "PDO" "pdo_mysql" "pdo_pgsql"
+	"pdo_sqlite" "pgsql" "Phar" "posix" "random" "readline" "Reflection"
+	"session" "shmop" "SimpleXML" "soap" "sockets" "SPL" "sqlite3" "standard"
+	"tokenizer" "xml" "xmlreader" "xmlwriter" "xsl" "Zend OPcache" "zip" "zlib"
+)
+
+readonly default_pecl_extensions_84=(
+	"apcu" "mongodb" "redis"
+)
+
+readonly optional_builtin_extensions_84=(
+	"calendar" "ftp" "gettext" "gmp" "sodium" "tidy"
+)
+
+test::php84::classic() {
+#
+# Test a deployment of a classic app (not using Composer)
+# Specifying we want PHP 8.4.x via environment
+#
+
+	PHP_VERSION="8.4"
+	export PHP_VERSION
+
+	test::utils::setupFixture "defaults/classic"
+	test::helpers::classic_deploy \
+		"8.4." \
+		"${default_nginx["${STACK}"]}"
+}
+
+test::php84::composer() {
+#
+# Test a deployment of a PHP app using Composer
+# Specifying we want PHP 8.4.x via composer.json
+#
+
+	test::utils::setupFixture "php-8.4/composer"
+	test::helpers::composer_deploy \
+		"8.4." \
+		"${default_nginx["${STACK}"]}" \
+		"${default_composer["${STACK}"]}"
+}
+
+test::php84::extensions::default() {
+#
+# Test the presence of default enabled built-in extensions.
+#
+
+	test::utils::setupFixture "php-8.4/composer"
+
+	test::utils::compile
+	test::helpers::enter_prod
+
+	local extensions=("${default_builtin_extensions_84[@]}")
+	extensions+=("${default_pecl_extensions_84[@]}")
+
+	test::helpers::enabled_extensions "${extensions[@]}"
+}
+
+test::php84::extensions::optional_builtin() {
+#
+# Test the presence of available built-in extensions that are not
+# enabled by default.
+#
+
+	test::utils::setupFixture "php-8.4/optional_builtin"
+
+	test::utils::compile
+	test::helpers::enter_prod
+
+	test::helpers::enabled_extensions "${optional_builtin_extensions_84[@]}"
+}
