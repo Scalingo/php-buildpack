@@ -11,7 +11,7 @@ default_composer["scalingo-20"]="2.8."
 
 # Defaults for scalingo-22:
 default_php["scalingo-22"]="8.1."
-default_nginx["scalingo-22"]="1.26."
+default_nginx["scalingo-22"]="1.28."
 default_composer["scalingo-22"]="2.8."
 
 
