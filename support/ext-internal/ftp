@@ -9,7 +9,23 @@ pushd $php_src_dir/php-${php_version}/ext/ftp
 export PATH=$PATH:/app/vendor/php/bin
 
 phpize
-./configure --with-ftp
+
+php_series="$(echo $php_version | cut -d '.' -f1,2)"
+if [ -z "$php_series" ]; then
+    echo "Invalid PHP version: $php_version"
+    exit 1
+fi
+
+# For PHP 8.4 and later, use --with-ftp-ssl option
+param=("--enable-ftp")
+if [ ${zend_api_version} -gt 20240000 ]; then
+    param+=("--with-ftp-ssl")
+else
+    param+=("--with-openssl-dir=/usr/include/openssl")
+fi
+
+echo "Configuring FTP extension for PHP $php_version, using './configure $param'"
+./configure "${param[@]}"
 make
 make install
 
