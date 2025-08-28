@@ -39,4 +39,3 @@ popd > /dev/null
 swift_upload package/tail-${coreutils_version}.tgz
 
 "$basedir/package-checksum" "tail-${coreutils_version}"
-
