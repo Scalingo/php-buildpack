@@ -3,7 +3,7 @@
 set -e
 
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 libonig_version="$1"
@@ -17,19 +17,20 @@ source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
 tempdir=$(mktmpdir libonig)
-cd $tempdir
+cd "$tempdir"
 
 echo "-----> Downloading Oniguruma v${libonig_version}"
 curl -L -o - "https://github.com/kkos/oniguruma/releases/download/v${libonig_version}/onig-${libonig_version}.tar.gz" | tar xzv
 
-mkdir -p /app/vendor/libonig \
-  && pushd onig-${libonig_version} > /dev/null \
-  && mkdir build \
-  && pushd build > /dev/null \
-  && cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libonig \
-  && make && make install \
-  && popd > /dev/null \
-  && popd > /dev/null
+mkdir -p /app/vendor/libonig
+pushd "onig-${libonig_version}" > /dev/null
+mkdir build
+pushd build > /dev/null
+cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libonig
+make
+make install
+popd > /dev/null
+popd > /dev/null
 
 mkdir package
 pushd /app/vendor/libonig > /dev/null
@@ -37,6 +38,6 @@ rm -r ./share
 tar zcvf "${tempdir}/package/libonig-${libonig_version}.tgz" .
 popd > /dev/null
 
-swift_upload package/libonig-${libonig_version}.tgz
+swift_upload "package/libonig-${libonig_version}.tgz"
 
 "$basedir/package-checksum" "libonig-${libonig_version}"
