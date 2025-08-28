@@ -46,4 +46,3 @@ function build_libsodium() {
 }
 
 build_libsodium $sodium_version "releases"
-build_libsodium $sodium_php72_php73_version "releases/old/unsupported"
