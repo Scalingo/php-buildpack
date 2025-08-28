@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
+set -e
+
 which cmake 2>/dev/null || (apt-get update && apt-get install -y cmake)
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
+# The variable is assigned in `buildpack.conf`
+declare tidy_version
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
 tempdir=$(mktmpdir libtidy)
-cd $tempdir
+cd "$tempdir"
 
 echo "-----> Downloading Tidy v${tidy_version}"
 curl -LO "https://github.com/htacg/tidy-html5/archive/${tidy_version}.tar.gz"
@@ -23,13 +27,12 @@ cmake ../.. -DCMAKE_INSTALL_PREFIX=/app/vendor/libtidy -DTIDY_COMPAT_HEADERS=tru
 make
 make install
 
-cd $tempdir
+cd "$tempdir"
 mkdir package
 cd package
 tar -C /app/vendor/libtidy -czvf "libtidy-${tidy_version}.tgz" .
 cd ..
 
-swift_upload package/libtidy-${tidy_version}.tgz
+swift_upload "package/libtidy-${tidy_version}.tgz"
 
-"$basedir/package-checksum" "libtidy-${tidy_version}" 
-
+"$basedir/package-checksum" "libtidy-${tidy_version}"
