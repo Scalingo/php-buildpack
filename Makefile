@@ -1,4 +1,4 @@
-STACK := "scalingo-20"
+STACK := "scalingo-22"
 BASH_COMMAND := /bin/bash
 
 .DEFAULT := all
@@ -6,7 +6,7 @@ BASH_COMMAND := /bin/bash
 all: test
 test: test20 test22
 
-test22: STACK := "scalingo-22"
+test20: STACK := "scalingo-20"
 
 test20 test22: BASH_COMMAND := test/run
 test20 test22: IMAGE := "scalingo/$(STACK):latest"
