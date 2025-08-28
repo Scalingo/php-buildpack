@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+set -e
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
+# The variable is assigned in `buildpack.conf`
+declare sodium_version
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
@@ -45,4 +49,4 @@ function build_libsodium() {
   popd
 }
 
-build_libsodium $sodium_version "releases"
+build_libsodium "$sodium_version" "releases"
