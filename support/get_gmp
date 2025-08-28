@@ -25,6 +25,7 @@ mkdir -p /app/vendor/gmp
 pushd "gmp-${gmp_version}" > /dev/null
 ./configure --prefix=/app/vendor/gmp
 make
+make check
 make install
 popd > /dev/null
 
