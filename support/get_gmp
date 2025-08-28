@@ -6,6 +6,8 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
+# The variable is assigned in `buildpack.conf`
+declare gmp_version
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
