@@ -19,7 +19,7 @@ tempdir=$(mktmpdir gmp)
 cd $tempdir
 
 echo "-----> Downloading gmp ${gmp_version}"
-curl -L "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
+curl --fail --location "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
     | tar xJv
 
 mkdir -p /app/vendor/gmp \

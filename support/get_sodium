@@ -21,7 +21,7 @@ function build_libsodium() {
   pushd "${tempdir}"
 
   echo "-----> Downloading Sodium v${version}"
-  curl --location --remote-name "https://download.libsodium.org/libsodium/${url_prefix}/libsodium-${version}.tar.gz"
+  curl --fail --location --remote-name "https://download.libsodium.org/libsodium/${url_prefix}/libsodium-${version}.tar.gz"
 
   mkdir "libsodium"
   pushd "libsodium"

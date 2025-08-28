@@ -20,7 +20,7 @@ tempdir=$(mktmpdir zip)
 cd "$tempdir"
 
 echo "-----> Downloading ZIP v${zip_version}"
-curl -L -o - "https://libzip.org/download/libzip-${zip_version}.tar.gz" | tar xzv
+curl --fail --location --output - "https://libzip.org/download/libzip-${zip_version}.tar.gz" | tar xzv
 
 mkdir -p /app/vendor/libzip
 pushd "libzip-${zip_version}" > /dev/null

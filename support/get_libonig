@@ -20,7 +20,7 @@ tempdir=$(mktmpdir libonig)
 cd "$tempdir"
 
 echo "-----> Downloading Oniguruma v${libonig_version}"
-curl -L -o - "https://github.com/kkos/oniguruma/releases/download/v${libonig_version}/onig-${libonig_version}.tar.gz" | tar xzv
+curl --fail --location --output - "https://github.com/kkos/oniguruma/releases/download/v${libonig_version}/onig-${libonig_version}.tar.gz" | tar xzv
 
 mkdir -p /app/vendor/libonig
 pushd "onig-${libonig_version}" > /dev/null

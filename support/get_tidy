@@ -16,7 +16,7 @@ tempdir=$(mktmpdir libtidy)
 cd "$tempdir"
 
 echo "-----> Downloading Tidy v${tidy_version}"
-curl -LO "https://github.com/htacg/tidy-html5/archive/${tidy_version}.tar.gz"
+curl --fail --location --remote-name "https://github.com/htacg/tidy-html5/archive/${tidy_version}.tar.gz"
 
 tar xvf "${tidy_version}.tar.gz"
 cd "tidy-html5-${tidy_version}"

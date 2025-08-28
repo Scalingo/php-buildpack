@@ -13,7 +13,7 @@ tempdir=$(mktmpdir zlib)
 cd "$tempdir"
 
 echo "-----> Downloading ZLib v${zlib_version}"
-curl -LO "https://zlib.net/zlib-${zlib_version}.tar.gz"
+curl --fail --location --remote-name "https://zlib.net/zlib-${zlib_version}.tar.gz"
 
 mkdir zlib
 mv "zlib-${zlib_version}.tar.gz" zlib
