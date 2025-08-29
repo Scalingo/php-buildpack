@@ -20,6 +20,7 @@ jobs:
         stack:
           - scalingo-20
           - scalingo-22
+          - scalingo-24
     container:
       image: "scalingo/${{ matrix.stack }}:latest"
       env:
