@@ -17,7 +17,7 @@ tempdir=$(mktmpdir webp)
 cd "$tempdir"
 
 echo "-----> Downloading WEBP v${webp_version}"
-curl --fail --location --output - "http://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${webp_version}.tar.gz"| tar xzv
+curl --fail --location --output - "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${webp_version}.tar.gz"| tar xzv
 
 mkdir -p /app/vendor/libwebp
 pushd "libwebp-${webp_version}" > /dev/null
