@@ -3,11 +3,11 @@
 function swift_upload() {
   file="$1"
 
-  swift --verbose ${opts} upload ${SWIFT_BUCKET} --object-name "${STACK}/${file}" "${file}"
-  swift --verbose post -r '.r:*' ${SWIFT_BUCKET} "${STACK}/${file}"
+  swift --verbose upload "${SWIFT_BUCKET}" --object-name "${STACK}/${file}" "${file}"
+  swift --verbose post -r '.r:*' "${SWIFT_BUCKET}" "${STACK}/${file}"
 }
 
 function swift_download() {
   file="$1"
-  swift --verbose download ${SWIFT_BUCKET} "${STACK}/${file}"
+  swift --verbose download "${SWIFT_BUCKET}" "${STACK}/${file}"
 }

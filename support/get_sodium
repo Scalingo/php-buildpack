@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 
+set -e
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
+# The variable is assigned in `buildpack.conf`
+declare sodium_version
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
@@ -17,7 +24,7 @@ function build_libsodium() {
   pushd "${tempdir}"
 
   echo "-----> Downloading Sodium v${version}"
-  curl --location --remote-name "https://download.libsodium.org/libsodium/${url_prefix}/libsodium-${version}.tar.gz"
+  curl --fail --location --remote-name "https://download.libsodium.org/libsodium/${url_prefix}/libsodium-${version}.tar.gz"
 
   mkdir "libsodium"
   pushd "libsodium"
@@ -45,5 +52,4 @@ function build_libsodium() {
   popd
 }
 
-build_libsodium $sodium_version "releases"
-build_libsodium $sodium_php72_php73_version "releases/old/unsupported"
+build_libsodium "$sodium_version" "releases"

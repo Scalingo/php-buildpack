@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+set -e
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
 package=cmake
 if [ "$STACK" = "scalingo-14" ] ; then
   package="cmake3"
@@ -15,19 +20,19 @@ source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
 tempdir=$(mktmpdir zip)
-cd $tempdir
+cd "$tempdir"
 
 echo "-----> Downloading ZIP v${zip_version}"
-curl -L -o - "https://libzip.org/download/libzip-${zip_version}.tar.gz" | tar xzv
+curl --fail --location --output - "https://libzip.org/download/libzip-${zip_version}.tar.gz" | tar xzv
 
-mkdir -p /app/vendor/libzip \
-  && pushd libzip-${zip_version} > /dev/null \
-  && mkdir build \
-  && pushd build > /dev/null \
-  && cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libzip \
-  && make && make install \
-  && popd > /dev/null \
-  && popd > /dev/null
+mkdir -p /app/vendor/libzip
+pushd "libzip-${zip_version}" > /dev/null
+mkdir build
+pushd build > /dev/null
+cmake .. -DCMAKE_INSTALL_PREFIX=/app/vendor/libzip
+make && make install
+popd > /dev/null
+popd > /dev/null
 
 mkdir package
 pushd /app/vendor/libzip > /dev/null
@@ -35,7 +40,6 @@ rm -r ./share ./bin
 tar zcvf "${tempdir}/package/libzip-${zip_version}.tgz" .
 popd > /dev/null
 
-swift_upload package/libzip-${zip_version}.tgz
+swift_upload "package/libzip-${zip_version}.tgz"
 
 "$basedir/package-checksum" "libzip-${zip_version}"
-

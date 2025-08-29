@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
 set -e
-
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
+# The variable is assigned in `buildpack.conf`
+declare gmp_version
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
@@ -17,7 +18,7 @@ tempdir=$(mktmpdir gmp)
 cd $tempdir
 
 echo "-----> Downloading gmp ${gmp_version}"
-curl -L "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
+curl --fail --location "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
     | tar xJv
 
 mkdir -p /app/vendor/gmp \
