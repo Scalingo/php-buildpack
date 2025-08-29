@@ -74,3 +74,4 @@ test::php84::extensions::optional_builtin() {
 
 	test::helpers::enabled_extensions "${optional_builtin_extensions_84[@]}"
 }
+
