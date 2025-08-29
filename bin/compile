@@ -533,7 +533,6 @@ mv /app/vendor/php vendor/php
 [ -d "/app/vendor/libmcrypt" ] && mv /app/vendor/libmcrypt vendor/libmcrypt
 [ -d "/app/vendor/libonig" ] && mv /app/vendor/libonig vendor/libonig
 [ -d "/app/vendor/libzip" ] && mv /app/vendor/libzip vendor/libzip
-[ -d "/app/vendor/coreutils" ] && mv /app/vendor/coreutils vendor/coreutils
 [ -d "/app/vendor/libmemcached" ] && mv /app/vendor/libmemcached vendor/libmemcached
 [ -d "/app/vendor/gmp" ] && mv /app/vendor/gmp vendor/gmp
 [ -d "/app/vendor/libtidy" ] && mv /app/vendor/libtidy vendor/libtidy
