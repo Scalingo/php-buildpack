@@ -15,23 +15,25 @@ source "$basedir/lib/swift"
 export PATH=${basedir}/../vendor/bin:$PATH
 
 tempdir=$(mktmpdir gmp)
-cd $tempdir
+cd "$tempdir"
 
 echo "-----> Downloading gmp ${gmp_version}"
 curl --fail --location "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.xz" \
-    | tar xJv
+  | tar xJv
 
-mkdir -p /app/vendor/gmp \
-  && pushd gmp-${gmp_version} > /dev/null \
-  && ./configure --prefix=/app/vendor/gmp \
-  && make && make install \
-  && popd > /dev/null
+mkdir -p /app/vendor/gmp
+pushd "gmp-${gmp_version}" > /dev/null
+./configure --prefix=/app/vendor/gmp
+make
+make check
+make install
+popd > /dev/null
 
 mkdir package
 pushd /app/vendor/gmp > /dev/null
 tar zcvf "${tempdir}/package/gmp-${gmp_version}.tgz" .
 popd > /dev/null
 
-swift_upload package/gmp-${gmp_version}.tgz
+swift_upload "package/gmp-${gmp_version}.tgz"
 
 "$basedir/package-checksum" "gmp-${gmp_version}"
