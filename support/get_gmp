@@ -5,6 +5,8 @@ if [ -n "$DEBUG" ]; then
   set -x
 fi
 
+which m4 2> /dev/null || (apt-get update && apt-get install --yes m4)
+
 # The variable is assigned in `buildpack.conf`
 declare gmp_version
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"

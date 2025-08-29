@@ -6,6 +6,9 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
+apt-get update
+apt-get install --yes pkg-config libxml2-dev libssl-dev libsqlite3-dev
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 source "$basedir/../conf/buildpack.conf"
 source "$basedir/lib/utils"
@@ -19,7 +22,6 @@ if [ -z "$1" ]; then
 fi
 
 php_version="$1"
-php_series="$(echo $php_version | cut -d '.' -f1,2)"
 
 echo "-----> Packaging PHP $php_version"
 
