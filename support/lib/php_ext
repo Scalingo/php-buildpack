@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 function build_ext() {
   local tempbuilddir=$1
   local php_version=$2
@@ -27,11 +29,11 @@ function upload_ext() {
 
   echo "-----> Uploading extension $ext_name"
 
-  mkdir -p package/ext/${zend_api_version}
-  pushd $tempbuilddir > /dev/null
-  tar zcvf $tempdir/package/ext/${zend_api_version}/php-${package_name}.tgz .
+  mkdir -p "package/ext/${zend_api_version}"
+  pushd "$tempbuilddir" > /dev/null
+  tar zcvf "$tempdir/package/ext/${zend_api_version}/php-${package_name}.tgz" .
   popd
 
-  swift_upload package/ext/${zend_api_version}/php-${package_name}.tgz
+  swift_upload "package/ext/${zend_api_version}/php-${package_name}.tgz"
   "$basedir/package-checksum" "ext/${zend_api_version}/php-${package_name}"
 }

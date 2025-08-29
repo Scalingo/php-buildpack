@@ -31,17 +31,17 @@ package_ext() {
     local ext_package_name="$2"
     local php_series="$3"
 
-    local zend_api_version=$(zend_api_from_php_series $basedir $php_series)
+    local zend_api_version=$(zend_api_from_php_series "$basedir" "$php_series")
     if [ -z "$zend_api_version" ] ; then
       echo "No compatible zend API found for $php_series"
       return
     fi
 
-    local php_version=$(php_series_last_version $php_series)
+    local php_version=$(php_series_last_version "$php_series")
     echo "-----> Building $ext_name for PHP module API version ${zend_api_version} using PHP ${php_version}"
 
-    tempdir=$(mktmpdir php${ext_name})
-    cd $tempdir
+    tempdir=$(mktmpdir "php${ext_name}")
+    cd "$tempdir"
 
     install_php "${php_version}"
     cp "$basedir/ext/${ext_name}" "$tempdir/build.sh"
@@ -51,7 +51,7 @@ package_ext() {
       package_name="${ext_package_name}"
     fi
 
-    local tempbuilddir=$(mktmpdir php-build${ext_name})
+    local tempbuilddir=$(mktmpdir "php-build${ext_name}")
     build_ext "${tempbuilddir}" "${php_version}" "${zend_api_version}" "${ext_name}"
     upload_ext "${tempbuilddir}" "${tempdir}" "${package_name}" "${zend_api_version}"
 
