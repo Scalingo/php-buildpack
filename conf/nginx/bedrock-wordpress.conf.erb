@@ -7,8 +7,10 @@ location / {
 
 rewrite /wp-admin$ $scheme://$host$uri/ permanent;
 
-location ~ /\. {
-	deny all;
+# Prevent clients from accessing hidden files (starting with a dot)
+# Access to `/.well-known/` is allowed.
+location ~* /\.(?!well-known\/) {
+	 deny all;
 }
 
 location ~* /(?:uploads|files)/.*\.php$ {
