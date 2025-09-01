@@ -1,9 +1,9 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -e
 
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 apt-get update
@@ -26,7 +26,7 @@ php_version="$1"
 echo "-----> Packaging PHP $php_version"
 
 tempdir=$(mktmpdir php)
-cd $tempdir
+cd "$tempdir"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 curl -LO "${PHP_BASE_URL}/zlib/zlib-${zlib_version}.tar.gz"
@@ -63,13 +63,13 @@ export WEBP_CFLAGS="-I/app/vendor/libwebp/include"
 ENABLE_GD_CONFIGURE="--enable-gd --with-jpeg --with-freetype --with-webp"
 
 mkdir -p "/app/vendor/php/etc/conf.d" \
-&& pushd zlib-${zlib_version} >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
-&& pushd php-${php_version} >/dev/null \
+&& pushd "zlib-${zlib_version}" >/dev/null && ./configure --prefix=/app/vendor/php/zlib && make && make install && popd > /dev/null \
+&& pushd "php-${php_version}" >/dev/null \
 && ./configure --prefix=/app/vendor/php \
 --with-config-file-path=/app/vendor/php/etc \
 --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
 --enable-intl \
-${ENABLE_GD_CONFIGURE} \
+"${ENABLE_GD_CONFIGURE}" \
 --enable-exif \
 --with-mysqli \
 --with-pdo-mysql \
@@ -79,7 +79,7 @@ ${ENABLE_GD_CONFIGURE} \
 --enable-shmop \
 --with-zip \
 ${WITH_CURL_CONFIGURE} \
-${libzip_flag} \
+"${libzip_flag}" \
 --with-zlib=/app/vendor/php/zlib \
 --with-bz2 \
 --with-openssl \
@@ -95,11 +95,11 @@ ${libzip_flag} \
 --with-readline \
 --with-password-argon2 \
 --disable-debug \
-&& echo ${php_version} | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
+&& echo "${php_version}" | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true \
 && make -j 8 \
 && make install \
 && popd > /dev/null \
-&& eval $install_zend_optimizer
+&& eval "$install_zend_optimizer"
 
 mkdir package
 pushd /app/vendor/php > /dev/null
