@@ -30,7 +30,7 @@ cd "$tempdir"
 
 echo "-----> Downloading dependency zlib ${zlib_version}"
 curl -LO "${PHP_BASE_URL}/zlib/zlib-${zlib_version}.tar.gz"
-tar -xzvf "zlib-${zlib_version}.tar.gz"
+tar -xzf "zlib-${zlib_version}.tar.gz"
 
 echo "-----> Downloading dependency libonig ${libonig_version}"
 libzip_flag=""
@@ -41,7 +41,7 @@ export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 echo "-----> Downloading PHP $php_version"
 curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
-tar -xzvf "php-${php_version}.tar.gz"
+tar -xzf "php-${php_version}.tar.gz"
 
 install_zend_optimizer=":"
 install_zend_optimizer=$(cat <<SH
@@ -55,7 +55,7 @@ if [ -d '/app/.apt/usr' ] ; then
 fi
 
 mkdir -p "/app/vendor/libwebp" \
-  && curl "${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz" | tar xzv -C /app/vendor/libwebp
+  && curl "${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz" | tar xz -C /app/vendor/libwebp
 
 export WEBP_LIBS="-L/app/vendor/libwebp/lib -lwebp"
 export WEBP_CFLAGS="-I/app/vendor/libwebp/include"
@@ -103,7 +103,7 @@ ${WITH_CURL_CONFIGURE} \
 
 mkdir package
 pushd /app/vendor/php > /dev/null
-tar zcvf "${tempdir}/package/php-${php_version}.tgz" .
+tar zcf "${tempdir}/package/php-${php_version}.tgz" .
 popd > /dev/null
 
 echo "-----> Moving package to Swift"
