@@ -23,10 +23,9 @@ for e in ./ext-internal/*; do
   ext_name="$( basename "${e}" )"
 
   ./package_internal_ext "${ext_name}" "${php_version}"
-
   if [[ $? -ne 0 ]]; then
-    echo "Error packaging internal extension ${ext_name}"
-    exit -1
+    echo "Error packaging internal extension ${ext_name}" >&2
+    exit 1
   fi
 done
 
@@ -34,9 +33,8 @@ for e in ./ext/*; do
   ext_name="$( basename "${e}" )"
 
   ./package_ext "${ext_name}" "${ext_name}" "${php_version}"
-
   if [[ $? -ne 0 ]]; then
-    echo "Error packaging extension ${ext_name}"
-    exit -1
+    echo "Error packaging extension ${ext_name}" >&2
+    exit 1
   fi
 done
