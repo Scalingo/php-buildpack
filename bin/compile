@@ -80,6 +80,10 @@ function php::semver::resolve_version() {
 
     url="${semver_server}/${component}-${stack}/resolve/${required_version}"
 
+	if [ -n "${USE_LEGACY_PHP}" ]; then
+		url="${url}?include_legacy=true"
+	fi
+
     version="$( curl --fail --silent --location "${url}" )"
     rc="${?}"
 
