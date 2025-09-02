@@ -34,7 +34,9 @@ libonig_dir="/app/vendor/libonig"
 libwebp_url="${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz"
 libwebp_dir="/app/vendor/libwebp"
 
-# OpenSSL 1.1.x vars (only for PHP 7.4)
+# OpenSSL 1.1.x vars (only for PHP 7.4 stacks > scalingo-20)
+# We want to support PHP 7.4 on scalingo-22 and 24, and PHP 7.4 requires
+# OpenSSL 1.1.x.
 openssl_url="https://www.openssl.org/source/openssl-${pre81_openssl_version}.tar.gz"
 openssl_dir="${php_dir}/openssl"
 
@@ -204,6 +206,8 @@ if [[ "${php_version}" == 7.4.* ]]; then
 		# Adjust compile options:
 		compile_options+=( --with-openssl-dir="${openssl_dir}" )
 	fi
+	# else we most probably are in scalingo-20, which still ships an
+	# appropriate version of OpenSSL.
 fi
 
 # --- END PHP 7.4 support
