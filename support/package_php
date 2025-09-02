@@ -73,10 +73,6 @@ compile_options=(
 	--disable-debug
 )
 
-if [ -d "/app/.apt/usr" ] ; then
-	compile_options+=( --with-curl="/app/.apt/usr" )
-fi
-
 
 # -----------------------------------------------------------------------------
 
