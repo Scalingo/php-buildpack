@@ -181,7 +181,9 @@ mkdir --parents "${tempdir}/package"
 pushd "${tempdir}" > /dev/null
 
 echo "       Exporting env vars"
-# See http://tldp.org/LDP/abs/html/parameter-substitution.html
+# For syntax explantations, see http://tldp.org/LDP/abs/html/parameter-substitution.html
+# These environment vars allows the compile scripts used hereafter to know
+# where the libs, includes, etc. are:
 export C_INCLUDE_PATH="${C_INCLUDE_PATH:+$C_INCLUDE_PATH:}${libonig_dir}/include"
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}${libonig_dir}/lib/pkgconfig"
 export WEBP_LIBS="-L${libwebp_dir}/lib -lwebp"
@@ -191,7 +193,9 @@ export WEBP_CFLAGS="-I${libwebp_dir}/include"
 # --- START PHP 7.4 support
 
 if [[ "${php_version}" == 7.4.* ]]; then
-	if [[ "${STACK}" == "scalingo-22" || "${STACK}" == "scalingo-24" ]]; then
+	stack_version="${STACK#*-}"
+
+	if [[ "${stack_version}" -gt 20 ]]; then
 		echo "-----> Legacy setup detected!"
 		echo "-----> Compiling OpenSSL ${pre81_openssl_version}"
 
@@ -206,7 +210,7 @@ if [[ "${php_version}" == 7.4.* ]]; then
 		# Adjust compile options:
 		compile_options+=( --with-openssl-dir="${openssl_dir}" )
 	fi
-	# else we most probably are in scalingo-20, which still ships an
+	# else we most probably are in scalingo-20 or lower, which come with an
 	# appropriate version of OpenSSL.
 fi
 
