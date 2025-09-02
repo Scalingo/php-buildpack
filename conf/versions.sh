@@ -26,8 +26,6 @@ PHP_MODULE_API_VERSIONS["8.4"]="20240924"
 # The following lib versions are used for lib we statically store on Swift.
 # They are downloaded, compiled and stored with /support/get_* scripts.
 
-# Deprecated since PHP 7.2 https://www.php.net/manual/en/intro.mcrypt.php
-mcrypt_version="2.5.8"
 # As of PHP 7.3.0 it is automatically included: https://www.php.net/manual/en/zip.installation.php
 zip_version="1.5.2"
 
