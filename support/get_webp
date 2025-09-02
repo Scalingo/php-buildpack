@@ -16,7 +16,7 @@ source "$basedir/lib/swift"
 tempdir=$(mktmpdir webp)
 cd "$tempdir"
 
-echo "-----> Downloading WEBP v${webp_version}"
+echo "-----> Downloading WebP v${webp_version}"
 curl --fail --location --output - "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${webp_version}.tar.gz"| tar xzv
 
 mkdir -p /app/vendor/libwebp
