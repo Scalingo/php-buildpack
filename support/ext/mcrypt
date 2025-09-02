@@ -8,7 +8,7 @@ fi
 
 php_version=${1:=8.2}
 
-mcrypt_version=1.0.5
+mcrypt_version=1.0.9
 
 curl -L "https://pecl.php.net/get/mcrypt-${mcrypt_version}.tgz" \
     | tar xzv
