@@ -12,14 +12,14 @@ test::nginx::classic() {
 # the one expected.
 #
 
-    NGINX_VERSION="1.22.1"
+    NGINX_VERSION="1.28.0"
     export NGINX_VERSION
 
     test::utils::setupFixture "defaults/classic"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.22.1"
+    test::helpers::nginx "1.28.0"
 }
 
 test::nginx::composer() {
@@ -28,11 +28,11 @@ test::nginx::composer() {
 # Specifying the nginx version only via composer.json
 #
 
-    test::utils::setupFixture "nginx-1.21.6/composer"
+    test::utils::setupFixture "nginx-1.28.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.21.6"
+    test::helpers::nginx "1.28.0"
 }
 
 #test::composer::nginx_version_via_env() {
@@ -59,30 +59,30 @@ test::nginx::composer_over_lower_classic() {
 # specified in NGINX_VERSION.
 #
 
-    NGINX_VERSION="1.21.6"
+    NGINX_VERSION="1.28.0"
     export NGINX_VERSION
 
-    test::utils::setupFixture "nginx-1.22.1/composer"
+    test::utils::setupFixture "nginx-1.29.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.22.1"
+    test::helpers::nginx "1.29.0"
 }
 
 test::nginx::composer_over_higher_classic() {
 #
 # Test a deployment of a PHP app using Composer
-# Specifying the Nginx version via  both composer.json and NGINX_VERSION.
+# Specifying the Nginx version via both composer.json and NGINX_VERSION.
 # And where the version specified in composer.json is lower than the one
 # specified in NGINX_VERSION.
 #
 
-    NGINX_VERSION="1.22.1"
+    NGINX_VERSION="1.29.0"
     export NGINX_VERSION
 
-    test::utils::setupFixture "nginx-1.21.6/composer"
+    test::utils::setupFixture "nginx-1.28.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.21.6"
+    test::helpers::nginx "1.28.0"
 }

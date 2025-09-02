@@ -43,18 +43,6 @@ buildpack thanks to the [Multi buildpack](https://doc.scalingo.com/platform/depl
 
 More information on this [documentation page](https://doc.scalingo.com/languages/php/php-nodejs).
 
-## Available versions
-
-### Stack `scalingo-20`
-
-* [Available PHP Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/scalingo-20/manifest.php)
-* [Available NGINX Versions](https://nginx-buildpack.s3.amazonaws.com/scalingo-20/manifest.nginx)
-
-### Stack `scalingo-22`
-
-* [Available PHP Versions](https://storage.gra.cloud.ovh.net/v1/AUTH_be65d32d71a6435589a419eac98613f2/scalingo-php-buildpack/scalingo-22/manifest.php)
-* [Available NGINX Versions](https://nginx-buildpack.s3.amazonaws.com/scalingo-22/manifest.nginx)
-
 ## Detection
 
 This buildpack detects apps when the app has a `composer.json` in the app's root.
@@ -498,4 +486,19 @@ Node.js script at that time.
 
 ## Contributing
 
-Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the details.
+### Unit Tests
+
+The buildpack is tested with unit tests. One can execute them using `make`:
+
+```sh
+make
+```
+
+Understanding the root cause of a failing test is (not yet) easy. In case of failing test, we suggest you execute this single test by commenting all the other tests in `test/tests`. Then find the location of your test and add the following right after the failed test:
+
+```sh
+cat "${STD_OUT}"
+cat "${STD_ERR}"
+```
+
+Execute the test again, these two `cat` calls will output the stdout and stderr.

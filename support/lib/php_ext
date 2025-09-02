@@ -14,9 +14,6 @@ function build_ext() {
 	local ext_dir="lib/php/extensions/no-debug-non-zts-${zend_api_version}"
 	mkdir --parents "${tempbuilddir}/${ext_dir}"
 	mkdir --parents "${tempbuilddir}/etc/conf.d"
-	#PREFIX="${tempbuilddir}" EXT_DIR="${tempbuilddir}/${ext_dir}" \
-	#	./build.sh "${php_version}" "${zend_api_version}" "${php_src_dir}"
-  	#rc="${?}"if [ $rc -ne 0 ] ; then
 
 	if ! PREFIX="${tempbuilddir}" EXT_DIR="${tempbuilddir}/${ext_dir}" \
 		./build.sh "${php_version}" "${zend_api_version}" "${php_src_dir}"

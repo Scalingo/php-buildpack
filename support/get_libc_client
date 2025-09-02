@@ -3,7 +3,7 @@
 set -e
 
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 # Require for imap extension
@@ -15,71 +15,63 @@ source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
 tempdir=$(mktmpdir libc-client)
-cd $tempdir
+cd "$tempdir"
 
 dep_output=/app/vendor/libc-client
+mkdir --parents "${dep_output}/include" "${dep_output}/lib"
+
 dep_version=2007f
-dep_dirname=uw-imap-${dep_version}~dfsg
+dep_dirname="uw-imap-${dep_version}~dfsg"
 
 # Handle minimal stacks
 deps_stack="$( sed -e 's/-minimal$//i' <<<"${STACK}" )"
 
 dep_urls=(
-	http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz
+	"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg.orig.tar.gz"
 )
 
-if [[ "${deps_stack}" == "scalingo-18" ]]; then
+if [[ "${deps_stack}" = "scalingo-20" ]]; then
 	dep_urls+=(
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz"
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc"
 	)
-elif [[ "${deps_stack}" == "scalingo-20" ]]; then
+elif [[ "${deps_stack}" = "scalingo-22" ]]; then
 	dep_urls+=(
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.debian.tar.xz"
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.dsc"
 	)
-elif [[ "${deps_stack}" == "scalingo-22" ]]; then
+elif [[ "${deps_stack}" = "scalingo-24" ]]; then
 	dep_urls+=(
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.debian.tar.xz
-		http://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.dsc
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.debian.tar.xz"
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.dsc"
 	)
 fi
 
+echo "-----> Downloading libc-client ${dep_version}"
 
-echo "-----> Downloading libc-client ${version}"
+# Some packages are need for IMAP
+apt-get update -qq || { echo "Failed to 'apt-get update'. You must build this formula using Docker."; exit 1; }
+apt-get install -qq --yes libpam0g-dev debian-keyring
 
-# we need that for IMAP
-needed=( libpam0g-dev )
-needed+=( debian-keyring )
+curl --location --silent --remote-name-all "${dep_urls[@]}"
 
-missing=$(comm -1 -3 <(dpkg-query -W -f '${package}\n' | sort) <(IFS=$'\n'; echo "${needed[*]}" | sort))
-if [[ "$missing" ]]; then
-	apt-get update -qq || { echo "Failed to 'apt-get update'. You must build this formula using Docker."; exit 1; }
-	apt-get install -q -y $missing
-fi
-
-curl -L --remote-name-all "${dep_urls[@]}"
-
-dpkg-source --require-valid-signature -x $(basename ${dep_urls[-1]})
+dpkg-source --require-valid-signature --extract "$(basename "${dep_urls[-1]}")"
 
 pushd ${dep_dirname}
 touch ip6 # so we do not get prompted
-mkdir -p ${dep_output}
 make ldb EXTRACFLAGS=-fPIC # need PIC so relocations work in the shared imap.so ext later
-mkdir -p ${dep_output}/include ${dep_output}/lib
 cp c-client/*.h ${dep_output}/include
 cp c-client/*.c ${dep_output}/lib
 cp c-client/*.a ${dep_output}/lib
 strip --strip-unneeded ${dep_output}/lib/*.a
 popd
 
-cd $tempdir
+cd "$tempdir"
 mkdir package
 cd package
 tar -C ${dep_output} -czvf "libc-client-${dep_version}.tgz" .
 cd ..
 
-swift_upload package/libc-client-${dep_version}.tgz
+swift_upload "package/libc-client-${dep_version}.tgz"
 
 "$basedir/package-checksum" "libc-client-${dep_version}"
-

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function install_php() {
   php_version=$1
 
@@ -7,28 +9,28 @@ function install_php() {
   local php_md5="${PHP_BASE_URL}/package/php-${php_version}.md5"
 
   mkdir -p /app/vendor/php
-  curl -L "$php_md5" > /tmp/php-${php_version}.md5
+  curl -L "$php_md5" > "/tmp/php-${php_version}.md5"
   if [ -e "/tmp/php-${php_version}.tgz" ] ; then
     remote_php_md5=$(cat "/tmp/php-${php_version}.md5")
     local_php_md5=$(md5 "/tmp/php-${php_version}.tgz")
 
     if [ "$local_php_md5" != "$remote_php_md5" ] ; then
-      curl -L "$php_package" > /tmp/php-${php_version}.tgz
+      curl -L "$php_package" > "/tmp/php-${php_version}.tgz"
     else
       echo "/tmp/php-${php_version}.tgz exists, skip downloading"
     fi
   else
-    curl -L "$php_package" > /tmp/php-${php_version}.tgz
+    curl -L "$php_package" > "/tmp/php-${php_version}.tgz"
   fi
 
-  tar -xz -C /app/vendor/php -f /tmp/php-${php_version}.tgz
+  tar -xz -C /app/vendor/php -f "/tmp/php-${php_version}.tgz"
 }
 
 function install_php_src() {
   php_version=$1
   dst=$2
 
-  pushd $dst
+  pushd "$dst"
   echo "-----> Downloading PHP $php_version source"
   curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
   tar -xzf "php-${php_version}.tar.gz"

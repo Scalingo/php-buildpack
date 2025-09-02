@@ -22,7 +22,7 @@ if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
 fi
 
 if [ -n "$BUILDPACK_DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 BUILD_DIR="$1"

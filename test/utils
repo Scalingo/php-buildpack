@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # taken from
 # https://github.com/ryanbrainard/heroku-buildpack-testrunner/blob/master/lib/test_utils.sh
@@ -112,7 +112,7 @@ test::utils::assertMatches() {
 
 	local needle
 	local haystack
-	
+
 	needle="${1}"
 	haystack="${2}"
 
