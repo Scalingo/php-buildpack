@@ -19,8 +19,8 @@ function build_ext() {
 		./build.sh "${php_version}" "${zend_api_version}" "${php_src_dir}"
 	then
 		echo "Fail to build package"
-    	exit 1
-  	fi
+		exit 1
+	fi
 }
 
 function upload_ext() {
