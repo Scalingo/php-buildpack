@@ -3,12 +3,23 @@
 set -e
 
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 php_version=$1
 zend_api_version=$2
 php_src_dir=$3
+
+php_major_version=$(echo "$php_version" | cut -d "." -f 1)
+php_minor_version=$(echo "$php_version" | cut -d "." -f 2)
+if [[ "$php_major_version" -eq 8 ]] && [[ "$php_minor_version" -ge 4 ]]; then
+  echo "IMAP extension is no longer an internal one. It has been moved to PECL starting with PHP 8.4." >&2
+  exit 1
+fi
+if [[ "$php_major_version" -ge 9 ]]; then
+  echo "IMAP extension is no longer an internal one. It has been moved to PECL starting with PHP 8.4." >&2
+  exit 1
+fi
 
 if [ ! -d /app/vendor/libc-client ] ; then
   /buildpack/support/get_libc_client
@@ -17,7 +28,7 @@ fi
 # This is now required starting with PHP 7.4.0
 export PHP_OPENSSL=yes
 
-pushd $php_src_dir/php-${php_version}/ext/imap
+pushd "$php_src_dir/php-${php_version}/ext/imap"
 
 export PATH=$PATH:/app/vendor/php/bin
 

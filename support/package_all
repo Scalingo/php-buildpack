@@ -21,6 +21,11 @@ cd $( cd -P "$( dirname "$0" )" && pwd )
 
 for e in ./ext-internal/*; do
   ext_name="$( basename "${e}" )"
+  # IMAP extension has been moved to PECL starting with PHP 8.4
+  # https://www.php.net/ChangeLog-8.php#8.4.1
+  if [[ "$ext_name" = "imap" ]] && [[ "$php_version" = "8.4" ]]; then
+    continue
+  fi
 
   ./package_internal_ext "${ext_name}" "${php_version}"
   if [[ $? -ne 0 ]]; then
