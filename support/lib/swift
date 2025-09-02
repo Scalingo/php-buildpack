@@ -1,4 +1,4 @@
-# vim:set ft=sh:
+#!/usr/bin/env bash
 
 function swift_upload() {
   file="$1"
