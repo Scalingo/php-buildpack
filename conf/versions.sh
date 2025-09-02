@@ -26,9 +26,6 @@ PHP_MODULE_API_VERSIONS["8.4"]="20240924"
 # The following lib versions are used for lib we statically store on Swift.
 # They are downloaded, compiled and stored with /support/get_* scripts.
 
-# As of PHP 7.3.0 it is automatically included: https://www.php.net/manual/en/zip.installation.php
-zip_version="1.5.2"
-
 libmemcached_version="1.0.18"
 # Mandatory for multibytes strings starting with PHP 7.4
 libonig_version="${libonig_version:-6.9.10}"
