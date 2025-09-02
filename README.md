@@ -486,4 +486,19 @@ Node.js script at that time.
 
 ## Contributing
 
-Please see the [CONTRIBUTING](/CONTRIBUTING.md) file for all the details.
+### Unit Tests
+
+The buildpack is tested with unit tests. One can execute them using `make`:
+
+```sh
+make
+```
+
+Understanding the root cause of a failing test is (not yet) easy. In case of failing test, we suggest you execute this single test by commenting all the other tests in `test/tests`. Then find the location of your test and add the following right after the failed test:
+
+```sh
+cat "${STD_OUT}"
+cat "${STD_ERR}"
+```
+
+Execute the test again, these two `cat` calls will output the stdout and stderr.
