@@ -7,7 +7,7 @@ if [ -n "$DEBUG" ]; then
 fi
 
 # $phpredis_version, $PREFIX and $EXT_DIR are loaded from versions.sh
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 
 url="https://github.com/phpredis/phpredis/archive/refs/tags/${phpredis_version}.tar.gz"
 

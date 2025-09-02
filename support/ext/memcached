@@ -7,7 +7,7 @@ if [ -n "$DEBUG" ]; then
 fi
 
 # $memcached_version, $libmemcached_version, $PREFIX and $EXT_DIR are loaded from versions.sh
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 
 curl --location "https://github.com/php-memcached-dev/php-memcached/archive/v${memcached_version}.tar.gz" \
     | tar --extract --gzip --verbose

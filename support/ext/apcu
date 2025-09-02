@@ -9,7 +9,7 @@ fi
 php_version=${1:=8.2}
 
 # $apcu_version, $PREFIX and $EXT_DIR are loaded from versions.sh
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 
 curl --location "https://pecl.php.net/get/apcu-${apcu_version}.tgz" \
     | tar --extract --gzip --verbose

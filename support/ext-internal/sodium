@@ -10,7 +10,7 @@ php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 if echo "$php_version" | grep -qE "^7.[23]" ; then
   sodium_version="$sodium_php72_php73_version"
 fi

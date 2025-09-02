@@ -170,7 +170,7 @@ cleanup_amqp() {
 # Make sure `cmake` is available
 which cmake 2>/dev/null || (apt update && apt install -y cmake)
 
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 
 librabbitmq_prefix="/app/vendor/php/lib/rabbitmq"
 

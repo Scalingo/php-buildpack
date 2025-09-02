@@ -4,7 +4,7 @@ php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-source "/versions.sh/versions.sh"
+source "/buildpack/conf/versions.sh"
 gmp_package="${PHP_BASE_URL}/package/gmp-${gmp_version}.tgz"
 
 curl -L "$gmp_package" > /tmp/gmp-${gmp_version}.tgz
