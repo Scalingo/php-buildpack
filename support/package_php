@@ -35,7 +35,7 @@ libwebp_url="${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz"
 libwebp_dir="/app/vendor/libwebp"
 
 # OpenSSL 1.1.x vars (only for PHP 7.4)
-openssl_url="https://www.openssl.org/source/openssl-${legacy_openssl_version}.tar.gz"
+openssl_url="https://www.openssl.org/source/openssl-${pre81_openssl_version}.tar.gz"
 openssl_dir="${php_dir}/openssl"
 
 # PHP compilation options
@@ -195,11 +195,11 @@ export WEBP_CFLAGS="-I${libwebp_dir}/include"
 if [[ "${php_version}" == 7.4.* ]]; then
 	if [[ "${STACK}" == "scalingo-22" || "${STACK}" == "scalingo-24" ]]; then
 		echo "-----> Legacy setup detected!"
-		echo "-----> Compiling OpenSSL ${legacy_openssl_version}"
+		echo "-----> Compiling OpenSSL ${pre81_openssl_version}"
 
 		php::pkg::download_extract "${openssl_url}" "${tempdir}" "${tempdir}"
 		php::pkg::openssl::compile \
-			"${tempdir}/openssl-${legacy_openssl_version}" \
+			"${tempdir}/openssl-${pre81_openssl_version}" \
 			"${openssl_dir}"
 
 		# Export updated PKG_CONFIG_PATH for later:

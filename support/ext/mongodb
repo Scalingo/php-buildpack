@@ -15,7 +15,7 @@ zend_api_version="${2}"
 
 # Use legacy version with PHP < 8.1:
 if [ "${zend_api_version}" -lt "${PHP_MODULE_API_VERSIONS['8.1']}" ]; then
-	mongodb_version="${legacy_mongodb_version}"
+	mongodb_version="${pre81_mongodb_version}"
 fi
 
 url="https://pecl.php.net/get/mongodb-${mongodb_version}.tgz"
