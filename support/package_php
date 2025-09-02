@@ -168,7 +168,7 @@ php::pkg::package() {
 # -----------------------------------------------------------------------------
 
 
-echo "-----> Packaging PHP ${php_version}"
+echo "-----> Preparing PHP ${php_version} packaging"
 
 echo "       Creating directories"
 tempdir="$( mktemp -d -t php-XXXX )"
@@ -227,22 +227,22 @@ echo "-----> Compiling zlib ${zlib_version}"
 php::pkg::download_extract "${zlib_url}" "${tempdir}" "${tempdir}"
 php::pkg::zlib::compile "${tempdir}/zlib-${zlib_version}" "${zlib_dir}"
 
-echo "-----> Compiling PHP"
+echo "-----> Compiling PHP "${php_version}"
 php::pkg::download_extract "${php_url}" "${tempdir}" "${tempdir}"
 php::pkg::php::compile "${tempdir}/php-${php_version}" "${php_dir}" \
 	"${compile_options[@]}"
 
-echo "-----> Packaging"
+echo "-----> Packaging PHP ${php_version}"
 php::pkg::package "${php_dir}" "php-${php_version}.tgz" "${tempdir}/package"
 
-echo "-----> Uploading package"
+echo "-----> Uploading PHP package"
 php::pkg::swift_upload "${SWIFT_BUCKET}" "package/php-${php_version}.tgz" \
 	> /dev/null
 
-echo "       Building manifest"
+echo "       Building and uploading manifest"
 php::pkg::build_manifest "${SWIFT_BUCKET}"
 
-echo "       Building checksum"
+echo "       Building and uploading checksum"
 php::pkg::checksum "${SWIFT_BUCKET}" "package/php-${php_version}"
 
-echo "-----> Done building PHP package!"
+echo "-----> All done!"
