@@ -6,8 +6,8 @@ if [ -n "${BUILDPACK_DEBUG}" ]; then
     set -x
 fi
 
-# $mongodb_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
-source "/buildpack/conf/buildpack.conf"
+# $mongodb_version, $PREFIX and $EXT_DIR are loaded from versions.sh
+source "/versions.sh/versions.sh"
 
 # See lib/php_ext:
 php_version="${1}"

@@ -170,14 +170,14 @@ cleanup_amqp() {
 # Make sure `cmake` is available
 which cmake 2>/dev/null || (apt update && apt install -y cmake)
 
-source "/buildpack/conf/buildpack.conf"
+source "/versions.sh/versions.sh"
 
 librabbitmq_prefix="/app/vendor/php/lib/rabbitmq"
 
 
 # librabbitmq
 # https://github.com/alanxz/rabbitmq-c/releases
-# Default `$version` is loaded from the buildpack.conf file.
+# Default `$version` is loaded from the versions.sh file.
 pkgname="librabbitmq-c"
 source_url="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v%s.tar.gz"
 
@@ -198,7 +198,7 @@ build_librabbitmq "${pkgname}" "${version}" "${source_url}" "${librabbitmq_prefi
 
 # amqp
 # https://pecl.php.net/package/amqp
-# Default `$version` is loaded from the buildpack.conf file.
+# Default `$version` is loaded from the versions.sh file.
 pkgname="amqp"
 source_url="https://pecl.php.net/get/amqp-%s.tgz"
 

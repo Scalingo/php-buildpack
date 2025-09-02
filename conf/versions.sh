@@ -53,7 +53,11 @@ apcu_version="5.1.26"
 newrelic_version="11.5.0.18"
 
 
-# Legacy support:
+# Legacy support
+# These variables are used when building PHP 7.4 on scalingo-22 and scalingo-24.
+# Although EOL for a long time, we still want to support this version of PHP on
+# more recent stacks for customers that can't switch to a more recent version
+# of PHP.
 
 # For PHP < 8.1
 pre81_mongodb_version="1.20.1"

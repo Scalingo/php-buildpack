@@ -6,8 +6,8 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
-# $phpredis_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
-source "/buildpack/conf/buildpack.conf"
+# $phpredis_version, $PREFIX and $EXT_DIR are loaded from versions.sh
+source "/versions.sh/versions.sh"
 
 url="https://github.com/phpredis/phpredis/archive/refs/tags/${phpredis_version}.tar.gz"
 

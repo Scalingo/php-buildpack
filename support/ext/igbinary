@@ -6,8 +6,8 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
-# $igbinary_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
-source "/buildpack/conf/buildpack.conf"
+# $igbinary_version, $PREFIX and $EXT_DIR are loaded from versions.sh
+source "/versions.sh/versions.sh"
 
 curl --location "https://github.com/igbinary/igbinary/archive/${igbinary_version}.tar.gz" \
     | tar xzv

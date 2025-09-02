@@ -6,7 +6,7 @@ set -o pipefail
 shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source $basedir/common.sh
 source $basedir/../lib/package
 source $basedir/../lib/composer

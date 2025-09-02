@@ -3,7 +3,7 @@ function zend_api_from_php_series() {
   # PHP Major -> 5.6, 7.0, 7.1, etc.
   php_series=$2
 
-  source "$support_dir/../conf/buildpack.conf"
+  source "$support_dir/../conf/versions.sh"
   echo ${PHP_MODULE_API_VERSIONS["$php_series"]}
 }
 
