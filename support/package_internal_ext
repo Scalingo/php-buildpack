@@ -18,7 +18,7 @@ if [ -z "$1" ]; then
 fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source "$basedir/lib/output"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"

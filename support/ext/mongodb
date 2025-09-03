@@ -3,40 +3,45 @@
 set -e
 
 if [ -n "${BUILDPACK_DEBUG}" ]; then
-    set -x
+	set -x
 fi
 
-# $mongodb_version, $PREFIX and $EXT_DIR are loaded from buildpack.conf
-source "/buildpack/conf/buildpack.conf"
+# $mongodb_version, $PREFIX and $EXT_DIR are loaded from versions.sh
+source "/buildpack/conf/versions.sh"
+
+# The following variables are passed to this script by lib/php_ext
+php_version="${1}"
+zend_api_version="${2}"
+
+# Use legacy version with PHP < 8.1
+# See conf/versions.sh for further explanations regarding this support.
+if [ "${zend_api_version}" -lt "${PHP_MODULE_API_VERSIONS['8.1']}" ]; then
+	mongodb_version="${pre81_mongodb_version}"
+fi
 
 url="https://pecl.php.net/get/mongodb-${mongodb_version}.tgz"
 
 curl --location "${url}" \
-    | tar xzv
+	| tar xzv
 
 pushd "mongodb-${mongodb_version}"
 
-/app/vendor/php/bin/phpize ; rc=$?
-
-if [ $rc -ne 0 ] ; then
-    echo "Fail to PHPize mongodb extension"
-    exit 1
+if ! /app/vendor/php/bin/phpize; then
+	echo "Fail to PHPize mongodb extension"
+	exit 1
 fi
 
-./configure \
-    --with-php-config=/app/vendor/php/bin/php-config \
-    --enable-mongo ; rc=$?
-
-if [ $rc -ne 0  ] ; then
-    echo "Fail to configure mongo extension"
-    exit 1
+if ! ./configure \
+	--with-php-config=/app/vendor/php/bin/php-config \
+	--enable-mongo
+then
+	echo "Fail to configure mongo extension"
+	exit 1
 fi
 
-make ; rc=$?
-
-if [ $rc -ne 0 ] ; then
-    echo "Fail to build mongodb extension"
-    exit 1
+if ! make; then
+	echo "Fail to build mongodb extension"
+	exit 1
 fi
 
 cp modules/mongodb.so "${EXT_DIR}/mongodb.so"

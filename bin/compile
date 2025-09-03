@@ -6,7 +6,7 @@ set -o pipefail
 shopt -s dotglob
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source $basedir/common.sh
 source $basedir/../lib/package
 source $basedir/../lib/composer
@@ -79,6 +79,10 @@ function php::semver::resolve_version() {
     local version
 
     url="${semver_server}/${component}-${stack}/resolve/${required_version}"
+
+	if [ -n "${ALLOW_LEGACY_PHP}" ]; then
+		url="${url}?include_legacy=true"
+	fi
 
     version="$( curl --fail --silent --location "${url}" )"
     rc="${?}"

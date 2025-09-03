@@ -7,9 +7,9 @@ fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
-# The variable is assigned in `buildpack.conf`
+# The variable is assigned in `versions.sh`
 declare sodium_version
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 

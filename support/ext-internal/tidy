@@ -10,7 +10,7 @@ php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-source "/buildpack/conf/buildpack.conf"
+source "/buildpack/conf/versions.sh"
 tidy_package="${PHP_BASE_URL}/package/libtidy-${tidy_version}.tgz"
 
 curl -L "$tidy_package" > /tmp/tidy-${tidy_version}.tgz

@@ -1,118 +1,248 @@
 #!/usr/bin/env bash
 
-set -e
+set -o errexit
 
-if [ -n "$DEBUG" ]; then
-  set -x
+if [ -n "${DEBUG}" ]; then
+	set -o xtrace
 fi
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-source "$basedir/../conf/buildpack.conf"
-source "$basedir/lib/utils"
-source "$basedir/lib/swift"
+source "${basedir}/../conf/versions.sh"
+source "${basedir}/utils.sh"
 
-export PATH=${basedir}/../vendor/bin:$PATH
+export PATH="${PATH:+$PATH:}${basedir}/../vendor/bin"
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 <version>" >&2
-    exit 1
+	echo "Usage: $0 <version>" >&2
+	exit 1
 fi
 
-php_version="$1"
+# PHP vars
+php_version="${1}"
+php_url="https://php.net/distributions/php-${php_version}.tar.gz"
+php_dir="/app/vendor/php"
 
-echo "-----> Packaging PHP $php_version"
+# zlib vars
+zlib_url="${PHP_BASE_URL}/zlib/zlib-${zlib_version}.tar.gz"
+zlib_dir="${php_dir}/zlib"
 
-tempdir=$(mktmpdir php)
-cd "$tempdir"
+# libonig vars
+libonig_url="${PHP_BASE_URL}/package/libonig-${libonig_version}.tgz"
+libonig_dir="/app/vendor/libonig"
 
-echo "-----> Downloading dependency zlib ${zlib_version}"
-curl -LO "${PHP_BASE_URL}/zlib/zlib-${zlib_version}.tar.gz"
-tar -xzf "zlib-${zlib_version}.tar.gz"
+# libwebp vars
+libwebp_url="${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz"
+libwebp_dir="/app/vendor/libwebp"
 
-echo "-----> Downloading dependency libonig ${libonig_version}"
-mkdir /app/vendor/libonig -p
-curl -L -o - "${PHP_BASE_URL}/package/libonig-${libonig_version}.tgz" | tar -C /app/vendor/libonig -xvz
-export C_INCLUDE_PATH="$C_INCLUDE_PATH:/app/vendor/libonig/include"
-export PKG_CONFIG_PATH="/app/vendor/libonig/lib/pkgconfig:$PKG_CONFIG_PATH"
+# OpenSSL 1.1.x vars (only for PHP 7.4 stacks > scalingo-20)
+# We want to support PHP 7.4 on scalingo-22 and 24, and PHP 7.4 requires
+# OpenSSL 1.1.x.
+openssl_url="https://www.openssl.org/source/openssl-${pre81_openssl_version}.tar.gz"
+openssl_dir="${php_dir}/openssl"
 
-echo "-----> Downloading dependency WebP library ${webp_version}"
-mkdir -p "/app/vendor/libwebp"
-curl "${PHP_BASE_URL}/package/libwebp-${webp_version}.tgz" | tar xz -C /app/vendor/libwebp
-
-echo "-----> Downloading PHP $php_version"
-curl -LO "https://php.net/distributions/php-${php_version}.tar.gz"
-tar -xzf "php-${php_version}.tar.gz"
-
-install_zend_optimizer=":"
-install_zend_optimizer=$(cat <<SH
-    echo "zend_extension=opcache.so" > /app/vendor/php/etc/conf.d/opcache.ini
-SH
+# PHP compilation options
+compile_options=(
+	--prefix="${php_dir}"
+	--enable-bcmath
+	--enable-exif
+	--enable-fpm
+	--enable-gd
+	--enable-intl
+	--enable-mbstring
+	--enable-pcntl
+	--enable-shmop
+	--enable-soap
+	--enable-sockets
+	--enable-xmlreader
+	--with-bz2
+	--with-config-file-path="${php_dir}/etc"
+	--with-config-file-scan-dir="${php_dir}/etc/conf.d"
+	--with-curl="/usr"
+	--with-freetype
+	--with-jpeg
+	--with-mysqli
+	--with-openssl
+	--with-password-argon2
+	--with-pdo-mysql
+	--with-pdo-pgsql="/usr/bin/pg_config"
+	--with-pdo-sqlite
+	--with-pgsql
+	--with-readline
+	--with-webp
+	--with-xsl
+	--with-zip
+	--with-zlib="${zlib_dir}"
+	--disable-debug
 )
 
-WITH_CURL_CONFIGURE="--with-curl=/usr"
-if [ -d '/app/.apt/usr' ] ; then
-    WITH_CURL_CONFIGURE="--with-curl=/app/.apt/usr"
+
+# -----------------------------------------------------------------------------
+
+
+php::pkg::download_extract() {
+	local url="${1}"
+	local dst_dir="${2}"
+	local extract_dir="${3}"
+
+	local archive="$( basename "${url}" )"
+
+	# Download archive
+	mkdir --parents "${dst_dir}"
+	pushd "${dst_dir}" > /dev/null
+	curl --retry 3 --silent --fail \
+		--create-dirs \
+		--remote-name \
+		--location "${url}"
+	popd > /dev/null
+
+	# Uncompress
+	mkdir --parents "${extract_dir}"
+	tar --extract --gzip \
+		--directory "${extract_dir}" \
+		--file "${dst_dir}/${archive}"
+}
+
+php::pkg::zlib::compile() {
+	local src_dir="${1}"
+	local dst_dir="${2}"
+
+	pushd "${src_dir}" > /dev/null
+
+	./configure \
+		--prefix="${dst_dir}" \
+		> /dev/null
+	make -j 8 > /dev/null
+	make install > /dev/null
+
+	popd > /dev/null
+}
+
+php::pkg::openssl::compile() {
+	local src_dir="${1}"
+	local dst_dir="${2}"
+
+	pushd "${src_dir}" > /dev/null
+
+	./config \
+		--prefix="${dst_dir}" \
+		--openssldir="${dst_dir}" \
+		> /dev/null
+	make -j 8 > /dev/null
+	make install > /dev/null
+
+	popd > /dev/null
+}
+
+php::pkg::php::compile() {
+	local src_dir="${1}"
+	local dst_dir="${2}"
+	shift 2
+
+	local opts=("$@")
+
+	pushd "${src_dir}" > /dev/null
+
+	./configure "${opts[@]}" > /dev/null
+	make -j 8 > /dev/null
+	make install > /dev/null
+
+	popd > /dev/null
+
+	echo "zend_extension=opcache.so" > "${dst_dir}/etc/conf.d/opcache.ini"
+}
+
+php::pkg::package() {
+	local php_dir="${1}"
+	local package="${2}"
+	local package_dir="${3}"
+
+	pushd "${php_dir}" > /dev/null
+
+	# Mind the dot at the end of the following line.
+	tar --create --gzip --file "${package_dir}/${package}" .
+
+	popd > /dev/null
+}
+
+
+# -----------------------------------------------------------------------------
+
+
+echo "-----> Preparing PHP ${php_version} packaging"
+
+echo "       Creating directories"
+tempdir="$( mktemp -d -t php-XXXX )"
+mkdir --parents "${php_dir}/etc/conf.d"
+mkdir --parents "${libonig_dir}"
+mkdir --parents "${libwebp_dir}"
+mkdir --parents "${tempdir}/package"
+
+# We work from $tempdir
+pushd "${tempdir}" > /dev/null
+
+echo "       Exporting env vars"
+# For syntax explantations, see http://tldp.org/LDP/abs/html/parameter-substitution.html
+# These environment vars allows the compile scripts used hereafter to know
+# where the libs, includes, etc. are:
+export C_INCLUDE_PATH="${C_INCLUDE_PATH:+$C_INCLUDE_PATH:}${libonig_dir}/include"
+export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}${libonig_dir}/lib/pkgconfig"
+export WEBP_LIBS="-L${libwebp_dir}/lib -lwebp"
+export WEBP_CFLAGS="-I${libwebp_dir}/include"
+
+
+# --- START PHP 7.4 support
+
+if [[ "${php_version}" == 7.4.* ]]; then
+	stack_version="${STACK#*-}"
+
+	if [[ "${stack_version}" -gt 20 ]]; then
+		echo "-----> Legacy setup detected!"
+		echo "-----> Compiling OpenSSL ${pre81_openssl_version}"
+
+		php::pkg::download_extract "${openssl_url}" "${tempdir}" "${tempdir}"
+		php::pkg::openssl::compile \
+			"${tempdir}/openssl-${pre81_openssl_version}" \
+			"${openssl_dir}"
+
+		# Export updated PKG_CONFIG_PATH for later:
+		export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}${openssl_dir}/lib/pkgconfig"
+
+		# Adjust compile options:
+		compile_options+=( --with-openssl-dir="${openssl_dir}" )
+	fi
+	# else we most probably are in scalingo-20 or lower, which come with an
+	# appropriate version of OpenSSL.
 fi
 
-export WEBP_LIBS="-L/app/vendor/libwebp/lib -lwebp"
-export WEBP_CFLAGS="-I/app/vendor/libwebp/include"
+# --- END PHP 7.4 support
 
-mkdir -p "/app/vendor/php/etc/conf.d"
 
-echo "-----> Compile ZLib v${zlib_version}"
-pushd "zlib-${zlib_version}" >/dev/null
-./configure --prefix=/app/vendor/php/zlib
-make
-make install
-popd > /dev/null
+echo "-----> Downloading libonig ${libonig_version}"
+php::pkg::download_extract "${libonig_url}" "${tempdir}" "${libonig_dir}"
 
-echo "-----> Compile PHP v${php_version}"
-pushd "php-${php_version}" >/dev/null
-./configure --prefix=/app/vendor/php \
-  --with-config-file-path=/app/vendor/php/etc \
-  --with-config-file-scan-dir=/app/vendor/php/etc/conf.d \
-  --enable-intl \
-  --enable-gd --with-jpeg --with-freetype --with-webp \
-  --enable-exif \
-  --with-mysqli \
-  --with-pdo-mysql \
-  --with-pdo-sqlite \
-  --with-pdo-pgsql=/usr/bin/pg_config \
-  --with-pgsql \
-  --enable-shmop \
-  --with-zip \
-  ${WITH_CURL_CONFIGURE} \
-  --with-zlib=/app/vendor/php/zlib \
-  --with-bz2 \
-  --with-openssl \
-  --enable-soap \
-  --enable-xmlreader \
-  --with-xsl \
-  --enable-fpm \
-  --enable-mbstring \
-  --enable-pcntl \
-  --enable-sockets \
-  --enable-bcmath \
-  --with-readline \
-  --with-password-argon2 \
-  --disable-debug
-echo "${php_version}" | grep ^5.3 && sed -i '/^BUILD_/ s/\$(CC)/\$(CXX)/g' Makefile || true
-make -j 8
-make install
-popd > /dev/null
+echo "-----> Downloading libwebp ${webp_version}"
+php::pkg::download_extract "${libwebp_url}" "${tempdir}" "${libwebp_dir}"
 
-eval "$install_zend_optimizer"
+echo "-----> Compiling zlib ${zlib_version}"
+php::pkg::download_extract "${zlib_url}" "${tempdir}" "${tempdir}"
+php::pkg::zlib::compile "${tempdir}/zlib-${zlib_version}" "${zlib_dir}"
 
-mkdir package
-pushd /app/vendor/php > /dev/null
-tar zcf "${tempdir}/package/php-${php_version}.tgz" .
-popd > /dev/null
+echo "-----> Compiling PHP "${php_version}"
+php::pkg::download_extract "${php_url}" "${tempdir}" "${tempdir}"
+php::pkg::php::compile "${tempdir}/php-${php_version}" "${php_dir}" \
+	"${compile_options[@]}"
 
-echo "-----> Moving package to Swift"
+echo "-----> Packaging PHP ${php_version}"
+php::pkg::package "${php_dir}" "php-${php_version}.tgz" "${tempdir}/package"
 
-swift_upload "package/php-${php_version}.tgz"
+echo "-----> Uploading PHP package"
+php::pkg::swift_upload "${SWIFT_BUCKET}" "package/php-${php_version}.tgz" \
+	> /dev/null
 
-"$basedir/manifest" php
-"$basedir/package-checksum" "php-${php_version}"
+echo "       Building and uploading manifest"
+php::pkg::build_manifest "${SWIFT_BUCKET}"
 
-echo "-----> Done building PHP package!"
+echo "       Building and uploading checksum"
+php::pkg::checksum "${SWIFT_BUCKET}" "package/php-${php_version}"
+
+echo "-----> All done!"

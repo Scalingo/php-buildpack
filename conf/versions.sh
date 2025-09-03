@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Change this to your S3 Bucket if you have custom binaries
 export STACK="${STACK:-scalingo-22}"
 export SWIFT_BUCKET=scalingo-php-buildpack
@@ -44,3 +46,16 @@ amqp_version="2.1.2"
 phpredis_version="6.2.0"
 apcu_version="5.1.26"
 newrelic_version="11.5.0.18"
+
+
+# Legacy support
+# These variables are used when building PHP 7.4 on scalingo-22 and scalingo-24.
+# Although EOL for a long time, we still want to support this version of PHP on
+# more recent stacks for customers that can't switch to a more recent version
+# of PHP.
+
+# For PHP < 8.1
+pre81_mongodb_version="1.20.1"
+
+# For PHP < 8.1 + scalingo-22 and 24:
+pre81_openssl_version="1.1.1p"

@@ -20,7 +20,7 @@ indent() {
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 

@@ -9,9 +9,9 @@ which cmake 2>/dev/null || (apt-get update && apt-get install -y cmake)
 
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
 
-# The variable is assigned in `buildpack.conf`
+# The variable is assigned in `versions.sh`
 declare tidy_version
-source "$basedir/../conf/buildpack.conf"
+source "$basedir/../conf/versions.sh"
 source "$basedir/lib/utils"
 source "$basedir/lib/swift"
 
