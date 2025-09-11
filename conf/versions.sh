@@ -44,7 +44,7 @@ igbinary_version="3.2.16"
 mongodb_version="1.21.0"
 amqp_version="2.1.2"
 phpredis_version="6.2.0"
-apcu_version="5.1.26"
+apcu_version="5.1.27"
 newrelic_version="11.5.0.18"
 
 
