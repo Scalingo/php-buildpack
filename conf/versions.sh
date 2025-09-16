@@ -58,4 +58,4 @@ newrelic_version="11.5.0.18"
 pre81_mongodb_version="1.20.1"
 
 # For PHP < 8.1 + scalingo-22 and 24:
-pre81_openssl_version="1.1.1p"
+pre81_openssl_version="1.1.1w"

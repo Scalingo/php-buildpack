@@ -125,7 +125,7 @@ php::pkg::openssl::compile() {
 
 	./config \
 		--prefix="${dst_dir}" \
-		--openssldir="${dst_dir}" \
+		--openssldir="/usr/lib/ssl" \
 		> /dev/null
 	make -j 8 > /dev/null
 	make install > /dev/null
@@ -227,7 +227,7 @@ echo "-----> Compiling zlib ${zlib_version}"
 php::pkg::download_extract "${zlib_url}" "${tempdir}" "${tempdir}"
 php::pkg::zlib::compile "${tempdir}/zlib-${zlib_version}" "${zlib_dir}"
 
-echo "-----> Compiling PHP "${php_version}"
+echo "-----> Compiling PHP ${php_version}"
 php::pkg::download_extract "${php_url}" "${tempdir}" "${tempdir}"
 php::pkg::php::compile "${tempdir}/php-${php_version}" "${php_dir}" \
 	"${compile_options[@]}"
