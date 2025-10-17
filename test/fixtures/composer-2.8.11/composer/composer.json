@@ -1,9 +1,0 @@
-{
-    "extra": {
-        "paas": {
-            "engines": {
-                "composer": "2.8.11"
-            }
-        }
-    }
-}
