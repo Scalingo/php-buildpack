@@ -31,7 +31,7 @@ libmemcached_version="1.0.18"
 libonig_version="${libonig_version:-6.9.10}"
 librabbitmq_version="0.15.0"
 
-memcached_version="3.3.0"
+memcached_version="3.4.0"
 gmp_version="6.3.0"
 tidy_version="5.8.0"
 sodium_version="1.0.20"
