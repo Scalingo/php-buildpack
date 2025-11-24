@@ -15,18 +15,36 @@ fi
 set -e
 set -o pipefail
 
+#cur_dir="$( dirname -- "${BASH_SOURCE[0]}")"
+#source "${cur_dir}/../conf/versions.sh"
+
 php_version="${1}"
 
-cd $( cd -P "$( dirname "${0}" )" && pwd )
+cd "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source "../conf/versions.sh"
+
+# SKIP imap extension since it has been moved to PECL starting with PHP 8.4
+# https://www.php.net/ChangeLog-8.php#8.4.1
+#
+# SKIP amqp extension since it doesn't compile with PHP 8.5
+# https://github.com/php-amqp/php-amqp/pull/595
+#
+# SKIP igbinary extension since it doesn't compile with PHP 8.5
+# https://github.com/igbinary/igbinary/issues/400
+#
+# SKIP imagick extension since it doesn't compile with PHP 8.5
+# https://github.com/Imagick/imagick/issues/755
+#
+skip=( "imap" "amqp" "igbinary" "imagick" )
 
 for e in ./ext-internal/*; do
 	ext_name="$( basename "${e}" )"
-	# IMAP extension has been moved to PECL starting with PHP 8.4
-	# https://www.php.net/ChangeLog-8.php#8.4.1
-	if [[ "${ext_name}" == "imap" ]] \
-		&& [[ "${php_version}" == "8.4" || "${php_version}" == "8.5" ]]
+
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
+		&& [[ ${skip[@]} =~ "${ext_name}" ]]
 	then
-    	continue
+		continue
 	fi
 
 	./package_internal_ext "${ext_name}" "${php_version}"
@@ -38,6 +56,12 @@ done
 
 for e in ./ext/*; do
 	ext_name="$( basename "${e}" )"
+
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
+		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	then
+		continue
+	fi
 
 	./package_ext "${ext_name}" "${ext_name}" "${php_version}"
 	if [[ $? -ne 0 ]]; then
