@@ -22,6 +22,7 @@ PHP_MODULE_API_VERSIONS["8.1"]="20210902"
 PHP_MODULE_API_VERSIONS["8.2"]="20220829"
 PHP_MODULE_API_VERSIONS["8.3"]="20230831"
 PHP_MODULE_API_VERSIONS["8.4"]="20240924"
+PHP_MODULE_API_VERSIONS["8.5"]="20250925"
 
 # The following lib versions are used for lib we statically store on Swift.
 # They are downloaded, compiled and stored with /support/get_* scripts.
@@ -45,7 +46,7 @@ mongodb_version="1.21.0"
 amqp_version="2.1.2"
 phpredis_version="6.3.0"
 apcu_version="5.1.27"
-newrelic_version="11.5.0.18"
+newrelic_version="12.2.0.27"
 
 
 # Legacy support

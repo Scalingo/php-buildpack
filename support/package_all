@@ -2,44 +2,68 @@
 #
 # Package all extensions: both internal and non-internal.
 
-if [ -n "$DEBUG" ]; then
-    set -x
+if [ -n "${DEBUG}" ]; then
+	set -x
 fi
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 PHP_VERSION"
-    echo "Example: $0 7.4"
-    exit 1
+if [ -z "${1}" ]; then
+	echo "Usage: ${0} PHP_VERSION"
+	echo "Example: ${0} 7.4"
+	exit 1
 fi
 
 set -e
 set -o pipefail
 
-php_version=$1
+php_version="${1}"
 
-cd $( cd -P "$( dirname "$0" )" && pwd )
+cd "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source "../conf/versions.sh"
+
+# SKIP imap extension since it has been moved to PECL starting with PHP 8.4
+# https://www.php.net/ChangeLog-8.php#8.4.1
+#
+# SKIP amqp extension since it doesn't compile with PHP 8.5
+# https://github.com/php-amqp/php-amqp/pull/595
+#
+# SKIP igbinary extension since it doesn't compile with PHP 8.5
+# https://github.com/igbinary/igbinary/issues/400
+#
+# SKIP imagick extension since it doesn't compile with PHP 8.5
+# https://github.com/Imagick/imagick/issues/755
+#
+skip=( "imap" "amqp" "igbinary" "imagick" )
 
 for e in ./ext-internal/*; do
-  ext_name="$( basename "${e}" )"
-  # IMAP extension has been moved to PECL starting with PHP 8.4
-  # https://www.php.net/ChangeLog-8.php#8.4.1
-  if [[ "$ext_name" = "imap" ]] && [[ "$php_version" = "8.4" ]]; then
-    continue
-  fi
+	ext_name="$( basename "${e}" )"
 
-  ./package_internal_ext "${ext_name}" "${php_version}"
-  if [[ $? -ne 0 ]]; then
-    echo "Error packaging internal extension ${ext_name}" >&2
-    exit 1
-  fi
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
+		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	then
+		continue
+	fi
+
+	./package_internal_ext "${ext_name}" "${php_version}"
+	if [[ $? -ne 0 ]]; then
+		echo "Error packaging internal extension ${ext_name}" >&2
+		exit 1
+	fi
 done
 
 for e in ./ext/*; do
-  ext_name="$( basename "${e}" )"
+	ext_name="$( basename "${e}" )"
 
-  ./package_ext "${ext_name}" "${ext_name}" "${php_version}"
-  if [[ $? -ne 0 ]]; then
-    echo "Error packaging extension ${ext_name}" >&2
-    exit 1
-  fi
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
+		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	then
+		continue
+	fi
+
+	./package_ext "${ext_name}" "${ext_name}" "${php_version}"
+	if [[ $? -ne 0 ]]; then
+		echo "Error packaging extension ${ext_name}" >&2
+		exit 1
+	fi
 done
+
