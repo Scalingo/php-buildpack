@@ -1,11 +1,26 @@
 #!/bin/bash
 
-set -e
+export BUILDPACK_DEBUG="true"
+export DEBUG="yes"
 
-set -o pipefail
+SCALINGO_CMNLIB_VERSION="${SCALINGO_CMNLIB_VERSION:-"1.0.0"}"
+# cmnlib_url="https://github.com/Scalingo/buildpack-cmnlib/raw/refs/tags/v${SCALINGO_CMNLIB_VERSION}/cmnlib.sh"
+cmnlib_url="https://raw.githubusercontent.com/Scalingo/buildpack-cmnlib/refs/heads/main/cmnlib.sh"
+
+if ! declare -F cmn::output::info >/dev/null; then
+	source /dev/stdin <<< \
+		"$( curl --silent --location --retry 3 "${cmnlib_url}" \
+			|| printf "echo ' 🗙 Unable to load cmnlib, aborting.' >&2 && exit 1"; )"
+fi
+
+
+cmn::main::start "${0}" "${1}" "${2}" "${3}"
+
+# is this required? What for?
 shopt -s dotglob
 
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+basedir="${base_dir}"
+
 source "$basedir/../conf/versions.sh"
 source $basedir/common.sh
 source $basedir/../lib/package
@@ -19,10 +34,6 @@ source $basedir/../lib/pecl_oci8
 
 if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
   source $basedir/../lib/nodejs
-fi
-
-if [ -n "$BUILDPACK_DEBUG" ]; then
-  set -x
 fi
 
 BUILD_DIR="$1"
@@ -401,21 +412,26 @@ source ".profile.d/php.sh"
 fetch_package "$PHP_BASE_URL" "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
 export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
 
+
+## REMOVEME OR ONLY_FOR_PHP8.4 AND BELOW?
+
 # Fetch additional extensions
-status "Bundling platform default extensions"
-echo "       apcu"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
+#status "Bundling platform default extensions"
+#echo "       apcu"
+#fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
 
-echo "       phpredis"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+#echo "       phpredis"
+#fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
 
-echo "       mongodb"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
+#echo "       mongodb"
+#fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
 
-if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
-    echo "       mcrypt"
-    fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
-fi
+#if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
+#    echo "       mcrypt"
+#    fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
+#fi
+
+## ENDREMOVEME
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_datadog_enabled; then
     install_datadog "${DATADOG_TRACER_VERSION}" "${DATADOG_APPSEC_VERSION}"
@@ -483,7 +499,18 @@ if [ "$PHP_BUILDPACK_NO_NODE" != "true" ] ; then
   install_node_deps "$BUILD_DIR"
 fi
 
-install_composer_deps "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
+# install_composer_deps "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
+
+## Install dependencies using Composer:
+if [ -f "${build_dir}/composer.json" ]; then
+	# Install Composer
+	php::composer::install "${build_dir}" "${cache_dir}" "${PHP_BASE_URL}"
+
+	# Install dependencies using Composer
+	php::composer::install_dependencies \
+		"${build_dir}" "${cache_dir}" "${PHP_BASE_URL}"
+fi
+
 
 # Detect PHP framework
 # Set FRAMEWORK if not set in environment by user
@@ -631,3 +658,5 @@ exit 1
 SH
 
 chmod +x "bin/run"
+
+cmn::main::finish

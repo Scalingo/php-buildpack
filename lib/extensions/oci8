@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+#
+# OCI8 extension requires the following:
+# - PHP 8.2 or above
+# - libaio-dev must be installed
+#
+# OCI8 extensions exit codes for errors are [1010-1019]
+#
+
+apt_deps=( "libaio-dev" )
+php_api_min="${PHP_MODULE_API_VERSIONS["8.2"]}"
+
+
+# Check we have the minimum PHP version:
+
+php_version="$( php -v | head -n 1 | cut -d " " -f2 | cut -f 1-2 -d "." )"
+php_api="${PHP_MODULE_API_VERSIONS["${php_version}"]}"
+
+if [ ${php_api} -lt ${php_api_min} ]; then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		The oci8 PHP extension requires PHP 8.2 or above to run.
+		Please make sure to specify this requirement in your composer.json file.
+		For further help, please see https://doc.scalingo.com/languages/php/start#select-a-version
+		Unable to fulfill the prerequisites, aborting.
+	EOM
+	exit 1010
+fi
+
+cmn::output::debug "PHP version is OK for oci8."
+
+
+# Install apt dependencies:
+
+# We need a temporary "Aptfile" so we don't overwrite one that could be
+# provided by the user.
+
+orig_aptfile="${APT_FILE_MANIFEST:-"Aptfile"}"
+APT_FILE_MANIFEST="$( cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32 )"
+export APT_FILE_MANIFEST
+
+for d in ${apt_deps}; do
+    echo "${d}" >> "${build_dir}/${APT_FILE_MANIFEST}"
+done
+
+if ! cmn::bp::run "https://github.com/Scalingo/apt-buildpack" \
+    "${build_dir}" "${cache_dir}" "${env_dir}"
+then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		An error occured while installing dependencies using the apt buildpack.
+		Unable to install prerequisites, aborting.
+	EOM
+    exit 1011
+fi
+
+# Once the packages have been installed, reset APT_FILE:
+APT_FILE_MANIFEST="${orig_aptfile}"
+export APT_FILE_MANIFEST
+
+
+cmn::output::debug "Dependencies installed via apt."
+
+
+# Install Oracle client:
+
+instantclient_basic_url="https://download.oracle.com/otn_software/linux/instantclient/instantclient-basic-linuxx64.zip"
+instantclient_sdk_url="https://download.oracle.com/otn_software/linux/instantclient/instantclient-sdk-linuxx64.zip"
+oracle_install_dir="${build_dir}/vendor/oracle-client/"
+
+mkdir --parents "${oracle_install_dir}"
+
+if ! cmn::file::download "${instantclient_basic_url}" \
+	"${cache_dir}/oracleclient.zip"
+then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		Unable to download Oracle InstantClient, aborting.
+	EOM
+	exit 1012
+fi
+
+if ! cmn::file::download "${instantclient_sdk_url}" \
+	"${cache_dir}/oraclesdk.zip"
+then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		Unable to download Oracle InstantClient SDK, aborting.
+	EOM
+	exit 1013
+fi
+
+# We are only interested in the "instantclient_..." directory:
+#  -o = overwrite existing files without prompting
+#  -d = destination directory
+# -qq = very quiet output
+if ! unzip -o -qq "${cache_dir}/oracleclient.zip" "instantclient*" \
+	-d "${oracle_install_dir}"
+then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		Unable to uncompress InstantClient archive, aborting.
+	EOM
+	exit 1014
+fi
+
+if ! unzip -o -qq "${cache_dir}/oraclesdk.zip" "instantclient*" \
+	-d "${oracle_install_dir}"
+then
+	cmn::task::fail
+	cmn::output::err <<- EOM
+		Unable to uncompress InstantClient SDK archive, aborting.
+	EOM
+	exit 1015
+fi
+
+export ORACLE_HOME="${oracle_install_dir}$(ls ${oracle_install_dir})"
+export LD_LIBRARY_PATH="${ORACLE_HOME}/lib:${ORACLE_HOME}:${LD_LIBRARY_PATH}"
+
+profile_script="${build_dir}/.profile.d/oracle-client.sh"
+
+# Replace build_dir by HOME, which is the final location of the image data:
+runtime_oracle_home="${ORACLE_HOME//${build_dir}/\${HOME}}"
+
+cat << EOF > "${profile_script}"
+export ORACLE_HOME="${runtime_oracle_home}"
+export LD_LIBRARY_PATH="${runtime_oracle_home}/lib:${runtime_oracle_home}:\${LD_LIBRARY_PATH}
+EOF
+
+#runtime_oracle_home="$(echo "${ORACLE_HOME}" | sed -e "s+${build_dir}+/app+")"
+#echo "export ORACLE_HOME=${runtime_oracle_home}" >> "${startup_script}"
+#echo "export LD_LIBRARY_PATH=${runtime_oracle_home}/lib:${runtime_oracle_home}:\${LD_LIBRARY_PATH}" >> "${startup_script}"
+

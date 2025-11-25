@@ -1,4 +1,5 @@
-# vim:set ft=sh:
+#!/usr/bin/env bash
+#
 
 function get_php_version() {
     # Prints out the PHP version (major.minor)
@@ -52,104 +53,213 @@ function check_composer_json_and_lock() {
   fi
 }
 
-function install_composer_deps() {
-    local cwd=$(pwd)
-    local target="$1"
+php::extension::is_embedded() {
 
-    # If there is no composer.json, we install nothing
-    if [ ! -f "$target/composer.json" ] ; then
-      return 0
-    fi
+	local extension_name="${1}"
 
-    export COMPOSER_CACHE_DIR=$CACHE_DIR/composer
-    mkdir -p $COMPOSER_CACHE_DIR
-    mkdir -p "$target/vendor/composer/bin"
+	local rc=1
+	local result="false"
+	local php_modules
 
-    local checksum=$(curl --silent "${PHP_BASE_URL}/composer/composer-${COMPOSER_VERSION}.phar.md5")
+	if php_modules="$( php --modules 2>&1 )"; then
+		rc=0
 
-    status "Vendoring Composer ${COMPOSER_VERSION}"
-    if [ ! -f "$CACHE_DIR/composer.phar.md5" ] || [ "$(cat $CACHE_DIR/composer.phar.md5)" != "$checksum" ]; then
-        echo "Updating Composer" | indent
-        curl --silent "${PHP_BASE_URL}/composer/composer-${COMPOSER_VERSION}.phar" > "$CACHE_DIR/composer.phar" | indent
-        chmod a+x "$CACHE_DIR/composer.phar"
-        echo "$checksum" > $CACHE_DIR/composer.phar.md5
-    else
-        echo "Checksums match. Fetching Composer from cache." |indent
-    fi
+		if grep --quiet --extended-regexp --ignore-case "^${extension_name}$" \
+			<<< "${php_modules}"
+		then
+			result="true"
+		fi
+	fi
 
-    cp "$CACHE_DIR/composer.phar" "$target/vendor/composer/bin/"
+	echo "${result}"
+	exit "${rc}"
+}
 
-    # Add composer to the path
-    cp "$target/vendor/composer/bin/composer.phar" "$target/bin/composer"
-    cp "$target/vendor/composer/bin/composer.phar" "$target/bin/composer.phar"
+php::composer::install() {
 
-    local required_extensions=$(jq --raw-output '.require // {} | keys | .[]' < "$BUILD_DIR/composer.json" | grep '^ext-' | sed 's/^ext-//')
+	local build_dir="${1}"
+	local cache_dir="${2}"
+	local php_url="${3}"
 
-    if [ -n "$required_extensions" ]; then
-        status "Bundling additional extensions"
+	# FIXME: provide a default version
+	local version="${COMPOSER_VERSION:-"${COMPOSER_DEFAULT_VERSION}"}"
 
-        for ext in $required_extensions; do
-            local ext_lower
-            local apt_deps=""
-            local is_embedded=""
-            local ext_version=$(jq --raw-output ".require | .[\"ext-${ext}\"]" < "${BUILD_DIR}/composer.json")
+	local archive="composer-${version}.phar"
 
-            # The Zend OPCache extension is a bit special:
-            # It's listed by `php --modules` as `Zend OPCache`, but we must
-            # refer to it as `zend-opcache` in `composer.json`.
-            # Consequently, we have to detect it and rename it for the
-            # buildpack logic to work.
+	local file_url="${php_url}/composer/${archive}"
+	local hash_url="${file_url}.md5"
 
-            # First convert extension name to lowercase:
-            ext_lower="$( tr "[:upper:]" "[:lower:]" <<< "${ext}" )"
+	local cache_file="${cache_dir:?}/${archive}"
+	local hash_file="${cache_file}.md5"
 
-            # Then compare:
-            if [ "${ext_lower}" = "zend-opcache" ]; then
-                ext="zend opcache"
-            fi
+	local target_dir="${build_dir}/vendor/composer/bin"
 
 
-            # The oci8 extension is only available for PHP 8.2 and above:
+	cmn::step::start "Installing Composer ${version}"
+	
+	cmn::task::start "Downloading checksum"
+	# Remove previous hash file:
+	rm --recursive --force "${cache_dir:?}"/*.phar.md5
 
-            if [ "$ext" = "oci8" ] ; then
-              local php_version="$( get_php_version )"
+	if ! cmn::file::download "${hash_url}" "${hash_file}"; then
+		cmn::task::fail
+		cmn::step::fail
+		exit 200
+	fi
+	cmn::task::finish
 
-              if ! version_is_ge "${php_version}" "8.2"; then
-                echo "\
-!       The oci8 PHP extension requires PHP 8.2 or above to run.
-!       Please make sure to specify this requirement in your composer.json file.
-!       For further help, please see https://doc.scalingo.com/languages/php/start#select-a-version
-!       Aborting.
-" >&2
-                exit 1
-              fi
-            fi
+	if [ ! -f "${cache_file}" ]; then
+	# Remove archive from cache, since they are probably for another version:
+		cmn::task::start "Cleaning cache"
+		rm --recursive --force "${cache_dir:?}"/*.phar
+		cmn::task::finish
 
-            is_embedded="$( is_embedded_extension "${ext}" )"
-            rc=$?
-            [ ${rc} -ne 0 ] && error "error while trying to identify if ${ext} is embedded in runtime."
+		# Download appropriate version:
+		cmn::task::start "Downloading archive"
+		if ! cmn::file::download "${file_url}" "${cache_file}"; then
+			cmn::task::fail
+			cmn::step::fail
+			exit 201
+		fi
+		cmn::task::finish
+	else
+		cmn::output::info "Found matching file in cache."
+	fi
 
-            if [ "${is_embedded}" = "true" ] ; then
-              echo "PHP extension ${ext} is embedded in runtime" | indent
-              continue
-            fi
+	cmn::task::start "Checking archive validity"
+	if ! cmn::file::check_checksum "${cache_file}" "${hash_file}"; then
+		cmn::task::fail
+		cmn::output::err <<- EOM
+			Unable to check archive validity.
+			I'm now removing the file from the cache to force
+			a new download during the next deployment attempt.
+		EOM
 
-            if [ "$ext" = "oci8" ] ; then
-              apt_deps="libaio-dev"
-            fi
+		# File in cache does not seem valid,
+		# remove it so a future run can be successful
+		rm --force "${cache_file}"
+		rm --force "${hash_file}"
+		cmn::step::fail
+		exit 202
+	fi
+	cmn::task::finish
 
-            if [ -n "$apt_deps" ] ; then
-              echo "Installing dependencies for ${ext}: ${apt_deps}" | indent
-              install_env_file="$(apt_install "${apt_deps}" "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}")"
-              # Source environment to export LD_LIBRARY_PATH
-              source "${install_env_file}"
-              rm "${install_env_file}"
-            fi
+	# From this point we have a valid file in cache.
+
+	cmn::task::start "Vendoring Composer"
+	if ! mkdir --parents "${target_dir}" 2>/dev/null
+	then
+		cmn::task::fail
+		cmn::step::fail
+		exit 203
+	fi
+
+	if ! cp "${cache_file}" "${target_dir}/composer.phar" 2>/dev/null
+	then
+		cmn::task::fail
+		cmn::step::fail
+		cmn::output::debug <<- EOM
+			Failed to copy
+			  from: ${cache_file}
+			    to: ${target_dir}
+		EOM
+		exit 204
+	fi
+	cmn::task::finish
+
+	cmn::task::start "Setting permissions"
+	if ! chmod a+x "${target_dir}/composer.phar" 2>/dev/null
+	then
+		cmn::task::fail
+		cmn::step::fail
+		exit 205
+	fi
+	cmn::task::finish
+
+	cmn::task::start "Creating symlinks"
+	for link in "${target}/bin/composer" "${target}/bin/composer.phar"
+	do
+		if ln --symbolic --force --no-dereference \
+			"${target_dir}/composer.phar" "${link}" 2>/dev/null
+		then
+			cmn::task::fail
+			cmn::step::fail
+			exit 206
+		fi
+	done
+	cmn::task::finish
+
+	cmn::step::finish
+}
+
+php::composer::install_dependency() {
+	local build_dir="${1}"
+	local cache_dir="${2}"
+	local ext_name="${3}"
+
+	local ext
+	local version
+
+	
+	# First convert extension name to lowercase:
+	ext="$( tr "[:upper:]" "[:lower:]" <<< "${ext_name}" )"
+
+	cmn::task::start "Installing extension ${ext}"
+	if ! version="$( jq --raw-output ".require | .[\"ext-${ext}\"]" \
+		< "${build_dir}/composer.json" \
+		)"
+	then
+		cmn::task::fail
+		cmn::output::error <<- EOM
+			Unable to retrieve the desired version of extension ${ext}.
+			Is your composer.json file valid?
+		EOM
+		exit 320
+	fi
+
+	cmn::output::debug "Installing ${ext} ${version}"
+
+	if ! is_embbeded="$( php::extension::is_embedded "${ext}" )"; then
+		cmn::task::fail
+		cmn::output::err <<- EOM
+			Unable to check whether ${ext} is already embedded or not.
+			Aborting.
+		EOM
+		exit 321
+	fi
+
+	if [[ "${is_embedded}" == "true" ]]; then
+		cmn::output::info <<- EOM
+			PHP extension ${ext} is already embedded in runtime. Skipping.
+		EOM
+		exit 0
+	fi
+
+	# Install pre-requisites, if any:
+	if [ -f "${buildpack_dir}/lib/extensions/${ext}" ]; then
+		source "${buildpack_dir}/lib/extensions/${ext}"
+	fi
+
+	# The Zend OPCache extension is a bit special:
+	# It's listed by `php --modules` as `Zend OPCache`, but we must
+	# refer to it as `zend-opcache` in `composer.json`.
+	# Consequently, we have to detect it and rename it for the
+	# buildpack logic to work.
+
+	if [ "${ext}" = "zend-opcache" ]; then
+		ext="zend opcache"
+	fi
+
+	#if [ -n "$apt_deps" ] ; then
+	#  echo "Installing dependencies for ${ext}: ${apt_deps}" | indent
+	#  install_env_file="$(apt_install "${apt_deps}" "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}")"
+	# Source environment to export LD_LIBRARY_PATH
+	#  source "${install_env_file}"
+	#  rm "${install_env_file}"
+	#fi
 
             # Install third-party dependencies after ubuntu packages have been added
-            if [ "$ext" = "oci8" ] ; then
-              install_oracle_client_extension "${BUILD_DIR}" "${CACHE_DIR}"
-            elif [ "$ext" = "memcached" ] ; then
+            if [ "$ext" = "memcached" ] ; then
               fetch_package "$PHP_BASE_URL" "libmemcached-${libmemcached_version}" "/app/vendor/libmemcached" | indent
             elif [ "$ext" = "gmp" ] ; then
               fetch_package "$PHP_BASE_URL" "gmp-${gmp_version}" "/app/vendor/gmp" | indent
@@ -170,8 +280,58 @@ function install_composer_deps() {
             else
               install_pecl_extension "${ext}" "${ext_version}" "${CACHE_DIR}"
             fi
-        done
-    fi
+
+
+}
+
+php::composer::install_dependencies() {
+
+	local build_dir="${1}"
+	local cache_dir="${2}"
+	local php_base_url="${3}"
+
+	local cwd="$( pwd )"
+
+	COMPOSER_CACHE_DIR="${cache_dir}/composer"
+	export COMPOSER_CACHE_DIR
+
+	mkdir --parents "${COMPOSER_CACHE_DIR}"
+
+
+	cmn::step::start "Installing dependencies"
+
+	cmn::task::start "Checking dependencies"
+	local required_extensions
+
+	if ! required_extensions="$( jq --raw-output '.require // {} | keys | .[]' \
+			< "${build_dir}/composer.json" \
+			| grep "^ext-" \
+			| sed "s/^ext-//" \
+		)"
+	then
+		cmn::task::fail
+		cmn::output::err <<- EOM
+			Unable to retrieve the list of required extensions.
+			Please make sur your composer.json file is well-formatted.
+			Aborting.
+		EOM
+		cmn::step::fail
+		exit 210
+	fi
+	cmn::task::finish
+	cmn::step::finish
+
+	if [ -n "${required_extensions}" ]; then
+		cmn::step::start "Bundling dependencies"
+
+		# /!\ Not quoting required_extensions on purpose
+		for ext in ${required_extensions}; do
+			php::composer::install_dependency \
+				"${build_dir}" "${cache_dir}" "${ext}"
+		done
+	fi
+
+### FIXME:
 
     if [ -n "$COMPOSER_GITHUB_TOKEN" ]; then
         status "Configuring the GitHub authentication for Composer"
@@ -192,22 +352,4 @@ function install_composer_deps() {
             $devopt
         cd "$cwd"
     } | indent
-}
-
-function is_embedded_extension() {
-  local extension_name="${1}"
-  local php_modules
-
-  php_modules=$(php --modules 2>&1)
-  rc=$?
-  # error function exits with a return code 1
-  [ ${rc} -ne 0 ] && \
-    error "error while trying to identify if ${extension_name} is embedded in runtime: ${php_modules} (${rc})."
-
-  if echo "${php_modules}" | grep --quiet --extended-regexp --ignore-case "^${extension_name}$" ; then
-    echo "true"
-  else
-    echo "false"
-  fi
-  exit 0
 }
