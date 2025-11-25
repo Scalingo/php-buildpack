@@ -15,9 +15,6 @@ fi
 set -e
 set -o pipefail
 
-#cur_dir="$( dirname -- "${BASH_SOURCE[0]}")"
-#source "${cur_dir}/../conf/versions.sh"
-
 php_version="${1}"
 
 cd "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
