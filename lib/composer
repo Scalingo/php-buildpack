@@ -168,7 +168,7 @@ function install_composer_deps() {
               echo "Installing PHP extension: ${ext}" | indent
               fetch_package "${PHP_BASE_URL}" "${extension_package_path}" "/app/vendor/php"
             else
-              install_pecl_extension "${ext}" "${ext_version}" "${CACHE_DIR}"
+              php::pecl::install_extension "${ext}" "${ext_version}" "${CACHE_DIR}"
             fi
         done
     fi
