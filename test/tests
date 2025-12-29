@@ -8,6 +8,7 @@ source "$( pwd )/test/php81"
 source "$( pwd )/test/php82"
 source "$( pwd )/test/php83"
 source "$( pwd )/test/php84"
+source "$( pwd )/test/php85"
 source "$( pwd )/test/php"
 source "$( pwd )/test/composer"
 source "$( pwd )/test/nginx"
@@ -41,6 +42,12 @@ suite_addTest test::php84::classic
 suite_addTest test::php84::composer
 suite_addTest test::php84::extensions::default
 suite_addTest test::php84::extensions::optional_builtin
+
+# PHP 8.5
+suite_addTest test::php85::classic
+suite_addTest test::php85::composer
+suite_addTest test::php85::extensions::default
+suite_addTest test::php85::extensions::optional_builtin
 
 # PHP
 suite_addTest test::php::composer_over_lower_classic

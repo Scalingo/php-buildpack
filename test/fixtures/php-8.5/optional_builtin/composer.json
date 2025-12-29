@@ -1,0 +1,11 @@
+{
+    "require": {
+        "php": "~8.5",
+        "ext-calendar": "*",
+        "ext-ftp": "*",
+        "ext-gettext": "*",
+        "ext-gmp": "*",
+        "ext-sodium": "*",
+        "ext-tidy": "*"
+    }
+}
