@@ -8,14 +8,14 @@ declare -gA latest_composer
 # Defaults for scalingo-22:
 default_php["scalingo-22"]="8.1." # This one depends on the semver stable rule configuration
 default_nginx["scalingo-22"]="1.28."
-default_composer["scalingo-22"]="2.8."
-latest_composer["scalingo-22"]="2.8.12"
+default_composer["scalingo-22"]="2.9."
+latest_composer["scalingo-22"]="2.9.2"
 
 # Defaults for scalingo-24:
 default_php["scalingo-24"]="8.4."
 default_nginx["scalingo-24"]="1.28."
-default_composer["scalingo-24"]="2.8."
-latest_composer["scalingo-24"]="2.8.12"
+default_composer["scalingo-24"]="2.9."
+latest_composer["scalingo-24"]="2.9.2"
 
 
 test::defaults::classic() {
