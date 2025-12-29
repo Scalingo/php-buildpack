@@ -6,7 +6,7 @@ if [ -n "$DEBUG" ]; then
     set -x
 fi
 
-imagick_version="3.7.0"
+imagick_version="3.8.1"
 
 curl -L "https://pecl.php.net/get/imagick-${imagick_version}.tgz" \
     | tar xzv
