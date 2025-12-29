@@ -30,9 +30,6 @@ source "../conf/versions.sh"
 # SKIP igbinary extension since it doesn't compile with PHP 8.5
 # https://github.com/igbinary/igbinary/issues/400
 #
-# SKIP imagick extension since it doesn't compile with PHP 8.5
-# https://github.com/Imagick/imagick/issues/755
-#
 skip=( "imap" "amqp" "igbinary" "imagick" )
 
 for e in ./ext-internal/*; do
