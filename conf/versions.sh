@@ -35,7 +35,7 @@ librabbitmq_version="0.15.0"
 memcached_version="3.4.0"
 gmp_version="6.3.0"
 tidy_version="5.8.0"
-sodium_version="1.0.20"
+sodium_version="1.0.21"
 webp_version="${webp_version:-1.6.0}" # Can be found here: https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html
 # From https://zlib.net/
 zlib_version="${zlib_version:-1.3.1}"
