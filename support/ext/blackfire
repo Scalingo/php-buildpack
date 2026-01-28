@@ -49,9 +49,9 @@ echo -e "[blackfire]\nserver-id=f1abf3a8-3f85-4743-99b2-97f066c099b9\nserver-tok
 find ${PREFIX} -type f \( -executable -o -name '*.a' \) -exec sh -c "file -i '{}' | grep -Eq 'application/x-(archive|executable|sharedlib); charset=binary'" \; -print | xargs strip --strip-unneeded
 
 # gets sourced on container boot
+cat > "${PREFIX}/bin/profile.blackfire.sh" <<'EOF'
 blackfire_bin="/app/vendor/php/bin/blackfire"
 blackfire_socket="/app/vendor/php/var/blackfire/run/agent.sock"
-cat > "${PREFIX}/bin/profile.blackfire.sh" <<'EOF'
 if [[ -n "$BLACKFIRE_SERVER_TOKEN" && -n "$BLACKFIRE_SERVER_ID" ]]; then
 	if [[ -f "${blackfire_bin}" ]]; then
 		touch "${blackfire_socket}"
