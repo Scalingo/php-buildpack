@@ -56,7 +56,7 @@ if [[ -n "$BLACKFIRE_SERVER_TOKEN" && -n "$BLACKFIRE_SERVER_ID" ]]; then
 	if [[ -f "${blackfire_bin}" ]]; then
 		touch "${blackfire_socket}"
 		export BLACKFIRE_CONFIG="/dev/null"
-		export BLACKFIRE_SOCKET="unix://${blackfire_socket}"
+		export BLACKFIRE_AGENT_SOCKET="unix://${blackfire_socket}"
 
 		"${blackfire_bin}" agent:start &
 	else
