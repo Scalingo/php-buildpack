@@ -79,6 +79,17 @@ compile_options=(
 # -----------------------------------------------------------------------------
 
 
+php::pkg::version::get_major_minor() {
+	local version="${1}"
+
+	if [[ "${version}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+		echo "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+		return 0
+	fi
+
+	return 1
+}
+
 php::pkg::download_extract() {
 	local url="${1}"
 	local dst_dir="${2}"
@@ -140,6 +151,9 @@ php::pkg::php::compile() {
 
 	local opts=("$@")
 
+	local php_maj_min
+	local php_api
+
 	pushd "${src_dir}" > /dev/null
 
 	./configure "${opts[@]}" > /dev/null
@@ -148,7 +162,15 @@ php::pkg::php::compile() {
 
 	popd > /dev/null
 
-	echo "zend_extension=opcache.so" > "${dst_dir}/etc/conf.d/opcache.ini"
+	# OPCache is included in PHP 8.5 and above,
+	# so we don't need to explicitely enbale it starting with PHP 8.5:
+	php_maj_min="$( php::pkg::version::get_major_minor "${php_version}" )"
+	php_api="${PHP_MODULE_API_VERSIONS[${php_maj_min}]}"
+
+	if [[ "${php_api}" -lt "${PHP_MODULE_API_VERSIONS["8.5"]}" ]]; then
+		echo "zend_extension=opcache.so" \
+			> "${dst_dir}/etc/conf.d/opcache.ini"
+	fi
 }
 
 php::pkg::package() {
