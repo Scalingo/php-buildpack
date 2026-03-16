@@ -38,7 +38,7 @@ tidy_version="5.8.0"
 sodium_version="1.0.21"
 webp_version="${webp_version:-1.6.0}" # Can be found here: https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html
 # From https://zlib.net/
-zlib_version="${zlib_version:-1.3.1}"
+zlib_version="${zlib_version:-1.3.2}"
 
 # PHP extensions versions
 igbinary_version="3.2.16"
