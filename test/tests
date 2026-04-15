@@ -4,7 +4,6 @@ source "$( pwd )/test/utils"
 source "$( pwd )/test/helpers"
 
 source "$( pwd )/test/defaults"
-source "$( pwd )/test/php81"
 source "$( pwd )/test/php82"
 source "$( pwd )/test/php83"
 source "$( pwd )/test/php84"
@@ -18,12 +17,6 @@ source "$( pwd )/test/nginx"
 # Defaults
 suite_addTest test::defaults::classic
 suite_addTest test::defaults::composer
-
-# PHP 8.1
-suite_addTest test::php81::classic
-suite_addTest test::php81::composer
-suite_addTest test::php81::extensions::default
-suite_addTest test::php81::extensions::optional_builtin
 
 # PHP 8.2
 suite_addTest test::php82::classic
