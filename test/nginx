@@ -7,19 +7,19 @@
 test::nginx::classic() {
 #
 # Test a deployment of a classic app (not using Composer)
-# Specifying we want Nginx 1.22.1 via environment
+# Specifying we want Nginx 1.30.0 via environment
 # We don't test every step here, we just test that the Nginx version is
 # the one expected.
 #
 
-    NGINX_VERSION="1.28.0"
+    NGINX_VERSION="1.30.0"
     export NGINX_VERSION
 
     test::utils::setupFixture "defaults/classic"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.28.0"
+    test::helpers::nginx "1.30.0"
 }
 
 test::nginx::composer() {
@@ -28,11 +28,11 @@ test::nginx::composer() {
 # Specifying the nginx version only via composer.json
 #
 
-    test::utils::setupFixture "nginx-1.28.0/composer"
+    test::utils::setupFixture "nginx-1.30.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.28.0"
+    test::helpers::nginx "1.30.0"
 }
 
 #test::composer::nginx_version_via_env() {
@@ -59,14 +59,14 @@ test::nginx::composer_over_lower_classic() {
 # specified in NGINX_VERSION.
 #
 
-    NGINX_VERSION="1.28.0"
+    NGINX_VERSION="1.29.0"
     export NGINX_VERSION
 
-    test::utils::setupFixture "nginx-1.29.0/composer"
+    test::utils::setupFixture "nginx-1.30.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.29.0"
+    test::helpers::nginx "1.30.0"
 }
 
 test::nginx::composer_over_higher_classic() {
@@ -77,12 +77,12 @@ test::nginx::composer_over_higher_classic() {
 # specified in NGINX_VERSION.
 #
 
-    NGINX_VERSION="1.29.0"
+    NGINX_VERSION="1.30.0"
     export NGINX_VERSION
 
-    test::utils::setupFixture "nginx-1.28.0/composer"
+    test::utils::setupFixture "nginx-1.29.0/composer"
     test::utils::compile
     test::helpers::enter_prod
 
-    test::helpers::nginx "1.28.0"
+    test::helpers::nginx "1.29.0"
 }
