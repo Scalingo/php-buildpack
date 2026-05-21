@@ -1,87 +1,317 @@
-function install_pecl_extension() {
+#!/usr/bin/env bash
+
+function php::pecl::enable_extension() {
+  local rc=0
+  local known_zend_extensions=("scoutapm")
+
+  local name="${1}"
+
+  local is_zend_extension_var_name
+  local is_zend_extension
+  local is_in_array
+
+  is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_${name}"
+
+  is_in_array="$( echo "${known_zend_extensions[@]}" | grep -ow "${name}" | wc -w )"
+
+  if [ "${is_in_array}" -gt 0 ]; then
+    declare "${is_zend_extension_var_name}"="true"
+    export "${is_zend_extension_var_name?}"
+  fi
+
+  is_zend_extension="$( printenv "${is_zend_extension_var_name}" )"
+
+  if [[ "${is_zend_extension}" = "true" ]]; then
+    echo "zend_extension=${name}.so" \
+      > "/app/vendor/php/etc/conf.d/${name}.ini"
+  else
+    echo "extension=${name}.so" \
+      > "/app/vendor/php/etc/conf.d/${name}.ini"
+  fi
+
+  return "${rc}"
+}
+
+
+function php::pecl::get_latest_version() {
+  local rc=1
+
+  local extension_name="${1}"
+
+  local version
+  local url="https://pecl.php.net/rest/r/${extension_name}/latest.txt"
+
+  if version="$( curl --fail --silent --show-error --location "${url}" )"; then
+    echo -n "${version}"
+    rc=0
+  fi
+
+  return "${rc}"
+}
+
+
+function php::pecl::install_from_cache() {
+  local rc=1
+
+  local name="${1}"
+  local version="${2}"
+  local cache_dir="${3}"
+  local ext_dir="${4}"
+
+  local cached_file
+
+  cached_file="${cache_dir}/${name}-${version}.so"
+
+  if [ -f "${cached_file}" ]; then
+    cp "${cached_file}" "${ext_dir}/${name}.so"
+
+    php::pecl::enable_extension "${name}"
+    rc="${?}"
+  fi
+
+  return "${rc}"
+}
+
+
+function php::pecl::download_extension() {
+  local rc=1
+
+  local name="${1}"
+  local version="${2}"
+  local temp_dir="${3}"
+
+  local archive
+  local url
+
+  archive="${name}-${version}.tgz"
+  url="https://pecl.php.net/get/${archive}"
+
+  pushd "${temp_dir}" >/dev/null \
+    || { echo "Unable to enter ${temp_dir}." >&2; return 1; }
+
+  curl --silent --location --fail "${url}" --output "${archive}"
+  rc="${?}"
+
+  if [ "${rc}" -eq 0 ]; then
+    echo "${temp_dir}/${archive}"
+  fi
+
+  popd >/dev/null || return 1
+
+  return "${rc}"
+}
+
+
+function php::pecl::extract_extension() {
+  local rc=1
+
+  local archive="${1}"
+  local output_dir="${2}"
+
+  mkdir --parents "${output_dir}"
+
+  tar --extract --gzip --strip-components=1 \
+    --directory="${output_dir}" --file="${archive}"
+
+  rc="${?}"
+
+  if [ "${rc}" -ne 0 ]; then
+    rm --recursive --force "${archive}"
+  fi
+
+  return "${rc}"
+}
+
+
+function php::pecl::package_extension() {
+  local rc=1
+
+  local name="${1}"
+
+  local log
+
+  log="$( mktemp "/tmp/pecl-phpize-${name}-XXXX.log" )"
+
+  /app/vendor/php/bin/phpize >"${log}" 2>&1
+  rc="${?}"
+
+  echo -n "${log}"
+
+  return "${rc}"
+}
+
+
+function php::pecl::configure_extension() {
+  local rc=1
+
+  local name="${1}"
+  local build_dir="${2}"
+
+  local log
+  local configure_args_varname
+  local configure_args
+  local flags
+  local raw_flags
+
+  log="$( mktemp "/tmp/pecl-configure-${name}-XXXX.log" )"
+
+  # Let's ease installation of some extensions:
+  case "${name}" in
+    "oci8")
+      flags=("--with-oci8=instantclient,${ORACLE_HOME}")
+      ;;
+
+    "scoutapm")
+      flags=("--enable-scoutapm")
+      ;;
+
+    "yaml")
+      flags=("--with-yaml=${BUILD_DIR}/.apt/usr")
+      ;;
+
+    *)
+      configure_args_varname="PHP_PECL_EXTENSION_CONFIGURE_ARGS_${name}"
+      configure_args="$( printenv "${configure_args_varname}" )"
+      raw_flags="${configure_args//\$BUILD_DIR/${build_dir}}"
+
+      # Transform raw_flags into an array:
+      readarray -d " " -t flags <<<"${raw_flags} "
+      unset 'flags[-1]'
+      ;;
+  esac
+
+  ./configure --with-php-config=/app/vendor/php/bin/php-config "${flags[@]}" >"${log}" 2>&1
+  rc="${?}"
+
+  echo -n "${log}"
+
+  return "${rc}"
+}
+
+
+function php::pecl::make_extension() {
+  local rc=1
+
+  local name="${1}"
+
+  local log
+
+  log="$( mktemp "/tmp/pecl-make-${name}-XXXX.log" )"
+
+  make -j 2 >"${log}" 2>&1
+  rc="${?}"
+
+  echo -n "${log}"
+
+  return "${rc}"
+}
+
+
+function php::pecl::compile_extension() {
+  local rc=0
+
+  local ext_dir="${1}"
+  local build_dir="${2}"
+  local name="${3}"
+
+  pushd "${ext_dir}" >/dev/null \
+    || { echo "Unable to enter ${ext_dir}." >&2; return 1; }
+
+  if ! log="$( php::pecl::package_extension "${name}" )"; then
+    rc="${?}"
+    cat "${log}"
+  fi
+
+  if [ "${rc}" -eq 0 ]; then
+    if ! log="$( php::pecl::configure_extension "${name}" "${build_dir}" )"; then
+      rc="${?}"
+      cat "${log}"
+    fi
+  fi
+
+  if [ "${rc}" -eq 0 ]; then
+    if ! log="$( php::pecl::make_extension "${name}" )"; then
+      rc="${?}"
+      cat "${log}"
+    fi
+  fi
+
+  popd >/dev/null || return 1
+
+  return "${rc}"
+}
+
+
+function php::pecl::install_extension() {
   local extension_name="${1}"
   local version="${2}"
   local cache_dir="${3}"
 
-  if [[ $version = '*' ]]; then
-    local version=$(curl --silent "https://pecl.php.net/rest/r/$extension_name/latest.txt")
-  fi
-  local ext_dir=/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)
+  local build_dir
+  local version_number
+  local ext_dir
+  local temp_dir
+  local extension_temp_dir
+  local archive
 
-  local cache_extension_file="${cache_dir}/${extension_name}-${version}.so"
-  if [ -f "${cache_extension_file}" ]; then
-    echo "Installing PECL extension ${extension_name} version ${version} from the cache" | indent
-    cp "${cache_extension_file}" "${ext_dir}/${extension_name}.so"
-    enable_pecl_extension ${extension_name}
-    return
-  fi
+  build_dir="$( pwd )"
+  version_number="${version}"
+  ext_dir="/app/vendor/php/lib/php/extensions/no-debug-non-zts-$(php_api_version)"
 
-  local build_dir=$(pwd)
-  local temp_dir=$(mktmpdir "pecl-extension")
 
-  echo "Installing PECL extension ${extension_name} version ${version}" | indent
-
-  pushd "${temp_dir}" > /dev/null
-
-  curl --silent --location "https://pecl.php.net/get/${extension_name}-${version}.tgz" | tar xz
-
-  pushd ${extension_name}-${version} > /dev/null
-  (
-    set +e
-    readonly phpize_log_file=$(mktemp "/tmp/pecl-phpize-${extension_name}-XXXX.log")
-    /app/vendor/php/bin/phpize > "${phpize_log_file}" 2>&1
-    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "package" "${phpize_log_file}"
-
-    local configure_extension_args_var_name="PHP_PECL_EXTENSION_CONFIGURE_ARGS_$extension_name"
-    local configure_extension_args=$(printenv $configure_extension_args_var_name)
-    local flags=$(echo $configure_extension_args | sed "s|\$BUILD_DIR|$build_dir|")
-
-    if [[ $extension_name = 'oci8' ]]; then
-      flags="--with-oci8=instantclient,${ORACLE_HOME}"
+  # If version is given as '*', try to retrieve the latest version number:
+  if [[ "${version}" = '*' ]]; then
+    if ! version_number="$( php::pecl::get_latest_version "${extension_name}" )"; then
+      echo "Unable to retrieve '${extension_name}' latest version number. Aborting." >&2
+      return 1
     fi
-
-    readonly configure_log_file=$(mktemp "/tmp/pecl-configure-${extension_name}-XXXX.log")
-    ./configure --with-php-config=/app/vendor/php/bin/php-config $flags > "${configure_log_file}" 2>&1
-    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "configure build" "${configure_log_file}"
-
-    readonly make_log_file=$(mktemp "/tmp/pecl-make-${extension_name}-XXXX.log")
-    make -j 2 > "${make_log_file}" 2>&1
-    [ $? -eq 0 ] || install_pecl_error "${extension_name}" "compile" "${make_log_file}"
-  )
-
-  cp modules/${extension_name}.so "${ext_dir}/${extension_name}.so"
-  cp modules/${extension_name}.so "${cache_extension_file}"
-  enable_pecl_extension ${extension_name}
-
-  popd > /dev/null
-  popd > /dev/null
-}
-
-function enable_pecl_extension() {
-  local extension_name="${1}"
-  local is_zend_extension_var_name="PHP_PECL_EXTENSION_IS_ZEND_$extension_name"
-  local is_zend_extension=$(printenv $is_zend_extension_var_name)
-
-  if [[ $is_zend_extension = "true" ]] ; then
-    echo "zend_extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
-  else
-    echo "extension=${extension_name}.so" > "/app/vendor/php/etc/conf.d/${extension_name}.ini"
   fi
-}
 
-function install_pecl_error() {
-  local extension_name="${1}"
-  local action="${2}"
-  local log_file="${3}"
 
-  echo
-  tail -n 30 "${log_file}" | indent
-  echo
-  # This sleep prevents from having the following lines mixed up with the output
-  # of the above tail. Mystery of shellscripting.
-  sleep 0.1
-  warn "Fail to ${action} of PHP PECL extension: ${extension_name}"
-  echo "Read above logs to understand the source of the issue" | indent
-  echo
-  exit 1
+  # Try to install extension from cache, but never fail:
+  if php::pecl::install_from_cache "${extension_name}" "${version_number}" "${cache_dir}" "${ext_dir}"; then
+    echo "Successfully installed '${extension_name}' ${version_number} from cache."
+    return 0
+  fi
+
+
+  # The extension is not cached, we have to install it.
+  echo "Installing PECL extension '${extension_name}' ${version_number}" | indent
+
+  temp_dir="$( mktmpdir "pecl-extension" )"
+  extension_temp_dir="${temp_dir}/${extension_name}-${version_number}"
+
+  # Download:
+  if ! archive="$( php::pecl::download_extension "${extension_name}" "${version_number}" "${temp_dir}" )"; then
+    echo "Unable to download PECL extension '${extension_name}' ${version_number}. Aborting." >&2
+    return 1
+  fi
+
+  # Extract:
+  if ! php::pecl::extract_extension "${archive}" "${extension_temp_dir}"; then
+    echo "Unable to unpack PECL extension '${extension_name}'. Aborting." >&2
+    return 1
+  fi
+
+  # Compile:
+  if ! php::pecl::compile_extension "${extension_temp_dir}" "${build_dir}" "${extension_name}"; then
+    echo "Unable to compile PECL extension '${extension_name}'. Aborting." >&2
+    return 1
+  fi
+
+  pushd "${extension_temp_dir}" >/dev/null \
+    || { echo "Unable to enter ${extension_temp_dir}." >&2; return 1; }
+
+  cp "modules/${extension_name}.so" "${ext_dir}/${extension_name}.so"
+  cp "modules/${extension_name}.so" "${cache_dir}/${extension_name}-${version_number}.so"
+
+  popd >/dev/null || return 1
+
+  if ! php::pecl::enable_extension "${extension_name}"; then
+    echo "Unable to activate PECL extension '${extension_name}' ${version_number}. Aborting." >&2
+    return 1
+  else
+    echo "Successfully installed PECL extension '${extension_name}' ${version_number}."
+    return 0
+  fi
 }
