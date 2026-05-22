@@ -42,7 +42,7 @@ zlib_version="${zlib_version:-1.3.2}"
 
 # PHP extensions versions
 igbinary_version="3.2.16"
-mongodb_version="1.21.5"
+mongodb_version="2.3.3"
 amqp_version="2.2.0"
 phpredis_version="6.3.0"
 apcu_version="5.1.28"

@@ -229,4 +229,3 @@ echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
 # Cleanup
 
 cleanup_amqp
-
