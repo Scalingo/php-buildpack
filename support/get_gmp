@@ -25,7 +25,9 @@ curl --fail --location "https://gmplib.org/download/gmp/gmp-${gmp_version}.tar.x
 
 mkdir -p /app/vendor/gmp
 pushd "gmp-${gmp_version}" > /dev/null
-./configure --prefix=/app/vendor/gmp
+# We need the `CC` flag since gcc v15 (used in scalingo-26).
+# gcc v15 default C mode changed to C23 which made the configuration fails. A fix is already written but not yet published. Hence the `CC` flag may be deleted in the next releases.
+./configure --prefix=/app/vendor/gmp CC="gcc -std=gnu17"
 make
 make check
 make install
