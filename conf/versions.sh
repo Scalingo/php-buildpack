@@ -46,7 +46,7 @@ mongodb_version="2.3.3"
 amqp_version="2.2.0"
 phpredis_version="6.3.0"
 apcu_version="5.1.28"
-newrelic_version="12.5.0.30"
+newrelic_version="12.7.0.36"
 
 
 # Legacy support
