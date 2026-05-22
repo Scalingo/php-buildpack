@@ -29,9 +29,12 @@ source "../conf/versions.sh"
 #
 skip=( "imap" "igbinary" )
 
+echo "Compile the extensions for PHP $php_version"
+
 for e in ./ext-internal/*; do
 	ext_name="$( basename "${e}" )"
 
+  # For PHP 8.4 and more recent, we want to skip some extensions
 	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
 		&& [[ ${skip[@]} =~ "${ext_name}" ]]
 	then
@@ -48,6 +51,7 @@ done
 for e in ./ext/*; do
 	ext_name="$( basename "${e}" )"
 
+  # For PHP 8.4 and more recent, we want to skip some extensions
 	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
 		&& [[ ${skip[@]} =~ "${ext_name}" ]]
 	then
