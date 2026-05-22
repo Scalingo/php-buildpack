@@ -68,6 +68,7 @@ compile_options=(
 	--with-pdo-sqlite
 	--with-pgsql
 	--with-readline
+	--with-tidy
 	--with-webp
 	--with-xsl
 	--with-zip
@@ -142,6 +143,10 @@ php::pkg::openssl::compile() {
 	make install > /dev/null
 
 	popd > /dev/null
+}
+
+php::apt::libtidy() {
+  apt-get install --quiet=2 --yes libtidy-dev
 }
 
 php::pkg::php::compile() {
@@ -248,6 +253,9 @@ php::pkg::download_extract "${libwebp_url}" "${tempdir}" "${libwebp_dir}"
 echo "-----> Compiling zlib ${zlib_version}"
 php::pkg::download_extract "${zlib_url}" "${tempdir}" "${tempdir}"
 php::pkg::zlib::compile "${tempdir}/zlib-${zlib_version}" "${zlib_dir}"
+
+echo "-----> Installing libtidy from APT repository"
+php::apt::libtidy
 
 echo "-----> Compiling PHP ${php_version}"
 php::pkg::download_extract "${php_url}" "${tempdir}" "${tempdir}"
