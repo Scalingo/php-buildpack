@@ -45,6 +45,11 @@ elif [[ "${deps_stack}" = "scalingo-24" ]]; then
 		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.debian.tar.xz"
 		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.dsc"
 	)
+elif [[ "${deps_stack}" = "scalingo-26" ]]; then
+	dep_urls+=(
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.debian.tar.xz"
+		"https://archive.ubuntu.com/ubuntu/pool/universe/u/uw-imap/uw-imap_${dep_version}~dfsg-7.1.dsc"
+	)
 fi
 
 echo "-----> Downloading libc-client ${dep_version}"
