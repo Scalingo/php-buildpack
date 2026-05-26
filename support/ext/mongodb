@@ -26,6 +26,11 @@ curl --location "${url}" \
 
 pushd "mongodb-${mongodb_version}"
 
+if [ "$STACK" = "scalingo-26" ] && [ "${zend_api_version}" -ge "${PHP_MODULE_API_VERSIONS['8.5']}" ]; then
+	echo "Apply the patch to fix a call to IS_INTERNED"
+	patch -p1 < /buildpack/support/ext/mongodb-is-interned.patch
+fi
+
 if ! /app/vendor/php/bin/phpize; then
 	echo "Fail to PHPize mongodb extension"
 	exit 1
