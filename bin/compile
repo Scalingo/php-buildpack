@@ -397,6 +397,22 @@ SH
 
 source ".profile.d/php.sh"
 
+# OPCache became a required, statically-built extension in PHP 8.5
+# (https://wiki.php.net/rfc/opcache-required). It can no longer be loaded as
+# an external Zend extension and the shared `opcache.so` file is no longer
+# shipped. PHP >= 8.5 binaries packaged before this conditional was added to
+# `support/package_php` still contain a leftover `etc/conf.d/opcache.ini`
+# with a `zend_extension=opcache.so` directive, which now fails on every PHP
+# invocation with:
+#
+#   PHP Warning:  Failed loading Zend extension 'opcache.so'
+#
+# Remove the obsolete file defensively for PHP >= 8.5 to silence the warning
+# regardless of when the downloaded PHP binary was packaged.
+if [[ "$(php_api_version)" -ge "${PHP_MODULE_API_VERSIONS["8.5"]}" ]]; then
+    rm -f "${VENDORED_PHP}/etc/conf.d/opcache.ini"
+fi
+
 # Lib Oniguruma is only mandatory:
 fetch_package "$PHP_BASE_URL" "libonig-${libonig_version}" /app/vendor/libonig > /dev/null
 export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
