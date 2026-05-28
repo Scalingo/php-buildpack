@@ -24,13 +24,10 @@ source "../conf/versions.sh"
 # SKIP imap extension since it has been moved to PECL starting with PHP 8.4
 # https://www.php.net/ChangeLog-8.php#8.4.1
 #
-# SKIP amqp extension since it doesn't compile with PHP 8.5
-# https://github.com/php-amqp/php-amqp/pull/595
-#
 # SKIP igbinary extension since it doesn't compile with PHP 8.5
 # https://github.com/igbinary/igbinary/issues/400
 #
-skip=( "imap" "amqp" "igbinary" )
+skip=( "imap" "igbinary" )
 
 for e in ./ext-internal/*; do
 	ext_name="$( basename "${e}" )"
