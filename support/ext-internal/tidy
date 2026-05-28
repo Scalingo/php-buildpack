@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Compile the Tidy extension (https://www.php.net/manual/en/book.tidy.php)
+#
+
+set -e
+
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
+php_version=$1
+zend_api_version=$2
+php_src_dir=$3
+
+apt-get install --no-install-recommends --yes libtidy-dev
+
+pushd "$php_src_dir/php-${php_version}/ext/tidy"
+
+export PATH=$PATH:/app/vendor/php/bin
+
+phpize
+
+./configure # --with-tidy
+make
+make install
+
+cp modules/tidy.so "$EXT_DIR"
+popd
+
+echo "extension=tidy.so" > "$PREFIX/etc/conf.d/tidy.ini"

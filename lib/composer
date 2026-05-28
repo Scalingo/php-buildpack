@@ -138,6 +138,10 @@ function install_composer_deps() {
               apt_deps="libaio-dev"
             fi
 
+            if [ "$ext" = "tidy" ] ; then
+              apt_deps="libtidy-dev"
+            fi
+
             if [ -n "$apt_deps" ] ; then
               echo "Installing dependencies for ${ext}: ${apt_deps}" | indent
               install_env_file="$(apt_install "${apt_deps}" "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}")"
@@ -153,8 +157,6 @@ function install_composer_deps() {
               fetch_package "$PHP_BASE_URL" "libmemcached-${libmemcached_version}" "/app/vendor/libmemcached" | indent
             elif [ "$ext" = "gmp" ] ; then
               fetch_package "$PHP_BASE_URL" "gmp-${gmp_version}" "/app/vendor/gmp" | indent
-            elif [ "$ext" = "tidy" ] ; then
-              fetch_package "$PHP_BASE_URL" "libtidy-${tidy_version}" "/app/vendor/libtidy" | indent
             elif [ "$ext" = "sodium" ] ; then
               if [[ "$(php_api_version)" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
                 sodium_version=$sodium_php72_php73_version
