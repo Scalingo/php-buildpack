@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Compile the Tidy extension (https://www.php.net/manual/en/book.tidy.php)
+# Compile the Tidy PHP extension (https://www.php.net/manual/en/book.tidy.php). The outcome is a .so file that is uploaded to the object storage. This file is downloaded during the deployment if a customer enables the Tidy extension.
 #
 
 set -e
@@ -13,15 +13,19 @@ php_version=$1
 zend_api_version=$2
 php_src_dir=$3
 
-apt-get install --no-install-recommends --yes libtidy-dev
+source "/buildpack/conf/versions.sh"
+tidy_package="${PHP_BASE_URL}/package/libtidy-${libtidy_version}.tgz"
 
-pushd "$php_src_dir/php-${php_version}/ext/tidy"
+curl --location "$tidy_package" > /tmp/tidy-${libtidy_version}.tgz
 
+mkdir --parents /app/vendor/libtidy
+tar --extract --gzip --directory=/app/vendor/libtidy --file=/tmp/tidy-${libtidy_version}.tgz
+
+pushd $php_src_dir/php-${php_version}/ext/tidy
 export PATH=$PATH:/app/vendor/php/bin
 
 phpize
-
-./configure # --with-tidy
+./configure --with-tidy=/app/vendor/libtidy
 make
 make install
 

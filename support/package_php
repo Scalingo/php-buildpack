@@ -68,7 +68,6 @@ compile_options=(
 	--with-pdo-sqlite
 	--with-pgsql
 	--with-readline
-	# --with-tidy
 	--with-webp
 	--with-xsl
 	--with-zip

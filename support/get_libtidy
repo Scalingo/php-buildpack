@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# This script downloads the libtidy version specified in libtidy_version. It compiles it and upload it to an object storage. Libtidy is eventually used when packaging the Tidy PHP extension (`support/ext-internal/tidy`), and during the deployment of a new PHP application (https://github.com/Scalingo/php-buildpack/blob/03f4e8f45bcff5dd307c23549d7c725b9ba63dff/lib/composer#L156-L157).
+#
+# This script must only be called in the context of the release of a new stack (https://www.notion.so/scalingooriginal/New-Stack-PHP-Support-d1e5370e886f41f492050a7a7536217f).
+#
+
+set -e
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
+which cmake 2>/dev/null || (apt-get update && apt-get install -y cmake)
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+# The variable is assigned in `versions.sh`
+declare libtidy_version
+source "$basedir/../conf/versions.sh"
+source "$basedir/lib/utils"
+source "$basedir/lib/swift"
+
+tempdir=$(mktmpdir libtidy)
+cd "$tempdir"
+
+echo "-----> Downloading libtidy v${libtidy_version}"
+curl --fail --location --remote-name "https://github.com/htacg/tidy-html5/archive/${libtidy_version}.tar.gz"
+
+tar xvf "${libtidy_version}.tar.gz"
+cd "tidy-html5-${libtidy_version}"
+mkdir --parents /app/vendor/libtidy
+
+cd build/cmake
+# The flag `-DCMAKE_POLICY_VERSION_MINIMUM=3.5` is mandatory for the call to CMake to succeed with versions available in scalingo-26 and more recent.
+cmake ../.. -DCMAKE_INSTALL_PREFIX=/app/vendor/libtidy -DTIDY_COMPAT_HEADERS=true -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+make
+make install
+
+cd "$tempdir"
+mkdir package
+cd package
+tar -C /app/vendor/libtidy -czvf "libtidy-${libtidy_version}.tgz" .
+cd ..
+
+swift_upload "package/libtidy-${libtidy_version}.tgz"
+
+"$basedir/package-checksum" "libtidy-${libtidy_version}"
