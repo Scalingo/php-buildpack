@@ -55,7 +55,7 @@ test::php85::extensions::default() {
 	test::utils::compile
 	test::helpers::enter_prod
 
-	local extensions=("${default_builtin_extensions_85[@]}")
+	local extensions=("${default_builtins_extensions_85[@]}")
 	extensions+=("${default_pecl_extensions_85[@]}")
 
 	test::helpers::enabled_extensions "${extensions[@]}"
@@ -74,4 +74,3 @@ test::php85::extensions::optional_builtin() {
 
 	test::helpers::enabled_extensions "${optional_builtin_extensions_85[@]}"
 }
-

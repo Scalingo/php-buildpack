@@ -55,7 +55,7 @@ test::php82::extensions::default() {
 	test::utils::compile
 	test::helpers::enter_prod
 
-	local extensions=("${default_builtin_extensions_82[@]}")
+	local extensions=("${default_builtins_extensions_82[@]}")
 	extensions+=("${default_pecl_extensions_82[@]}")
 
 	test::helpers::enabled_extensions "${extensions[@]}"
