@@ -34,7 +34,7 @@ librabbitmq_version="0.15.0"
 
 memcached_version="3.4.0"
 gmp_version="6.3.0"
-tidy_version="5.8.0"
+libtidy_version="5.8.0"
 sodium_version="1.0.22"
 webp_version="${webp_version:-1.6.0}" # Can be found here: https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html
 # From https://zlib.net/
@@ -46,7 +46,7 @@ mongodb_version="1.21.5"
 amqp_version="2.2.0"
 phpredis_version="6.3.0"
 apcu_version="5.1.28"
-newrelic_version="12.5.0.30"
+newrelic_version="12.7.0.36"
 
 
 # Legacy support

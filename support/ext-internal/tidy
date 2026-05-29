@@ -1,9 +1,12 @@
 #!/bin/bash
+#
+# Compile the Tidy PHP extension (https://www.php.net/manual/en/book.tidy.php). The outcome is a .so file that is uploaded to the object storage. This file is downloaded during the deployment if a customer enables the Tidy extension.
+#
 
 set -e
 
 if [ -n "$DEBUG" ]; then
-    set -x
+  set -x
 fi
 
 php_version=$1
@@ -11,12 +14,12 @@ zend_api_version=$2
 php_src_dir=$3
 
 source "/buildpack/conf/versions.sh"
-tidy_package="${PHP_BASE_URL}/package/libtidy-${tidy_version}.tgz"
+tidy_package="${PHP_BASE_URL}/package/libtidy-${libtidy_version}.tgz"
 
-curl -L "$tidy_package" > /tmp/tidy-${tidy_version}.tgz
+curl --location "$tidy_package" > /tmp/tidy-${libtidy_version}.tgz
 
-mkdir -p /app/vendor/libtidy
-tar -xzv -C /app/vendor/libtidy -f /tmp/tidy-${tidy_version}.tgz
+mkdir --parents /app/vendor/libtidy
+tar --extract --gzip --directory=/app/vendor/libtidy --file=/tmp/tidy-${libtidy_version}.tgz
 
 pushd $php_src_dir/php-${php_version}/ext/tidy
 export PATH=$PATH:/app/vendor/php/bin
@@ -30,4 +33,3 @@ cp modules/tidy.so "$EXT_DIR"
 popd
 
 echo "extension=tidy.so" > "$PREFIX/etc/conf.d/tidy.ini"
-

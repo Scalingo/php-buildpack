@@ -17,6 +17,12 @@ default_nginx["scalingo-24"]="1.30."
 default_composer["scalingo-24"]="2.9."
 latest_composer["scalingo-24"]="2.9.8"
 
+# Defaults for scalingo-26:
+default_php["scalingo-26"]="8.4."
+default_nginx["scalingo-26"]="1.30."
+default_composer["scalingo-26"]="2.9."
+latest_composer["scalingo-26"]="2.9.8"
+
 
 test::defaults::classic() {
 #

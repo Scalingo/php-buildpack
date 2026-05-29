@@ -154,7 +154,7 @@ function install_composer_deps() {
             elif [ "$ext" = "gmp" ] ; then
               fetch_package "$PHP_BASE_URL" "gmp-${gmp_version}" "/app/vendor/gmp" | indent
             elif [ "$ext" = "tidy" ] ; then
-              fetch_package "$PHP_BASE_URL" "libtidy-${tidy_version}" "/app/vendor/libtidy" | indent
+              fetch_package "$PHP_BASE_URL" "libtidy-${libtidy_version}" "/app/vendor/libtidy" | indent
             elif [ "$ext" = "sodium" ] ; then
               if [[ "$(php_api_version)" -lt "${PHP_MODULE_API_VERSIONS["7.4"]}" ]] ; then
                 sodium_version=$sodium_php72_php73_version
