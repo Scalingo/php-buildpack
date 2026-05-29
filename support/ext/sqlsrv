@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [ -n "$DEBUG" ]; then
+    set -x
+fi
+
+sqlsrv_version="5.12.0"
+
+curl -L "https://pecl.php.net/get/sqlsrv-${sqlsrv_version}.tgz" \
+    | tar xzv
+
+cd sqlsrv-${sqlsrv_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/sqlsrv.so "$EXT_DIR/sqlsrv.so"
+echo "extension=sqlsrv.so" > "$PREFIX/etc/conf.d/sqlsrv.ini"
+
+pdo_sqlsrv_version="5.12.0"
+
+curl -L "https://pecl.php.net/get/pdo_sqlsrv-${pdo_sqlsrv_version}.tgz" \
+    | tar xzv
+
+cd pdo_sqlsrv-${pdo_sqlsrv_version}
+/app/vendor/php/bin/phpize
+./configure --with-php-config=/app/vendor/php/bin/php-config
+
+make
+cp modules/pdo_sqlsrv.so "$EXT_DIR/pdo_sqlsrv.so"
+echo "extension=pdo_sqlsrv.so" > "$PREFIX/etc/conf.d/pdo_sqlsrv.ini"
