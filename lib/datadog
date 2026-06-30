@@ -15,7 +15,7 @@ function install_datadog() {
     local cwd=$(pwd)
     local temp_dir=$(mktmpdir "datadog")
 
-    cd "${tempdir}"
+    cd "${temp_dir}"
 
     curl --silent -L "https://github.com/DataDog/dd-trace-php/releases/latest/download/datadog-setup.php" > datadog-setup.php
     mkdir -p ${install_dir}
