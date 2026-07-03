@@ -197,8 +197,6 @@ echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
 # | scalingo-26 |  2.2.0 |      0.17.0 |
 # | scalingo-24 |  2.2.0 |      0.17.0 |
 # | scalingo-22 |  2.2.0 |      0.17.0 |
-# | scalingo-20 |  2.1.2 |      0.13.0 |
-# | scalingo-18 | 1.11.0 |      0.11.0 |
 #
 
 
