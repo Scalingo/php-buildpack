@@ -65,97 +65,80 @@ build_librabbitmq() {
     download_archive "${archive_url}" \
         | tar xvz --strip-components=1
 
-    if [ "${STACK}" = "scalingo-18" ]; then
-        cmake \
-            -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
-            -DBUILD_TESTS=OFF \
-            -DBUILD_EXAMPLES=OFF \
-            -DBUILD_TOOLS=OFF \
-            -DBUILD_TOOLS_DOCS=OFF \
-            -DBUILD_API_DOCS=OFF \
-            -DRUN_SYSTEM_TESTS=OFF \
-            -DBUILD_SHARED_LIBS=ON \
-            -DBUILD_STATIC_LIBS=OFF \
-            -Wno-dev \
-            || ( echo "Failed to build librabbitmq." \
-                && exit 1 )
-    else
-        cmake \
-            -DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
-            -DBUILD_TESTING=OFF \
-            -DBUILD_EXAMPLES=OFF \
-            -DBUILD_TOOLS=OFF \
-            -DBUILD_TOOLS_DOCS=OFF \
-            -DBUILD_API_DOCS=OFF \
-            -DRUN_SYSTEM_TESTS=OFF \
-            -DBUILD_SHARED_LIBS=ON \
-            -DBUILD_STATIC_LIBS=OFF \
-            -Wno-dev \
-            || ( echo "Failed to build librabbitmq." \
-                && exit 1 )
-    fi
+	if ! cmake \
+			-DCMAKE_INSTALL_PREFIX="${librabbitmq_dir}" \
+			-DBUILD_TESTING=OFF \
+			-DBUILD_EXAMPLES=OFF \
+			-DBUILD_TOOLS=OFF \
+			-DBUILD_TOOLS_DOCS=OFF \
+			-DBUILD_API_DOCS=OFF \
+			-DRUN_SYSTEM_TESTS=OFF \
+			-DBUILD_SHARED_LIBS=ON \
+			-DBUILD_STATIC_LIBS=OFF \
+			-Wno-dev
+	then
+		echo "Failed to build librabbitmq."
+		exit 1
+	fi
 
-    cmake \
-        --build . \
-        --config Release \
-        --target install \
-        || ( echo "Failed to build librabbitmq." \
-            && exit 1 )
+	if ! cmake \
+		--build . \
+		--config Release \
+		--target install
+	then
+		echo "Failed to build librabbitmq."
+		exit 1
+	fi
 
-    popd
+	popd
 
-    mkdir -p "${PREFIX}/lib"
+	mkdir --parents "${PREFIX}/lib"
 
-    if [ "${STACK}" = "scalingo-18" ]; then
-        # Move things that have been stored in `${prefix}/lib/x86_64-linux-gnu`
-        # to `${prefix}/lib` so that AMQP's `configure` finds them.
-        find "${librabbitmq_dir}/lib/x86_64-linux-gnu" \
-            -mindepth 1 \
-            -maxdepth 1 \
-            -exec mv --target-directory "${librabbitmq_dir}/lib/" -- {} \+
-
-        rmdir "${librabbitmq_dir}/lib/x86_64-linux-gnu"
-    fi
-
-    # Copy library to `$PREFIX/lib` so it's included in the future package
-    cp -ar "${librabbitmq_dir}" "${PREFIX}/lib/"
+	# Copy library to `$PREFIX/lib` so it's included in the future package
+	cp --archive --recursive "${librabbitmq_dir}" "${PREFIX}/lib/"
 }
 
 
 build_amqp() {
-    local pkgname
-    local pkgver
-    local url
-    local librabbitmq_dir
+	local pkgname
+	local pkgver
+	local url
+	local librabbitmq_dir
 
-    pkgname="${1}"
-    pkgver="${2}"
-    url="${3}"
-    librabbitmq_dir="${4}"
+	pkgname="${1}"
+	pkgver="${2}"
+	url="${3}"
+	librabbitmq_dir="${4}"
 
-    printf -v archive_url "${url}" "${pkgver}"
+	printf -v archive_url "${url}" "${pkgver}"
 
-    mkdir -p "${pkgname}-${pkgver}"
-    pushd "${pkgname}-${pkgver}"
+	mkdir --parents "${pkgname}-${pkgver}"
+	pushd "${pkgname}-${pkgver}" > /dev/null
 
-    download_archive "${archive_url}" \
-        | tar xvz --strip-components=1
+	download_archive "${archive_url}" \
+		| tar --extract --gzip --strip-components=1
 
-    /app/vendor/php/bin/phpize \
-        || ( echo "Failed to PHPize AMQP extension." \
-            && exit 1 )
+	if ! /app/vendor/php/bin/phpize
+	then
+		echo "Failed to PHPize AMQP extension."
+		exit 1
+	fi
 
-    ./configure \
-        --with-php-config="/app/vendor/php/bin/php-config" \
-        --with-librabbitmq-dir="${librabbitmq_dir}" \
-        || ( echo "Failed to configure AMQP extension." \
-            && exit 1 )
+	if ! ./configure \
+		--with-php-config="/app/vendor/php/bin/php-config" \
+		--with-librabbitmq-dir="${librabbitmq_dir}"
+	then
+		echo "Failed to configure AMQP extension."
+		exit 1
+	fi
 
-    make \
-        || ( echo "Failed to build AMQP extension." \
-            && exit 1 )
+	if ! make
+	then
+		echo "Failed to build AMQP extension."
+		exit 1
+	fi
 
-    popd
+	popd > /dev/null
 }
 
 
@@ -182,12 +165,6 @@ pkgname="librabbitmq-c"
 source_url="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v%s.tar.gz"
 
 case "${STACK}" in
-    "scalingo-18")
-        version="0.11.0"
-        ;;
-    "scalingo-20")
-        version="0.13.0"
-        ;;
     *)
         version="${librabbitmq_version}"
         ;;
@@ -203,9 +180,6 @@ pkgname="amqp"
 source_url="https://pecl.php.net/get/amqp-%s.tgz"
 
 case "${STACK}" in
-    "scalingo-18")
-        version="1.11.0"
-        ;;
     *)
         version="${amqp_version}"
         ;;
@@ -220,9 +194,9 @@ echo "extension=amqp.so" > "${PREFIX}/etc/conf.d/amqp.ini"
 #
 # | Stack       | amqp   | librabbitmq |
 # | ----------- | ------ | ----------- |
-# | scalingo-22 |  2.1.2 |      0.14.0 |
-# | scalingo-20 |  2.1.2 |      0.13.0 |
-# | scalingo-18 | 1.11.0 |      0.11.0 |
+# | scalingo-26 |  2.2.0 |      0.17.0 |
+# | scalingo-24 |  2.2.0 |      0.17.0 |
+# | scalingo-22 |  2.2.0 |      0.17.0 |
 #
 
 

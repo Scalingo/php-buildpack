@@ -30,7 +30,7 @@ PHP_MODULE_API_VERSIONS["8.5"]="20250925"
 libmemcached_version="1.0.18"
 # Mandatory for multibytes strings starting with PHP 7.4
 libonig_version="${libonig_version:-6.9.10}"
-librabbitmq_version="0.15.0"
+librabbitmq_version="0.17.0"
 
 memcached_version="3.4.0"
 gmp_version="6.3.0"
