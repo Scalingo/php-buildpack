@@ -1,8 +1,9 @@
-version = "1.0.0"
-owner = "etienne@scalingo.com"
-team = "IST"
+dependencies = []
 description = "Official Scalingo PHP buildpack"
-languages = ["shell"]
 destination_server = []
 flags = ["buildpack"]
-dependencies = []
+languages = ["shell", "github-actions"]
+owner = "team-infrastructure-services@scalingo.com"
+team = "IST"
+tier = 1
+version = "1.0.0"
