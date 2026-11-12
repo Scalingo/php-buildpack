@@ -499,6 +499,8 @@ fi
 # By default, we run npm first, and then Composer.
 # If PHP_BUILDPACK_RUN_COMPOSER_FIRST is set to "true", we run Composer first
 # and then npm.
+# This is especially useful for frameworks such a symfony-ux that require
+# Composer to run before npm.
 if [[ "${PHP_BUILDPACK_RUN_COMPOSER_FIRST:-}" = 'true' ]]; then
 	install_composer_deps "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
 fi
