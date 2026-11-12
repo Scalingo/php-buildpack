@@ -2,7 +2,7 @@
     "extra": {
         "paas": {
             "engines": {
-                "composer": "2.11.1"
+                "composer": "2.11.2"
             }
         }
     }
