@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
 
-set -e
+set -o errexit
 
 if [ -n "$DEBUG" ]; then
-    set -x
+	set -o xtrace
 fi
 
 php_version=${1:=8.2}
 
-event_version="3.0.8"
+# $event_version, $PREFIX and $EXT_DIR are loaded from versions.sh
+source "/buildpack/conf/versions.sh"
 
-# libwebp is required to compile this library starting with scalingo-20
+# libwebp is required:
 if [[ ! -d /app/vendor/libwebp ]]; then
-  /buildpack/support/get_webp
+	/buildpack/support/get_webp
 fi
 
-curl --location \
-  "https://pecl.php.net/get/event-${event_version}.tgz" \
-  | tar -xzv
+curl --location "https://pecl.php.net/get/event-${event_version}.tgz" \
+	| tar --extract --gzip --verbose
 
-pushd event-${event_version}
-
+pushd event-${event_version} > /dev/null
 /app/vendor/php/bin/phpize
 ./configure --with-php-config=/app/vendor/php/bin/php-config
-
 make
 cp modules/event.so "$EXT_DIR/event.so"
-
-popd
+popd > /dev/null
 
 echo "extension=event.so" > "$PREFIX/etc/conf.d/event.ini"

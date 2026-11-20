@@ -33,6 +33,7 @@ libmemcached_version="1.0.18"
 libonig_version="${libonig_version:-6.9.10}"
 librabbitmq_version="0.17.0"
 
+event_version="3.2.0"
 memcached_version="3.4.0"
 gmp_version="6.3.0"
 libtidy_version="5.8.0"
@@ -43,7 +44,7 @@ zlib_version="${zlib_version:-1.4}"
 
 # PHP extensions versions
 igbinary_version="3.2.16"
-mongodb_version="1.21.5"
+mongodb_version="1.21.14"
 amqp_version="2.2.0"
 phpredis_version="6.3.0"
 apcu_version="5.1.28"
