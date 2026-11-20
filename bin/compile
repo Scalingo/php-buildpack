@@ -419,18 +419,24 @@ export LD_LIBRARY_PATH="/app/vendor/libonig:$LD_LIBRARY_PATH"
 
 # Fetch additional extensions
 status "Bundling platform default extensions"
-echo "       apcu"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-apcu" "/app/vendor/php" | indent
 
-echo "       phpredis"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-redis" "/app/vendor/php" | indent
+# apcu, phpredis and mongodb are not yet available for PHP 8.6:
+if [[ "$( php_api_version )" -lt "${PHP_MODULE_API_VERSIONS["8.6"]}" ]]; then
+	echo "       apcu"
+	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-apcu" "/app/vendor/php" | indent
 
-echo "       mongodb"
-fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mongodb" "/app/vendor/php" | indent
+	echo "       phpredis"
+	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-redis" "/app/vendor/php" | indent
 
-if [ "$(php_api_version)" = "20170718" -o "$(php_api_version)" = "20180731" ] ; then
-    echo "       mcrypt"
-    fetch_package "$PHP_BASE_URL" "ext/$(php_api_version)/php-mcrypt" "/app/vendor/php" | indent
+	echo "       mongodb"
+	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-mongodb" "/app/vendor/php" | indent
+fi
+
+# mcrypt is only available for PHP 7.2 and 7.3:
+if [[ "$( php_api_version )" = "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] \
+	|| [[ "$( php_api_version )" = "${PHP_MODULE_API_VERSIONS["7.3"]}" ]]; then
+	echo "       mcrypt"
+	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-mcrypt" "/app/vendor/php" | indent
 fi
 
 if [ -f "$BUILD_DIR/composer.json" ] && package_datadog_enabled; then
