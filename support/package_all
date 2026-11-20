@@ -21,22 +21,20 @@ cd "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "../conf/versions.sh"
 
+echo
+echo "----- Compile PHP extensions from ext-internal for PHP $php_version"
+echo
+
 # SKIP imap extension since it has been moved to PECL starting with PHP 8.4
 # https://www.php.net/ChangeLog-8.php#8.4.1
-#
-# SKIP igbinary extension since it doesn't compile with PHP 8.5
-# https://github.com/igbinary/igbinary/issues/400
-#
-skip=( "imap" "igbinary" )
-
-echo "Compile the extensions for PHP $php_version"
+skip84=( "imap" )
 
 for e in ./ext-internal/*; do
 	ext_name="$( basename "${e}" )"
 
-  # For PHP 8.4 and more recent, we want to skip some extensions
+	# Skip some extensions for PHP >= 8.4
 	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
-		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+		&& [[ ${skip84[@]} =~ "${ext_name}" ]]
 	then
 		continue
 	fi
@@ -48,12 +46,46 @@ for e in ./ext-internal/*; do
 	fi
 done
 
+
+
+echo
+echo "----- Compile PHP extensions from ext for PHP $php_version"
+echo
+
+# SKIP igbinary extension since it doesn't compile with PHP 8.5
+# https://github.com/igbinary/igbinary/issues/400
+skip85=( "igbinary" )
+
+# SKIP amqp extension since it is not available for PHP 8.6.0 yet.
+# https://github.com/php-amqp/php-amqp/pull/643
+#
+# SKIP APCu extension since is is not available for PHP 8.6.0 yet.
+# https://github.com/krakjoe/apcu/issues/634
+#
+# SKIP imagick extension
+#
+# SKIP mcrypt extension
+#
+# SKIP memcached extension
+#
+# SKIP mongodb extension
+#
+skip86=( "amqp" "apcu" "imagick" "mcrypt" "memcached" )
+skip86+=( "mongodb" "mongodb-is-interned.patch" "redis" )
+
 for e in ./ext/*; do
 	ext_name="$( basename "${e}" )"
 
-  # For PHP 8.4 and more recent, we want to skip some extensions
-	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
-		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	# Skip some extensions for PHP >= 8.5
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20250925 ]] \
+		&& [[ ${skip85[@]} =~ "${ext_name}" ]]
+	then
+		continue
+	fi
+
+	# Skip some extensions for PHP >= 8.6
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20261112 ]] \
+		&& [[ ${skip86[@]} =~ "${ext_name}" ]]
 	then
 		continue
 	fi
