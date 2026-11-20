@@ -21,8 +21,12 @@ curl --fail --location --output - "https://storage.googleapis.com/downloads.webm
 
 mkdir -p /app/vendor/libwebp
 pushd "libwebp-${webp_version}" > /dev/null
-./configure --prefix=/app/vendor/libwebp
-make
+./configure \
+	--prefix=/app/vendor/libwebp \
+	--enable-libwebpdemux \
+	--enable-libwebpmux
+
+make -j8
 make install
 popd > /dev/null
 

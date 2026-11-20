@@ -23,6 +23,7 @@ PHP_MODULE_API_VERSIONS["8.2"]="20220829"
 PHP_MODULE_API_VERSIONS["8.3"]="20230831"
 PHP_MODULE_API_VERSIONS["8.4"]="20240924"
 PHP_MODULE_API_VERSIONS["8.5"]="20250925"
+PHP_MODULE_API_VERSIONS["8.6"]="20261112"
 
 # The following lib versions are used for lib we statically store on Swift.
 # They are downloaded, compiled and stored with /support/get_* scripts.
