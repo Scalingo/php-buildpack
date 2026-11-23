@@ -208,7 +208,7 @@ echo "       Exporting env vars"
 # where the libs, includes, etc. are:
 export C_INCLUDE_PATH="${C_INCLUDE_PATH:+$C_INCLUDE_PATH:}${libonig_dir}/include"
 export PKG_CONFIG_PATH="${PKG_CONFIG_PATH:+$PKG_CONFIG_PATH:}${libonig_dir}/lib/pkgconfig"
-export WEBP_LIBS="-L${libwebp_dir}/lib -lwebp"
+export WEBP_LIBS="-L${libwebp_dir}/lib -lwebpdemux -lwebpmux -lwebp"
 export WEBP_CFLAGS="-I${libwebp_dir}/include"
 
 

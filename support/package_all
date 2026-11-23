@@ -21,22 +21,21 @@ cd "$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 source "../conf/versions.sh"
 
-# SKIP imap extension since it has been moved to PECL starting with PHP 8.4
-# https://www.php.net/ChangeLog-8.php#8.4.1
-#
-# SKIP igbinary extension since it doesn't compile with PHP 8.5
-# https://github.com/igbinary/igbinary/issues/400
-#
-skip=( "imap" "igbinary" )
+echo
+echo "----- Compile PHP extensions from ext-internal for PHP $php_version"
+echo
 
-echo "Compile the extensions for PHP $php_version"
+# SKIP imap extension since it has been moved to PECL starting with PHP >= 8.4
+# https://www.php.net/ChangeLog-8.php#8.4.1
+skip_ge_84=( "imap" )
 
 for e in ./ext-internal/*; do
 	ext_name="$( basename "${e}" )"
 
-  # For PHP 8.4 and more recent, we want to skip some extensions
-	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
-		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	# Skip some extensions for PHP >= 8.4
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" \
+		-ge "${PHP_MODULE_API_VERSIONS['8.4']}" ]] \
+		&& [[ ${skip_ge_84[@]} =~ "${ext_name}" ]]
 	then
 		continue
 	fi
@@ -48,12 +47,56 @@ for e in ./ext-internal/*; do
 	fi
 done
 
+
+
+echo
+echo "----- Compile PHP extensions from ext for PHP $php_version"
+echo
+
+# SKIP igbinary extension since it doesn't compile with PHP >= 8.5
+# https://github.com/igbinary/igbinary/issues/400
+skip_ge_85=( "igbinary" )
+
+# SKIP amqp extension since it is not available for PHP 8.6.0 yet.
+# https://github.com/php-amqp/php-amqp/pull/643
+#
+# SKIP APCu extension since is is not available for PHP 8.6.0 yet.
+# https://github.com/krakjoe/apcu/issues/634
+#
+# SKIP imagick extension since it is not available for PHP 8.6.0 yet.
+# Current master seems fixed, waiting for a proper numbered release.
+# https://github.com/Imagick/imagick/issues/804
+#
+# SKIP memcached extension since it is not available for PHP 8.6.0 yet.
+# Current master seems fixed, waiting for a proper numbered release.
+# https://github.com/php-memcached-dev/php-memcached/issues/586
+#
+# SKIP mongodb extension since it won't be available for PHP 8.6.
+# We'd need to upgrade to 2.5+ for it to work.
+# https://github.com/mongodb/mongo-php-driver/pull/2222
+#
+# SKIP redis extension since it is not available for PHP 8.6.0 yet.
+# Re-check when 6.4.0 is released.
+# https://github.com/phpredis/phpredis/issues/3002
+#
+skip_ge_86=( "amqp" "apcu" "imagick" "memcached" )
+skip_ge_86+=( "mongodb" "mongodb-is-interned.patch" "redis" )
+
 for e in ./ext/*; do
 	ext_name="$( basename "${e}" )"
 
-  # For PHP 8.4 and more recent, we want to skip some extensions
-	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" -ge 20240924 ]] \
-		&& [[ ${skip[@]} =~ "${ext_name}" ]]
+	# Skip some extensions for PHP >= 8.5
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" \
+		-ge "${PHP_MODULE_API_VERSIONS['8.5']}" ]] \
+		&& [[ ${skip_ge_85[@]} =~ "${ext_name}" ]]
+	then
+		continue
+	fi
+
+	# Skip some extensions for PHP >= 8.6
+	if [[ "${PHP_MODULE_API_VERSIONS["${php_version}"]}" \
+		-ge "${PHP_MODULE_API_VERSIONS['8.6']}" ]] \
+		&& [[ ${skip_ge_86[@]} =~ "${ext_name}" ]]
 	then
 		continue
 	fi
