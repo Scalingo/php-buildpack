@@ -432,13 +432,6 @@ if [[ "$( php_api_version )" -lt "${PHP_MODULE_API_VERSIONS["8.6"]}" ]]; then
 	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-mongodb" "/app/vendor/php" | indent
 fi
 
-# mcrypt is only available for PHP 7.2 and 7.3:
-if [[ "$( php_api_version )" = "${PHP_MODULE_API_VERSIONS["7.2"]}" ]] \
-	|| [[ "$( php_api_version )" = "${PHP_MODULE_API_VERSIONS["7.3"]}" ]]; then
-	echo "       mcrypt"
-	fetch_package "$PHP_BASE_URL" "ext/$( php_api_version )/php-mcrypt" "/app/vendor/php" | indent
-fi
-
 if [ -f "$BUILD_DIR/composer.json" ] && package_datadog_enabled; then
     install_datadog "${DATADOG_TRACER_VERSION}" "${DATADOG_APPSEC_VERSION}"
 fi
